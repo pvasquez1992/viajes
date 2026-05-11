@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">Campana</title>
+  <defs>
+    <linearGradient id="bellGlow" x1="12" x2="52" y1="8" y2="58" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#9bdfff"/>
+      <stop offset=".48" stop-color="#77d8ff"/>
+      <stop offset="1" stop-color="#ffd166"/>
+    </linearGradient>
+  </defs>
+  <path fill="#0b0f14" d="M32 59c15 0 27-12 27-27S47 5 32 5 5 17 5 32s12 27 27 27Z"/>
+  <path fill="url(#bellGlow)" d="M32 11c-4.8 0-8.8 3.7-9.2 8.5l-1.1 13.4c-.2 2.3-1.2 4.4-2.9 6l-2.2 2.2c-1.8 1.8-.5 4.9 2 4.9h26.8c2.5 0 3.8-3.1 2-4.9L45.2 39c-1.7-1.6-2.7-3.7-2.9-6l-1.1-13.4C40.8 14.7 36.8 11 32 11Z"/>
+  <path fill="#d9e8f5" d="M26.8 49c.9 2.1 2.8 3.6 5.2 3.6s4.3-1.5 5.2-3.6H26.8Z"/>
+  <path fill="#0b0f14" fill-opacity=".22" d="M31.9 15c-2.9 0-5.4 2.2-5.6 5.2l-1.1 13.3c-.3 3.3-1.7 6.4-4.1 8.7h21.8c-2.4-2.3-3.8-5.4-4.1-8.7l-1.1-13.3c-.2-3-2.8-5.2-5.8-5.2Z"/>
+</svg>

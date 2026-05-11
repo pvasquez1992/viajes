@@ -15,8 +15,59 @@ body{
 img{
     max-width:100%;
 }
+.site-header{
+    position:sticky;
+    top:0;
+    z-index:20;
+    padding:10px 16px;
+}
+.site-header-inner{
+    display:flex;
+    justify-content:space-between;
+    gap:18px;
+    align-items:center;
+    width:min(1280px,100%);
+    margin:auto;
+    padding:12px 18px;
+    border:1px solid rgba(217,232,245,.14);
+    border-radius:18px;
+    background:rgba(7,11,16,.72);
+    backdrop-filter:blur(12px);
+    box-shadow:0 12px 34px rgba(0,0,0,.24);
+}
+.brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    color:white;
+    text-decoration:none;
+    font-weight:900;
+    letter-spacing:.01em;
+}
+.brand img{
+    width:34px;
+    height:34px;
+    object-fit:contain;
+}
+.site-header nav{
+    display:flex;
+    gap:8px;
+    align-items:center;
+}
+.site-header nav a{
+    padding:8px 11px;
+    border-radius:999px;
+    color:#d9e8f5;
+    text-decoration:none;
+    font-size:14px;
+    font-weight:800;
+}
+.site-header nav a:hover{
+    background:rgba(119,216,255,.12);
+    color:#bcefff;
+}
 .hero{
-    min-height:100svh;
+    min-height:calc(100svh - 78px);
     background-image:
     linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.65)),
     url('../img/hero-aurora.jpg');
@@ -26,6 +77,23 @@ img{
     align-items:center;
     justify-content:center;
     padding:40px 24px;
+}
+.site-footer{
+    display:flex;
+    justify-content:space-between;
+    gap:18px;
+    align-items:center;
+    width:min(1280px,100%);
+    margin:auto;
+    padding:26px 28px 34px;
+    color:#9fb2c5;
+}
+.site-footer span{
+    color:#d9e8f5;
+    font-weight:900;
+}
+.site-footer p{
+    margin:0;
 }
 .hero-inner{
     display:grid;
@@ -38,9 +106,31 @@ img{
     text-align:left;
 }
 .hero h1{
+    display:flex;
+    align-items:center;
+    gap:14px;
     font-size:clamp(44px,7vw,64px);
     margin:0;
     letter-spacing:0;
+}
+.title-icon{
+    width:clamp(38px,6vw,58px);
+    height:clamp(38px,6vw,58px);
+    flex:0 0 auto;
+    filter:drop-shadow(0 0 22px rgba(119,216,255,.34));
+}
+.heading-icon{
+    width:34px;
+    height:34px;
+    margin-right:10px;
+    vertical-align:-6px;
+    filter:drop-shadow(0 0 16px rgba(119,216,255,.26));
+}
+.inline-icon{
+    width:22px;
+    height:22px;
+    margin-right:8px;
+    vertical-align:-4px;
 }
 .hero p{
     font-size:clamp(18px,2.4vw,22px);
@@ -654,6 +744,23 @@ p{
     }
 }
 @media (max-width:640px){
+    .site-header{
+        padding:8px 10px;
+    }
+    .site-header-inner{
+        padding:10px 12px;
+        border-radius:14px;
+    }
+    .brand span{
+        display:none;
+    }
+    .site-header nav{
+        gap:4px;
+    }
+    .site-header nav a{
+        padding:7px 8px;
+        font-size:13px;
+    }
     body{
         overflow-x:hidden;
     }
@@ -921,6 +1028,15 @@ p{
         font-size:14px;
         line-height:1.35;
         white-space:normal;
+    }
+}
+@media (max-width:460px){
+    .site-header nav a:nth-child(3){
+        display:none;
+    }
+    .site-footer{
+        display:grid;
+        padding:22px 14px 30px;
     }
 }
 @media (max-width:380px){

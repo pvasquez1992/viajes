@@ -5,17 +5,31 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Iceland 2026</title>
+<link rel="icon" href="../logo.png" type="image/png">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
     crossorigin="">
 <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
+<header class="site-header">
+<div class="site-header-inner">
+<a class="brand" href="../">
+<img src="../logo.png" alt="">
+<span>Bookmark</span>
+</a>
+<nav aria-label="Navegación principal">
+<a href="../">Viajes</a>
+<a href="#library">Roadbook</a>
+<a href="#places">Lugares</a>
+</nav>
+</div>
+</header>
 
 <section class="hero">
 <div class="hero-inner">
 <div class="hero-copy">
-<h1>ICELAND 2026</h1>
+<h1><img class="title-icon" src="../logo.png" alt="">ICELAND 2026</h1>
 <p>
 7 días manejando entre volcanes, glaciares, playas negras y montañas imposibles.
 No es un viaje normal. Es una expedición cinematográfica por Islandia.
@@ -31,8 +45,8 @@ No es un viaje normal. Es una expedición cinematográfica por Islandia.
 
 <div class="container">
 
-<section class="itinerary">
-<h2>🌍 Roadbook Iceland 2026</h2>
+<section class="itinerary" id="library">
+<h2><img class="heading-icon" src="../logo.png" alt="">Roadbook Iceland 2026</h2>
 <p>
 Itinerario real de camper: horarios, rutas, paradas clave, supermercados, gasolina y campings.
 </p>
@@ -186,7 +200,7 @@ Itinerario real de camper: horarios, rutas, paradas clave, supermercados, gasoli
 <summary>
 <span class="panel-icon">🚐</span>
 <span>
-<strong>Camper & reservas</strong>
+<strong><img class="inline-icon" src="../logo.png" alt="">Camper & reservas</strong>
 <small>Caravana, campings sugeridos y números base del plan</small>
 </span>
 </summary>
@@ -217,7 +231,7 @@ Itinerario real de camper: horarios, rutas, paradas clave, supermercados, gasoli
 </section>
  
 
-<div class="card">
+<div id="places" class="card">
 <div class="card-gallery">
 <img src="img/hallgrimskirkja-1.jpg" alt="Hallgrímskirkja en Reykjavik" loading="lazy">
 <img src="img/hallgrimskirkja-2.jpg" alt="Fachada de Hallgrímskirkja en Reykjavik" loading="lazy">
@@ -362,6 +376,11 @@ Esto es literalmente portada de National Geographic.
 </div>
 
 </div>
+
+<footer class="site-footer">
+<span>Bookmark</span>
+<p>Del sueño al mapa. Del mapa a la memoria.</p>
+</footer>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
