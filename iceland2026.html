@@ -11,9 +11,17 @@ body{
     font-family:Arial,Helvetica,sans-serif;
     background:#0b0f14;
     color:white;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+}
+*{
+    box-sizing:border-box;
+}
+img{
+    max-width:100%;
 }
 .hero{
-    height:90vh;
+    min-height:90vh;
     background-image:
     linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.65)),
     url('https://commons.wikimedia.org/wiki/Special:FilePath/Aurora_Borealis-Northern_Lights_Iceland.jpg?width=2400');
@@ -23,19 +31,21 @@ body{
     align-items:center;
     justify-content:center;
     text-align:center;
-    padding:40px;
+    padding:40px 24px;
 }
 .hero h1{
-    font-size:64px;
+    font-size:clamp(44px,7vw,64px);
     margin:0;
+    letter-spacing:0;
 }
 .hero p{
-    font-size:22px;
+    font-size:clamp(18px,2.4vw,22px);
     max-width:900px;
     line-height:1.5;
+    margin:18px auto 0;
 }
 .container{
-    width:92%;
+    width:min(92%,1400px);
     max-width:1400px;
     margin:auto;
 }
@@ -66,15 +76,17 @@ body{
     padding:35px;
 }
 h2{
-    font-size:42px;
+    font-size:clamp(32px,4.4vw,42px);
     margin-top:0;
+    line-height:1.1;
 }
 h3{
     color:#77d8ff;
-    font-size:28px;
+    font-size:clamp(22px,3vw,28px);
+    line-height:1.2;
 }
 p{
-    font-size:20px;
+    font-size:clamp(17px,2.1vw,20px);
     line-height:1.7;
 }
 .badge{
@@ -140,7 +152,7 @@ p{
 }
 .timeline-day h3{
     margin:0 0 12px;
-    font-size:24px;
+    font-size:clamp(21px,2.6vw,24px);
 }
 .route{
     color:#b9cadf;
@@ -176,7 +188,7 @@ p{
 }
 .event p{
     margin:0;
-    font-size:18px;
+    font-size:clamp(16px,2.1vw,18px);
     line-height:1.45;
 }
 .event small{
@@ -194,25 +206,111 @@ p{
     .timeline-grid{
         grid-template-columns:1fr;
     }
-    .hero h1{
-        font-size:44px;
-    }
-    .card-gallery{
-        grid-template-columns:1fr;
-    }
-    .card-gallery img{
-        height:360px;
-    }
-    .day-top,
-    .event{
+    .day-top{
         display:block;
     }
     .tag{
         display:inline-block;
         margin-top:8px;
     }
+}
+@media (max-width:640px){
+    body{
+        overflow-x:hidden;
+    }
+    .hero{
+        min-height:78svh;
+        align-items:flex-end;
+        padding:72px 18px 46px;
+        background-position:center top;
+    }
+    .hero p{
+        line-height:1.55;
+    }
+    .container{
+        width:100%;
+        padding:0 14px;
+    }
+    .itinerary{
+        margin:28px 0 20px;
+        padding:20px 14px;
+        border-radius:18px;
+    }
+    .trip-summary{
+        gap:10px;
+        margin:20px 0 22px;
+    }
+    .summary-pill{
+        border-radius:12px;
+        padding:14px;
+    }
+    .timeline-grid{
+        gap:14px;
+    }
+    .timeline-day{
+        border-radius:14px;
+        padding:16px 14px;
+    }
+    .event-list{
+        gap:8px;
+    }
+    .event{
+        grid-template-columns:70px minmax(0,1fr);
+        gap:10px;
+        padding:10px;
+        border-radius:12px;
+    }
     .time{
-        margin-bottom:6px;
+        font-size:15px;
+        white-space:nowrap;
+    }
+    .event small{
+        font-size:14px;
+    }
+    .quick-note{
+        margin-top:18px;
+    }
+    .card{
+        border-radius:18px;
+        margin:28px 0;
+    }
+    .card-gallery{
+        display:flex;
+        gap:12px;
+        overflow-x:auto;
+        scroll-snap-type:x mandatory;
+        padding:14px;
+        -webkit-overflow-scrolling:touch;
+    }
+    .card-gallery img{
+        flex:0 0 82%;
+        height:240px;
+        border-radius:14px;
+        scroll-snap-align:center;
+    }
+    .content{
+        padding:22px 16px 24px;
+    }
+    .badge{
+        max-width:100%;
+        font-size:14px;
+        line-height:1.35;
+        white-space:normal;
+    }
+}
+@media (max-width:380px){
+    .hero{
+        min-height:82svh;
+    }
+    .card-gallery img{
+        flex-basis:88%;
+        height:220px;
+    }
+    .event{
+        grid-template-columns:1fr;
+    }
+    .time{
+        margin-bottom:2px;
     }
 }
 </style>
