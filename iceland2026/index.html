@@ -1,0 +1,882 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Iceland 2026</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin="">
+<style>
+html{
+    scroll-behavior:smooth;
+}
+body{
+    margin:0;
+    font-family:Arial,Helvetica,sans-serif;
+    background:#0b0f14;
+    color:white;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+}
+*{
+    box-sizing:border-box;
+}
+img{
+    max-width:100%;
+}
+.hero{
+    min-height:100svh;
+    background-image:
+    linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.65)),
+    url('https://commons.wikimedia.org/wiki/Special:FilePath/Aurora_Borealis-Northern_Lights_Iceland.jpg?width=2400');
+    background-size:cover;
+    background-position:center;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:40px 24px;
+}
+.hero-inner{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(320px,480px);
+    gap:34px;
+    align-items:center;
+    width:min(1120px,100%);
+}
+.hero-copy{
+    text-align:left;
+}
+.hero h1{
+    font-size:clamp(44px,7vw,64px);
+    margin:0;
+    letter-spacing:0;
+}
+.hero p{
+    font-size:clamp(18px,2.4vw,22px);
+    max-width:900px;
+    line-height:1.5;
+    margin:18px 0 0;
+}
+.route-map{
+    position:relative;
+    padding:18px;
+    border:1px solid rgba(119,216,255,.34);
+    border-radius:22px;
+    background:rgba(11,15,20,.68);
+    box-shadow:0 26px 70px rgba(0,0,0,.42);
+    backdrop-filter:blur(10px);
+}
+.route-map svg{
+    width:100%;
+    display:block;
+}
+.real-map{
+    width:100%;
+    height:390px;
+    overflow:hidden;
+    border:1px solid rgba(119,216,255,.26);
+    border-radius:16px;
+    background:#0e141d;
+}
+.real-map .leaflet-container,
+.leaflet-container{
+    font-family:Arial,Helvetica,sans-serif;
+}
+.real-map .leaflet-control-attribution{
+    background:rgba(11,15,20,.72);
+    color:#d9e8f5;
+    font-size:10px;
+}
+.real-map .leaflet-control-attribution a{
+    color:#77d8ff;
+}
+.route-marker{
+    display:grid;
+    place-items:center;
+    width:26px;
+    height:26px;
+    border:3px solid #77d8ff;
+    border-radius:50%;
+    background:#0b0f14;
+    color:white;
+    font-size:13px;
+    font-weight:700;
+    box-shadow:0 0 0 2px rgba(11,15,20,.9),0 0 18px rgba(119,216,255,.55);
+}
+.route-marker-critical{
+    background:#77d8ff;
+    border-color:white;
+    color:#0b0f14;
+}
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip{
+    background:#121821;
+    color:white;
+}
+.leaflet-popup-content{
+    margin:12px 14px;
+    font-size:14px;
+    line-height:1.4;
+}
+.map-title{
+    display:flex;
+    justify-content:space-between;
+    gap:12px;
+    align-items:center;
+    margin:0 0 10px;
+    color:#d9e8f5;
+    font-size:15px;
+}
+.map-title strong{
+    color:white;
+    font-size:18px;
+}
+.map-title span{
+    color:#77d8ff;
+    white-space:nowrap;
+}
+.map-island{
+    fill:rgba(217,232,245,.1);
+    stroke:rgba(217,232,245,.48);
+    stroke-width:2;
+}
+.map-route{
+    fill:none;
+    stroke:#77d8ff;
+    stroke-width:5;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+    filter:drop-shadow(0 0 10px rgba(119,216,255,.55));
+}
+.map-return{
+    fill:none;
+    stroke:rgba(119,216,255,.45);
+    stroke-width:3;
+    stroke-dasharray:8 9;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+}
+.map-point{
+    fill:#0b0f14;
+    stroke:#77d8ff;
+    stroke-width:4;
+}
+.map-point-critical{
+    fill:#77d8ff;
+    stroke:white;
+}
+.map-label{
+    fill:white;
+    font-size:15px;
+    font-weight:700;
+}
+.map-place{
+    fill:#d9e8f5;
+    font-size:13px;
+}
+.route-map a{
+    cursor:pointer;
+}
+.route-map a:hover .map-point,
+.route-map a:focus .map-point{
+    fill:#77d8ff;
+    stroke:white;
+}
+.map-note{
+    margin:10px 0 0;
+    color:#b9cadf;
+    font-size:14px;
+    line-height:1.45;
+}
+.container{
+    width:min(92%,1400px);
+    max-width:1400px;
+    margin:auto;
+}
+.card{
+    background:#121821;
+    border-radius:24px;
+    overflow:hidden;
+    margin:50px 0;
+    box-shadow:0 10px 30px rgba(0,0,0,.4);
+}
+.card-gallery{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:22px;
+    padding:22px 22px 0;
+    background:#0b0f14;
+}
+.card-gallery img{
+    width:100%;
+    height:300px;
+    object-fit:cover;
+    display:block;
+    border:1px solid #26364d;
+    border-radius:18px;
+    box-shadow:0 16px 34px rgba(0,0,0,.42);
+}
+.content{
+    padding:35px;
+}
+h2{
+    font-size:clamp(32px,4.4vw,42px);
+    margin-top:0;
+    line-height:1.1;
+}
+h3{
+    color:#77d8ff;
+    font-size:clamp(22px,3vw,28px);
+    line-height:1.2;
+}
+p{
+    font-size:clamp(17px,2.1vw,20px);
+    line-height:1.7;
+}
+.badge{
+    display:inline-block;
+    background:#1f2c3d;
+    padding:8px 16px;
+    border-radius:999px;
+    margin-bottom:15px;
+}
+.itinerary{
+    margin:55px 0 30px;
+    padding:34px;
+    background:#121821;
+    border:1px solid #233044;
+    border-radius:24px;
+}
+.itinerary h2{
+    margin-bottom:18px;
+}
+.trip-summary{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:14px;
+    margin:26px 0 30px;
+}
+.summary-pill{
+    background:#0e141d;
+    border:1px solid #26364d;
+    border-radius:16px;
+    padding:16px;
+}
+.summary-pill strong{
+    display:block;
+    color:#77d8ff;
+    font-size:18px;
+    margin-bottom:6px;
+}
+.summary-pill span{
+    color:#d9e8f5;
+    font-size:16px;
+}
+.timeline-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:22px;
+}
+.timeline-day{
+    background:#0e141d;
+    border:1px solid #26364d;
+    border-radius:18px;
+    padding:22px;
+    scroll-margin-top:20px;
+}
+.timeline-day.critical{
+    border-color:#77d8ff;
+    box-shadow:0 0 0 1px rgba(119,216,255,.18),0 18px 36px rgba(0,0,0,.28);
+}
+.day-top{
+    display:flex;
+    justify-content:space-between;
+    gap:16px;
+    align-items:flex-start;
+    margin-bottom:16px;
+}
+.timeline-day h3{
+    margin:0 0 12px;
+    font-size:clamp(21px,2.6vw,24px);
+}
+.route{
+    color:#b9cadf;
+    font-size:16px;
+    margin:0;
+}
+.tag{
+    flex:0 0 auto;
+    background:#1f2c3d;
+    border:1px solid #344962;
+    border-radius:999px;
+    color:#d9e8f5;
+    font-size:14px;
+    padding:8px 12px;
+}
+.event-list{
+    display:grid;
+    gap:10px;
+}
+.event{
+    display:grid;
+    grid-template-columns:96px 1fr;
+    gap:12px;
+    align-items:start;
+    padding:12px;
+    background:#121a25;
+    border-radius:14px;
+}
+.time{
+    color:#77d8ff;
+    font-weight:700;
+    font-size:16px;
+}
+.event p{
+    margin:0;
+    font-size:clamp(16px,2.1vw,18px);
+    line-height:1.45;
+}
+.event small{
+    display:block;
+    color:#b9cadf;
+    font-size:15px;
+    margin-top:4px;
+}
+.quick-note{
+    margin:24px 0 0;
+    color:#b9cadf;
+}
+@media (max-width:900px){
+    .hero-inner{
+        grid-template-columns:1fr;
+        gap:24px;
+    }
+    .hero-copy{
+        text-align:center;
+    }
+    .hero p{
+        margin-left:auto;
+        margin-right:auto;
+    }
+    .route-map{
+        width:min(520px,100%);
+        margin:auto;
+    }
+    .trip-summary,
+    .timeline-grid{
+        grid-template-columns:1fr;
+    }
+    .day-top{
+        display:block;
+    }
+    .tag{
+        display:inline-block;
+        margin-top:8px;
+    }
+}
+@media (max-width:640px){
+    body{
+        overflow-x:hidden;
+    }
+    .hero{
+        min-height:auto;
+        align-items:flex-end;
+        padding:62px 18px 34px;
+        background-position:center top;
+    }
+    .hero-inner{
+        gap:18px;
+    }
+    .hero p{
+        line-height:1.55;
+    }
+    .route-map{
+        padding:12px;
+        border-radius:18px;
+    }
+    .real-map{
+        height:320px;
+    }
+    .map-title{
+        font-size:13px;
+    }
+    .map-title strong{
+        font-size:16px;
+    }
+    .map-note{
+        font-size:13px;
+    }
+    .container{
+        width:100%;
+        padding:0 14px;
+    }
+    .itinerary{
+        margin:28px 0 20px;
+        padding:20px 14px;
+        border-radius:18px;
+    }
+    .trip-summary{
+        gap:10px;
+        margin:20px 0 22px;
+    }
+    .summary-pill{
+        border-radius:12px;
+        padding:14px;
+    }
+    .timeline-grid{
+        gap:14px;
+    }
+    .timeline-day{
+        border-radius:14px;
+        padding:16px 14px;
+    }
+    .event-list{
+        gap:8px;
+    }
+    .event{
+        grid-template-columns:70px minmax(0,1fr);
+        gap:10px;
+        padding:10px;
+        border-radius:12px;
+    }
+    .time{
+        font-size:15px;
+        white-space:nowrap;
+    }
+    .event small{
+        font-size:14px;
+    }
+    .quick-note{
+        margin-top:18px;
+    }
+    .card{
+        border-radius:18px;
+        margin:28px 0;
+    }
+    .card-gallery{
+        display:flex;
+        gap:12px;
+        overflow-x:auto;
+        scroll-snap-type:x mandatory;
+        padding:14px;
+        -webkit-overflow-scrolling:touch;
+    }
+    .card-gallery img{
+        flex:0 0 82%;
+        height:240px;
+        border-radius:14px;
+        scroll-snap-align:center;
+    }
+    .content{
+        padding:22px 16px 24px;
+    }
+    .badge{
+        max-width:100%;
+        font-size:14px;
+        line-height:1.35;
+        white-space:normal;
+    }
+}
+@media (max-width:380px){
+    .hero{
+        padding-left:12px;
+        padding-right:12px;
+    }
+    .card-gallery img{
+        flex-basis:88%;
+        height:220px;
+    }
+    .event{
+        grid-template-columns:1fr;
+    }
+    .time{
+        margin-bottom:2px;
+    }
+}
+</style>
+</head>
+<body>
+
+<section class="hero">
+<div class="hero-inner">
+<div class="hero-copy">
+<h1>ICELAND 2026</h1>
+<p>
+7 días manejando entre volcanes, glaciares, playas negras y montañas imposibles.
+No es un viaje normal. Es una expedición cinematográfica por Islandia.
+</p>
+</div>
+<div class="route-map" aria-label="Mapa de ruta Iceland 2026">
+<div class="map-title"><strong>Ruta real</strong><span>OpenStreetMap</span></div>
+<div id="routeMap" class="real-map" role="img" aria-label="Mapa real de la ruta Iceland 2026"></div>
+<p class="map-note">Toca un marcador para ver el tramo y saltar al dia. En mobile el mapa queda fijo para no interrumpir el scroll.</p>
+</div>
+</div>
+</section>
+
+<div class="container">
+
+<section class="itinerary">
+<h2>🌍 Roadbook Iceland 2026</h2>
+<p>
+Itinerario real de camper: horarios, rutas, paradas clave, supermercados, gasolina y campings.
+</p>
+<div class="trip-summary">
+<div class="summary-pill"><strong>7 días</strong><span>KEF → Reykjavik → Golden Circle → Costa Sur → Este → KEF</span></div>
+<div class="summary-pill"><strong>Modo</strong><span>Camper + campings estratégicos</span></div>
+<div class="summary-pill"><strong>Regla</strong><span>⭐ = imperdible, pase lo que pase</span></div>
+<div class="summary-pill"><strong>Clave</strong><span>Día 4 es el día crítico: glaciares + Jökulsárlón</span></div>
+</div>
+
+<div class="timeline-grid">
+<article class="timeline-day" id="day-1">
+<div class="day-top">
+<div>
+<h3>📅 Día 1 — Llegada + Reykjavik</h3>
+<p class="route">🛣️ Ruta 41 → 49 → Reykjavik</p>
+</div>
+<span class="tag">Aterrizaje + setup</span>
+</div>
+<div class="event-list">
+<div class="event"><span class="time">06:25</span><p>🛬 Llegada a KEF</p></div>
+<div class="event"><span class="time">07:30</span><p>Recoger camper <small>Ventana aproximada: 07:30–08:30</small></p></div>
+<div class="event"><span class="time">09:30</span><p>😴 Siesta clave <small>09:30–12:30 en zona Grindavík, cualquier parking tranquilo</small></p></div>
+<div class="event"><span class="time">13:30</span><p>🌆 Ruta hacia Reykjavik</p></div>
+<div class="event"><span class="time">14:30</span><p>🏙️ Ciudad <small>⭐ Hallgrímskirkja, Harpa, Sun Voyager. Hasta 17:30</small></p></div>
+<div class="event"><span class="time">17:30</span><p>🛒 Supermercado <small>Bónus barato. Alternativa: Krónan. Compra para 2–3 días</small></p></div>
+<div class="event"><span class="time">18:30</span><p>🏕️ Dormir <small>Reykjavík Eco Campsite</small></p></div>
+</div>
+</article>
+
+<article class="timeline-day" id="day-2">
+<div class="day-top">
+<div>
+<h3>📅 Día 2 — Golden Circle</h3>
+<p class="route">🛣️ Ruta 36</p>
+</div>
+<span class="tag">Clásicos de Islandia</span>
+</div>
+<div class="event-list">
+<div class="event"><span class="time">08:00</span><p>🌅 Salida</p></div>
+<div class="event"><span class="time">09:00</span><p>⭐ Þingvellir National Park <small>Hasta 10:30</small></p></div>
+<div class="event"><span class="time">11:30</span><p>📍 Geysir <small>Parada rápida</small></p></div>
+<div class="event"><span class="time">12:30</span><p>📍 Gullfoss Waterfall</p></div>
+<div class="event"><span class="time">13:30</span><p>🍔 Almuerzo <small>Geysir Visitor Center: rápido y fácil</small></p></div>
+<div class="event"><span class="time">15:30</span><p>📍 Kerið Crater</p></div>
+<div class="event"><span class="time">17:00</span><p>🛒 Reabastecer en Selfoss <small>IMPORTANTE: Bónus + gasolinera N1</small></p></div>
+<div class="event"><span class="time">18:30</span><p>🏕️ Dormir <small>Selfoss Campsite</small></p></div>
+</div>
+</article>
+
+<article class="timeline-day" id="day-3">
+<div class="day-top">
+<div>
+<h3>📅 Día 3 — Costa Sur</h3>
+<p class="route">🛣️ Ruta 1, Ring Road</p>
+</div>
+<span class="tag">Cascadas + playa negra</span>
+</div>
+<div class="event-list">
+<div class="event"><span class="time">08:00</span><p>🌅 Salida</p></div>
+<div class="event"><span class="time">09:00</span><p>📍 Seljalandsfoss + Gljúfrabúi</p></div>
+<div class="event"><span class="time">11:00</span><p>⭐ Skógafoss</p></div>
+<div class="event"><span class="time">12:30</span><p>🍔 Almuerzo <small>Skógar / food truck / gas station</small></p></div>
+<div class="event"><span class="time">13:30</span><p>📍 Dyrhólaey</p></div>
+<div class="event"><span class="time">14:30</span><p>⭐ Reynisfjara Beach</p></div>
+<div class="event"><span class="time">16:00</span><p>🛒 Reabastecer <small>Vík í Mýrdal: Krónan + N1</small></p></div>
+<div class="event"><span class="time">17:30</span><p>🏕️ Dormir <small>Vik Campsite</small></p></div>
+</div>
+</article>
+
+<article class="timeline-day critical" id="day-4">
+<div class="day-top">
+<div>
+<h3>📅 Día 4 — Glaciares</h3>
+<p class="route">🛣️ Ruta 1</p>
+</div>
+<span class="tag">Día crítico</span>
+</div>
+<div class="event-list">
+<div class="event"><span class="time">07:30</span><p>🌅 Salida</p></div>
+<div class="event"><span class="time">09:00</span><p>📍 Fjaðrárgljúfur <small>30 min máximo</small></p></div>
+<div class="event"><span class="time">10:30</span><p>📍 Skaftafell Visitor Center</p></div>
+<div class="event"><span class="time">11:00</span><p>⭐ Glacier Hike <small>11:00–14:00</small></p></div>
+<div class="event"><span class="time">14:30</span><p>🍔 Snack rápido / picnic</p></div>
+<div class="event"><span class="time">15:30</span><p>⭐ Jökulsárlón</p></div>
+<div class="event"><span class="time">16:30</span><p>📍 Diamond Beach</p></div>
+<div class="event"><span class="time">18:30</span><p>🏕️ Skaftafell Campground</p></div>
+</div>
+</article>
+
+<article class="timeline-day" id="day-5">
+<div class="day-top">
+<div>
+<h3>📅 Día 5 — Vestrahorn</h3>
+<p class="route">🛣️ Ruta 1 Este</p>
+</div>
+<span class="tag">Tarde libre</span>
+</div>
+<div class="event-list">
+<div class="event"><span class="time">08:30</span><p>🌅 Salida</p></div>
+<div class="event"><span class="time">10:30</span><p>⭐ Vestrahorn <small>Hasta 13:00. Incluye Stokksnes + Viking Village</small></p></div>
+<div class="event"><span class="time">13:30</span><p>🍔 Höfn <small>Comida / gasolina</small></p></div>
+<div class="event"><span class="time">14:30</span><p>🏕️ Camping zona Vestrahorn / Höfn</p></div>
+<div class="event"><span class="time">Tarde</span><p>Libre <small>Uno de los mejores momentos del viaje</small></p></div>
+</div>
+</article>
+
+<article class="timeline-day" id="day-6">
+<div class="day-top">
+<div>
+<h3>📅 Día 6 — Regreso</h3>
+<p class="route">🛣️ Ruta 1, día largo de roadtrip</p>
+</div>
+<span class="tag">Con calma</span>
+</div>
+<div class="event-list">
+<div class="event"><span class="time">08:00</span><p>🌅 Salida</p></div>
+<div class="event"><span class="time">10:00</span><p>☕ Skaftafell <small>Pausa</small></p></div>
+<div class="event"><span class="time">13:00</span><p>🍔 Vík <small>Comida + gasolina</small></p></div>
+<div class="event"><span class="time">15:00</span><p>📍 Dyrhólaey <small>Rápido, si quieren</small></p></div>
+<div class="event"><span class="time">17:30</span><p>🏕️ Hvolsvöllur Campsite</p></div>
+</div>
+</article>
+
+<article class="timeline-day" id="day-7">
+<div class="day-top">
+<div>
+<h3>📅 Día 7 — Salida</h3>
+<p class="route">🛣️ Ruta 1 → 41</p>
+</div>
+<span class="tag">Cierre</span>
+</div>
+<div class="event-list">
+<div class="event"><span class="time">08:30</span><p>🌅 Salida hacia el aeropuerto</p></div>
+<div class="event"><span class="time">10:30</span><p>📍 KEF</p></div>
+</div>
+</article>
+</div>
+<p class="quick-note">🧠 Lectura rápida: ⭐ = no negociable. Compras fuertes en Reykjavik, Selfoss y Vík. Día 4 manda el ritmo del viaje.</p>
+</section>
+ 
+
+<div class="card">
+<div class="card-gallery">
+<img src="https://commons.wikimedia.org/wiki/Special:FilePath/Reykjavik_Hallgrimskirkja.jpg?width=900" alt="Hallgrímskirkja en Reykjavik" loading="lazy">
+<img src="https://commons.wikimedia.org/wiki/Special:FilePath/Hallgrimskirkja_Reykjavik.jpg?width=900" alt="Fachada de Hallgrímskirkja en Reykjavik" loading="lazy">
+<img src="https://commons.wikimedia.org/wiki/Special:FilePath/Hallgrimskirkja_and_Leif_Eriksson.jpg?width=900" alt="Hallgrímskirkja con la estatua de Leif Eriksson" loading="lazy">
+</div>
+<div class="content">
+<div class="badge">📅 Día 1 — Reykjavik</div>
+<h2>Hallgrímskirkja</h2>
+<h3>💥 WOW factor</h3>
+<p>
+Esta iglesia parece un cohete vikingo. Desde arriba ves Reykjavik completa con techos de colores y el Atlántico detrás.
+La entrada oficial a Islandia.
+</p>
+</div>
+</div>
+
+<div class="card">
+<div class="card-gallery">
+<img src="https://commons.wikimedia.org/wiki/Special:FilePath/Thingvellir_National_Park%2C_Iceland.jpg?width=900" alt="Paisaje real de Þingvellir National Park" loading="lazy">
+<img src="https://commons.wikimedia.org/wiki/Special:FilePath/Thingvellir%2C_Iceland_%2821677114683%29.jpg?width=900" alt="Valle rocoso de Þingvellir en Islandia" loading="lazy">
+<img src="https://commons.wikimedia.org/wiki/Special:FilePath/%C3%9Eingvellir_National_Park_in_Iceland%2C_where_the_North_American_and_Eurasian_tectonic_plates_meet_%2837898374962%29.jpg?width=900" alt="Sendero entre placas tectónicas en Þingvellir" loading="lazy">
+</div>
+<div class="content">
+<div class="badge">📅 Día 2 — Golden Circle</div>
+<h2>Þingvellir National Park</h2>
+<h3>💥 WOW factor</h3>
+<p>
+Literalmente caminarás entre las placas tectónicas de América y Europa.
+Uno de los lugares más épicos y simbólicos del planeta.
+</p>
+</div>
+</div>
+
+<div class="card">
+<div class="card-gallery">
+<img src="https://commons.wikimedia.org/wiki/Special:FilePath/Skogafoss_with_Rainbow_%2819731920224%29.jpg?width=900" alt="Skógafoss con arcoíris frente a la cascada" loading="lazy">
+<img src="https://commons.wikimedia.org/wiki/Special:FilePath/Skogafoss_%281%29.jpg?width=900" alt="Skógafoss vista de frente" loading="lazy">
+<img src="https://commons.wikimedia.org/wiki/Special:FilePath/Skogafoss_detail_%281%29.jpg?width=900" alt="Detalle del agua cayendo en Skógafoss" loading="lazy">
+</div>
+<div class="content">
+<div class="badge">📅 Día 3 — Costa Sur</div>
+<h2>Skógafoss</h2>
+<h3>💥 WOW factor</h3>
+<p>
+Una cascada brutal cayendo frente a ti con arcoíris constantes.
+El sonido del agua literalmente retumba en el pecho.
+</p>
+</div>
+</div>
+
+<div class="card">
+<div class="card-gallery">
+<img src="https://commons.wikimedia.org/wiki/Special:FilePath/Black_Sand_Beach_Iceland%2C_Reynisfjara_Beach.jpg?width=900" alt="Arena negra de Reynisfjara con formaciones rocosas" loading="lazy">
+<img src="https://commons.wikimedia.org/wiki/Special:FilePath/Columnar_basalts_at_Reynisfjara_%28Iceland%29.jpg?width=900" alt="Columnas basálticas en Reynisfjara" loading="lazy">
+<img src="https://commons.wikimedia.org/wiki/Special:FilePath/Reynisfjara%2C_Iceland%2C_20230501_1640_4046.jpg?width=900" alt="Reynisfjara con columnas basálticas y rocas Reynisdrangar" loading="lazy">
+</div>
+<div class="content">
+<div class="badge">📅 Día 3 — Costa Sur</div>
+<h2>Reynisfjara Beach</h2>
+<h3>💥 WOW factor</h3>
+<p>
+Arena negra volcánica, columnas basálticas y olas salvajes.
+Parece un planeta alienígena.
+</p>
+</div>
+</div>
+
+<div class="card">
+<div class="card-gallery">
+<img src="https://commons.wikimedia.org/wiki/Special:FilePath/Fjadr%C3%A1rglj%C3%BAfur-pjt.jpg?width=900" alt="Cañón Fjaðrárgljúfur en Islandia" loading="lazy">
+<img src="https://commons.wikimedia.org/wiki/Special:FilePath/Fja%C3%B0r%C3%A1rglj%C3%BAfur.JPG?width=900" alt="Vista del cañón Fjaðrárgljúfur" loading="lazy">
+<img src="https://commons.wikimedia.org/wiki/Special:FilePath/Fja%C3%B0r%C3%A1rglj%C3%BAfur1.JPG?width=900" alt="Paredes verdes del cañón Fjaðrárgljúfur" loading="lazy">
+</div>
+<div class="content">
+<div class="badge">📅 Día 4 — Glaciares</div>
+<h2>Fjaðrárgljúfur</h2>
+<h3>💥 WOW factor</h3>
+<p>
+Un cañón verde surrealista con río serpenteando entre paredes gigantes.
+Parece sacado de una película de fantasía.
+</p>
+</div>
+</div>
+
+<div class="card">
+<div class="card-gallery">
+<img src="https://commons.wikimedia.org/wiki/Special:FilePath/Jokulsarlon_lagoon%2C_Iceland_-_panoramio_%281%29.jpg?width=900" alt="Jökulsárlón con icebergs flotando" loading="lazy">
+<img src="https://commons.wikimedia.org/wiki/Special:FilePath/Jokulsarlon_Ice.jpg?width=900" alt="Iceberg azul en Jökulsárlón" loading="lazy">
+<img src="https://commons.wikimedia.org/wiki/Special:FilePath/Icebergs_in_Jokulsarlon_-_Iceland_-_panoramio.jpg?width=900" alt="Icebergs flotando en la laguna Jökulsárlón" loading="lazy">
+</div>
+<div class="content">
+<div class="badge">📅 Día 4 — El gran día</div>
+<h2>Jökulsárlón</h2>
+<h3>💥 WOW factor</h3>
+<p>
+Icebergs flotando lentamente en silencio absoluto.
+Uno de los lugares más impresionantes de toda Islandia.
+</p>
+</div>
+</div>
+
+<div class="card">
+<div class="card-gallery">
+<img src="https://commons.wikimedia.org/wiki/Special:FilePath/Iceland_Diamond_Beach.jpg?width=900" alt="Bloques de hielo sobre la arena negra de Diamond Beach" loading="lazy">
+<img src="https://commons.wikimedia.org/wiki/Special:FilePath/Diamond_beach_iceland_.jpg?width=900" alt="Hielo transparente en Diamond Beach" loading="lazy">
+<img src="https://commons.wikimedia.org/wiki/Special:FilePath/The_Black_Sand_Beach_of_Reynisfjara.jpg?width=900" alt="Bloques de hielo brillando sobre arena negra" loading="lazy">
+</div>
+<div class="content">
+<div class="badge">📅 Día 4 — Diamond Beach</div>
+<h2>Diamond Beach</h2>
+<h3>💥 WOW factor</h3>
+<p>
+Bloques de hielo brillando sobre arena negra volcánica.
+El contraste más surrealista del viaje.
+</p>
+</div>
+</div>
+
+<div class="card">
+<div class="card-gallery">
+<img src="https://commons.wikimedia.org/wiki/Special:FilePath/Island_Vestrahorn_13.JPG?width=900" alt="Montañas Vestrahorn en Islandia" loading="lazy">
+<img src="https://commons.wikimedia.org/wiki/Special:FilePath/Island_Vestrahorn_02.JPG?width=900" alt="Vestrahorn junto a la costa sur de Islandia" loading="lazy">
+<img src="https://commons.wikimedia.org/wiki/Special:FilePath/Vestrahorn.JPG?width=900" alt="Perfil de las montañas Vestrahorn" loading="lazy">
+</div>
+<div class="content">
+<div class="badge">📅 Día 5 — Vestrahorn</div>
+<h2>Vestrahorn</h2>
+<h3>💥 WOW factor</h3>
+<p>
+Montañas negras gigantes reflejadas en agua tranquila.
+Esto es literalmente portada de National Geographic.
+</p>
+</div>
+</div>
+
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""></script>
+<script>
+const isSmallScreen = window.matchMedia('(max-width: 640px)').matches;
+const routeStops = [
+    { day: 1, name: 'KEF / Reykjavik', coords: [64.1466, -21.9426], anchor: 'day-1' },
+    { day: 2, name: 'Golden Circle', coords: [64.2559, -21.1295], anchor: 'day-2' },
+    { day: 3, name: 'Costa Sur / Vik', coords: [63.4186, -19.0060], anchor: 'day-3' },
+    { day: 4, name: 'Skaftafell / Jokulsarlon', coords: [64.0481, -16.1794], anchor: 'day-4', critical: true },
+    { day: 5, name: 'Vestrahorn / Hofn', coords: [64.2720, -14.9970], anchor: 'day-5' },
+    { day: 6, name: 'Regreso por Ring Road', coords: [63.5321, -19.5114], anchor: 'day-6' },
+    { day: 7, name: 'Salida por KEF', coords: [63.9850, -22.6056], anchor: 'day-7' }
+];
+const routeLine = [
+    [63.9850, -22.6056],
+    [64.1466, -21.9426],
+    [64.2559, -21.1295],
+    [64.3138, -20.3008],
+    [64.3271, -20.1199],
+    [63.9331, -20.9971],
+    [63.6156, -19.9896],
+    [63.5321, -19.5114],
+    [63.4186, -19.0060],
+    [63.7713, -18.1718],
+    [64.0167, -16.9667],
+    [64.0481, -16.1794],
+    [64.2720, -14.9970],
+    [64.2440, -15.2082],
+    [64.0481, -16.1794],
+    [63.4186, -19.0060],
+    [63.9850, -22.6056]
+];
+const map = L.map('routeMap', {
+    zoomControl: !isSmallScreen,
+    scrollWheelZoom: false,
+    dragging: !isSmallScreen,
+    touchZoom: !isSmallScreen,
+    doubleClickZoom: !isSmallScreen,
+    tap: true
+});
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 18,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+}).addTo(map);
+L.polyline(routeLine.slice(0, 13), {
+    color: '#77d8ff',
+    weight: 4,
+    opacity: .9,
+    lineJoin: 'round'
+}).addTo(map);
+L.polyline(routeLine.slice(12), {
+    color: '#d9e8f5',
+    weight: 2,
+    opacity: .55,
+    dashArray: '7 8'
+}).addTo(map);
+routeStops.forEach((stop) => {
+    const icon = L.divIcon({
+        className: '',
+        html: `<span class="route-marker${stop.critical ? ' route-marker-critical' : ''}">${stop.day}</span>`,
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -14]
+    });
+    const marker = L.marker(stop.coords, { icon }).addTo(map);
+    marker.bindPopup(`<strong>Dia ${stop.day}</strong><br>${stop.name}`);
+    marker.on('click', () => {
+        const target = document.getElementById(stop.anchor);
+        if (target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    });
+});
+map.fitBounds(L.latLngBounds(routeLine), {
+    padding: isSmallScreen ? [18, 18] : [28, 28]
+});
+</script>
+</body>
+</html>
