@@ -1,4 +1,25 @@
 const isSmallScreen = window.matchMedia('(max-width: 640px)').matches;
+function openDay(anchor) {
+    const target = document.getElementById(anchor);
+    if (!target) {
+        return;
+    }
+    if (target.tagName.toLowerCase() === 'details') {
+        target.open = true;
+    }
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+document.querySelectorAll('.timeline-day').forEach((day) => {
+    day.addEventListener('toggle', () => {
+        if (day.open) {
+            day.classList.add('is-open');
+        } else {
+            day.classList.remove('is-open');
+        }
+    });
+});
+
 const routeStops = [
     { day: 1, name: 'KEF / Reykjavik', coords: [64.1466, -21.9426], anchor: 'day-1' },
     { day: 2, name: 'Golden Circle', coords: [64.2559, -21.1295], anchor: 'day-2' },
@@ -62,10 +83,7 @@ routeStops.forEach((stop) => {
     const marker = L.marker(stop.coords, { icon }).addTo(map);
     marker.bindPopup(`<strong>Dia ${stop.day}</strong><br>${stop.name}`);
     marker.on('click', () => {
-        const target = document.getElementById(stop.anchor);
-        if (target) {
-            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
+        openDay(stop.anchor);
     });
 });
 map.fitBounds(L.latLngBounds(routeLine), {
