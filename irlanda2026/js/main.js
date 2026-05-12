@@ -133,11 +133,31 @@ function showNext() {
 }
 
 document.querySelectorAll('.card-gallery img').forEach((img) => {
+    let touchMoved = false;
+    img.addEventListener('touchstart', () => { touchMoved = false; }, { passive: true });
+    img.addEventListener('touchmove', () => { touchMoved = true; }, { passive: true });
+    img.addEventListener('touchend', (e) => {
+        if (!touchMoved) {
+            e.preventDefault();
+            const gallery = [...img.closest('.card-gallery').querySelectorAll('img')];
+            openLightbox(gallery, gallery.indexOf(img));
+        }
+    });
     img.addEventListener('click', () => {
         const gallery = [...img.closest('.card-gallery').querySelectorAll('img')];
         openLightbox(gallery, gallery.indexOf(img));
     });
 });
+
+// Swipe para navegar dentro del lightbox en mobile
+let lbTouchStartX = 0;
+lightboxImg.addEventListener('touchstart', (e) => {
+    lbTouchStartX = e.touches[0].clientX;
+}, { passive: true });
+lightboxImg.addEventListener('touchend', (e) => {
+    const dx = e.changedTouches[0].clientX - lbTouchStartX;
+    if (Math.abs(dx) > 50) dx < 0 ? showNext() : showPrev();
+}, { passive: true });
 
 document.querySelector('.lightbox-close').addEventListener('click', closeLightbox);
 document.querySelector('.lightbox-prev').addEventListener('click', showPrev);
