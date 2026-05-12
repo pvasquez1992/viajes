@@ -3,26 +3,360 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Irlanda 2026</title>
+<title>Irlanda 2026 · Gooligoog</title>
 <link rel="icon" href="../logo.png" type="image/png">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin="">
 <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
 <header class="site-header">
 <div class="site-header-inner">
-<a class="brand" href="../"><img src="../logo.png" alt=""><span>Gooligoog</span></a>
-<nav aria-label="Navegación principal"><a href="../">Viajes</a><a href="../iceland2026/">Iceland 2026</a></nav>
+<a class="brand" href="../">
+<img src="../logo.png" alt="">
+<span>Gooligoog</span>
+</a>
+<nav aria-label="Navegación principal">
+<a href="../">Viajes</a>
+<a href="#library">Roadbook</a>
+<a href="#places">Lugares</a>
+</nav>
 </div>
 </header>
-<main class="trip-shell">
-<section class="placeholder">
-<p class="eyebrow">Viaje en preparación</p>
-<h1><img class="title-icon" src="../logo.png" alt="">Irlanda 2026</h1>
-<p>Cascarón listo para cargar ruta, pueblos, costa, castillos, reservas y mapa del viaje.</p>
-<div class="meta-row"><span>2026</span><span>Europa</span><span>Draft</span></div>
+
+<section class="hero">
+<div class="hero-inner">
+<div class="hero-copy">
+<h1><img class="title-icon" src="../logo.png" alt="">IRLANDA 2026</h1>
+<p>
+8 días entre castillos medievales, acantilados salvajes y el mejor Día de San Patricio del mundo.
+De Belfast al Atlántico, con Dublín como base.
+</p>
+</div>
+<div class="route-map" aria-label="Mapa de ruta Irlanda 2026">
+<div class="map-title"><strong>Ruta real</strong><span>OpenStreetMap</span></div>
+<div id="routeMap" class="real-map" role="img" aria-label="Mapa real de la ruta Irlanda 2026"></div>
+<p class="map-note">Toca un marcador para ver el día y saltar al roadbook. En mobile el mapa queda fijo.</p>
+</div>
+</div>
 </section>
-</main>
-<footer class="site-footer"><span>Gooligoog</span><p>Del sueño al mapa. Del mapa a la memoria.</p></footer>
+
+<div class="container">
+
+<section class="itinerary" id="library">
+<h2><img class="heading-icon" src="../logo.png" alt="">Roadbook Irlanda 2026</h2>
+<p>Itinerario real: vuelos, hoteles, días de ruta, paradas clave y el plan del Día de San Patricio.</p>
+<div class="trip-summary">
+<div class="summary-pill"><strong>8 días</strong><span>IAD → Dublín → Drogheda → Belfast → Antrim Coast → Cliffs of Moher → IAD</span></div>
+<div class="summary-pill"><strong>Hoteles</strong><span>Quarter by the Warren (Belfast) · The Morrison Dublin, Curio Collection by Hilton</span></div>
+<div class="summary-pill"><strong>Vuelo</strong><span>Aer Lingus EI 116 / EI 119 · Ref: 2T3LGJ · Pedro y Marielos</span></div>
+<div class="summary-pill"><strong>Día estrella</strong><span>☘️ Día 7 — San Patricio en Dublín. Día 3 — Giant's Causeway + Dark Hedges</span></div>
+</div>
+
+<div class="timeline-grid">
+
+<details class="timeline-day" id="day-1" open>
+<summary class="day-top">
+<div>
+<h3><span class="day-kicker">Día 1</span><span class="day-title">Salida de Washington DC</span><span class="day-mobile-title">Salida de DC</span></h3>
+<p class="route"><span class="date-chip">11-mar-2026</span> ✈️ IAD → DUB · Aer Lingus EI 116</p>
+</div>
+<span class="tag">Vuelo nocturno</span>
+</summary>
+<div class="mobile-day-meta"><strong>11-mar-2026</strong><span>IAD → DUB · Aer Lingus EI 116</span></div>
+<div class="event-list">
+<div class="event"><span class="time">~17:00</span><p>🚇 Pentagon City Metro Station <small>Metro hacia Dulles — 36 min, 44 km</small></p></div>
+<div class="event"><span class="time">18:05</span><p>✈️ Despegue IAD → DUB <small>Aer Lingus EI 116 · Economy Class · 6h 50m de vuelo</small></p></div>
+<div class="event"><span class="time">Noche</span><p>🌙 Vuelo transatlántico <small>Llega al día siguiente 04:55 hora de Dublín</small></p></div>
+</div>
+</details>
+
+<details class="timeline-day" id="day-2">
+<summary class="day-top">
+<div>
+<h3><span class="day-kicker">Día 2</span><span class="day-title">Belfast y Drogheda</span><span class="day-mobile-title">Belfast + Drogheda</span></h3>
+<p class="route"><span class="date-chip">12-mar-2026</span> 🛣️ Dublin Airport → Drogheda → Belfast</p>
+</div>
+<span class="tag">Exploración</span>
+</summary>
+<div class="mobile-day-meta"><strong>12-mar-2026</strong><span>Dublin Airport → Drogheda → Belfast</span></div>
+<div class="event-list">
+<div class="event"><span class="time">04:55</span><p>🛬 Aterrizaje en Dublin Airport <small>Terminal 2 · DUB</small></p></div>
+<div class="event"><span class="time">06:30</span><p>🚗 Recoger coche de alquiler y salir del aeropuerto</p></div>
+<div class="event"><span class="time">07:00</span><p>📍 Saint Laurence Gate <small>Drogheda — 33 min, 48 km · puerta medieval del siglo XIII</small></p></div>
+<div class="event"><span class="time">07:15</span><p>📍 Iglesia de San Pedro <small>7 min caminando · historia del martirio de San Oliverio Plunkett</small></p></div>
+<div class="event"><span class="time">08:30</span><p>⭐ Glass of Thrones — The Iron Throne <small>Instalación de Game of Thrones en ruta a Belfast</small></p></div>
+<div class="event"><span class="time">10:00</span><p>📍 Boyne Viaduct <small>Espectacular viaducto victoriano sobre el río Boyne</small></p></div>
+<div class="event"><span class="time">10:15</span><p>📍 Drogheda Museum <small>Historia de la batalla del Boyne · 14 min caminando</small></p></div>
+<div class="event"><span class="time">11:30</span><p>🍔 Almuerzo en Drogheda</p></div>
+<div class="event"><span class="time">13:00</span><p>🚗 Drive a Belfast <small>1h30 por la A1</small></p></div>
+<div class="event"><span class="time">14:30</span><p>🏰 Castillo de Belfast <small>Vistas de la ciudad desde Cave Hill · 11 min, 8.8 km del hotel</small></p></div>
+<div class="event"><span class="time">16:30</span><p>🏨 Check in — Quarter by the Warren Collection <small>70-74 Donegall Street, Belfast</small></p></div>
+</div>
+</details>
+
+<details class="timeline-day critical" id="day-3">
+<summary class="day-top">
+<div>
+<h3><span class="day-kicker">Día 3</span><span class="day-title">Castillos & Giant's Causeway</span><span class="day-mobile-title">Calzada del Gigante</span></h3>
+<p class="route"><span class="date-chip">13-mar-2026</span> 🛣️ Antrim Coast Road A2 — 262 km</p>
+</div>
+<span class="tag">Día épico</span>
+</summary>
+<div class="mobile-day-meta"><strong>13-mar-2026</strong><span>Antrim Coast Road A2</span></div>
+<div class="event-list">
+<div class="event"><span class="time">09:00</span><p>🏛️ Ayuntamiento de Belfast <small>800 m caminando desde el hotel · arquitectura victoriana</small></p></div>
+<div class="event"><span class="time">10:00</span><p>⭐ Castillo de Carrickfergus <small>18 min, 18 km · uno de los mejores castillos normandos de Irlanda</small></p></div>
+<div class="event"><span class="time">11:00</span><p>🌊 A2 — Antrim Coast Road <small>Una de las rutas costeras más espectaculares de Europa</small></p></div>
+<div class="event"><span class="time">12:30</span><p>📍 Portaneevy Car Park & Viewpoint <small>Vistas panorámicas sobre la costa de Antrim</small></p></div>
+<div class="event"><span class="time">13:00</span><p>⭐ The Dark Hedges <small>El túnel de hayas de Game of Thrones · 17 min, 16 km · fotogénico e imperdible</small></p></div>
+<div class="event"><span class="time">14:00</span><p>⭐ Calzada del Gigante <small>22 min · 40,000 columnas de basalto · Patrimonio UNESCO · imperdible</small></p></div>
+<div class="event"><span class="time">15:30</span><p>🏰 Dunluce Castle <small>9 min, 7.9 km · ruinas sobre el acantilado · cinematográfico</small></p></div>
+<div class="event"><span class="time">16:30</span><p>🚗 Regreso a Belfast <small>1h5min, 95 km por la A2</small></p></div>
+<div class="event"><span class="time">17:30</span><p>🏨 Quarter by the Warren Collection</p></div>
+</div>
+</details>
+
+<details class="timeline-day" id="day-4">
+<summary class="day-top">
+<div>
+<h3><span class="day-kicker">Día 4</span><span class="day-title">Belfast → Dublín</span><span class="day-mobile-title">Llegada a Dublín</span></h3>
+<p class="route"><span class="date-chip">14-mar-2026</span> 🚆 Belfast Grand Central → Dublín</p>
+</div>
+<span class="tag">Exploración Dublín</span>
+</summary>
+<div class="mobile-day-meta"><strong>14-mar-2026</strong><span>Belfast Grand Central → Dublín</span></div>
+<div class="event-list">
+<div class="event"><span class="time">09:00</span><p>🏨 Check out — Quarter by the Warren Collection</p></div>
+<div class="event"><span class="time">09:17</span><p>🚆 Belfast Grand Central Station <small>17 min caminando · tren a Dublín · 1h42min, 165 km</small></p></div>
+<div class="event"><span class="time">11:00</span><p>🏙️ Llegada a Dublín <small>Riu Plaza The Gresham como referencia · O'Connell Street</small></p></div>
+<div class="event"><span class="time">11:30</span><p>🏨 Check in — The Morrison Dublin <small>Curio Collection by Hilton · Ormond Quay Lower</small></p></div>
+<div class="event"><span class="time">12:00</span><p>🍺 Temple Bar <small>El barrio más animado de Dublín · pubs, música en vivo</small></p></div>
+<div class="event"><span class="time">13:00</span><p>⭐ Guinness Storehouse <small>Tour de la fábrica + pinta con vistas desde el Gravity Bar</small></p></div>
+<div class="event"><span class="time">15:00</span><p>📚 Trinity College <small>El Libro de Kells y la Long Room · 10 min · imperdible</small></p></div>
+<div class="event"><span class="time">15:15</span><p>🛍️ Grafton Street <small>La arteria comercial de Dublín · músicos callejeros</small></p></div>
+<div class="event"><span class="time">15:30</span><p>🌳 Saint Stephens Green <small>Cerrado los sábados · pasear por afuera igual vale</small></p></div>
+<div class="event"><span class="time">16:00</span><p>🏰 Castillo de Dublín <small>Dame Street · símbolo de la historia irlandesa</small></p></div>
+<div class="event"><span class="time">16:10</span><p>⛪ Catedral de la Santísima Trinidad <small>Christ Church Cathedral · 5 min caminando</small></p></div>
+<div class="event"><span class="time">16:45</span><p>🌿 Parque de Merrion <small>Descanso en los jardines georgianos más elegantes de Dublín</small></p></div>
+<div class="event"><span class="time">17:30</span><p>🏨 Regreso a The Morrison <small>20 min caminando</small></p></div>
+</div>
+</details>
+
+<details class="timeline-day" id="day-5">
+<summary class="day-top">
+<div>
+<h3><span class="day-kicker">Día 5</span><span class="day-title">Cliffs of Moher</span><span class="day-mobile-title">Acantilados</span></h3>
+<p class="route"><span class="date-chip">15-mar-2026</span> 🛣️ Dublín → Costa Oeste · 586 km</p>
+</div>
+<span class="tag">Tour día completo</span>
+</summary>
+<div class="mobile-day-meta"><strong>15-mar-2026</strong><span>Dublín → Costa Oeste</span></div>
+<div class="event-list">
+<div class="event"><span class="time">08:00</span><p>🚗 Salida desde The Morrison <small>Día largo — 586 km totales ida y vuelta</small></p></div>
+<div class="event"><span class="time">11:00</span><p>⭐ Acantilados de Moher <small>3h2min, 276 km · 214m sobre el Atlántico · los más famosos de Irlanda</small></p></div>
+<div class="event"><span class="time">11:05</span><p>🗼 O'Brien's Tower <small>El punto más alto · vistas 360° sobre el océano</small></p></div>
+<div class="event"><span class="time">11:30</span><p>📍 Hags Head <small>14 min, 5.5 km · el extremo sur de los acantilados</small></p></div>
+<div class="event"><span class="time">12:10</span><p>🏰 Doonagore Castle <small>20 min, 11 km · torre circular del siglo XVI sobre el Atlántico</small></p></div>
+<div class="event"><span class="time">12:20</span><p>🥾 Doolin Cliff Walks <small>3 min · senderismo por la costa del Burren</small></p></div>
+<div class="event"><span class="time">12:35</span><p>⚓ Doolin Pier <small>7 min · el pueblo más auténtico de la Costa de Clare</small></p></div>
+<div class="event"><span class="time">13:10</span><p>🏖️ Fanore Beach <small>20 min, 18 km · playa salvaje en el karst del Burren</small></p></div>
+<div class="event"><span class="time">13:45</span><p>🍽️ Oar Restaurant & Rooms <small>Almuerzo en Doolin · mariscos frescos del Atlántico</small></p></div>
+<div class="event"><span class="time">16:30</span><p>🚗 Regreso a Dublín <small>2h47min, 254 km</small></p></div>
+<div class="event"><span class="time">~19:30</span><p>🏨 The Morrison Dublin</p></div>
+</div>
+</details>
+
+<details class="timeline-day" id="day-6">
+<summary class="day-top">
+<div>
+<h3><span class="day-kicker">Día 6</span><span class="day-title">Wicklow & Glendalough</span><span class="day-mobile-title">Wicklow</span></h3>
+<p class="route"><span class="date-chip">16-mar-2026</span> 🛣️ Dublín → Wicklow Mountains · 138 km</p>
+</div>
+<span class="tag">Naturaleza + historia</span>
+</summary>
+<div class="mobile-day-meta"><strong>16-mar-2026</strong><span>Dublín → Wicklow Mountains</span></div>
+<div class="event-list">
+<div class="event"><span class="time">09:00</span><p>🚗 Salida desde The Morrison</p></div>
+<div class="event"><span class="time">09:36</span><p>🏔️ Wicklow Mountains National Park <small>36 min, 27 km · el "Jardín de Irlanda"</small></p></div>
+<div class="event"><span class="time">09:45</span><p>⭐ Sally Gap <small>Alto de montaña · vistas al páramo infinito irlandés</small></p></div>
+<div class="event"><span class="time">10:00</span><p>📍 Lough Tay <small>5 min, 4.9 km · el lago "Guinness" — oscuro con orilla blanca</small></p></div>
+<div class="event"><span class="time">10:20</span><p>🏘️ Enniskerry <small>17 min, 17 km · el pueblo más bonito de Wicklow</small></p></div>
+<div class="event"><span class="time">10:30</span><p>⭐ Powerscourt House & Gardens <small>3 min · jardines victorianos con el monte Sugarloaf de fondo</small></p></div>
+<div class="event"><span class="time">11:40</span><p>💧 Powerscourt Waterfall <small>11 min, 7.5 km · la cascada más alta de Irlanda — 121 m</small></p></div>
+<div class="event"><span class="time">12:30</span><p>⭐ Glendalough Cathedral <small>33 min, 27 km · monasterio del siglo VI en un valle con dos lagos</small></p></div>
+<div class="event"><span class="time">14:00</span><p>🚗 Regreso a Dublín <small>55 min, 51 km</small></p></div>
+<div class="event"><span class="time">15:00</span><p>🏨 The Morrison Dublin</p></div>
+</div>
+</details>
+
+<details class="timeline-day" id="day-7">
+<summary class="day-top">
+<div>
+<h3><span class="day-kicker">Día 7</span><span class="day-title">Festival Día de San Patricio ☘️</span><span class="day-mobile-title">San Patricio ☘️</span></h3>
+<p class="route"><span class="date-chip">17-mar-2026</span> 🏙️ Dublín</p>
+</div>
+<span class="tag">El día del año</span>
+</summary>
+<div class="mobile-day-meta"><strong>17-mar-2026</strong><span>Festival San Patricio, Dublín</span></div>
+<div class="event-list">
+<div class="event"><span class="time">10:00</span><p>⛪ Catedral de San Patricio de Dublín <small>14 min caminando · la catedral más grande de Irlanda, siglo XII</small></p></div>
+<div class="event"><span class="time">11:00</span><p>⭐ Parnell Square — Inicio del desfile <small>25 min caminando · el mejor desfile del año</small></p></div>
+<div class="event"><span class="time">11:10</span><p>🎉 O'Connell Street <small>El corazón del desfile · ambiente único en el mundo</small></p></div>
+<div class="event"><span class="time">11:30</span><p>🌉 Puente O'Connell <small>Vistas sobre el río Liffey vestido de verde</small></p></div>
+<div class="event"><span class="time">12:00</span><p>🍺 Dame Street <small>Los mejores pubs de Dublín en pleno San Patricio</small></p></div>
+<div class="event"><span class="time">13:00</span><p>⛪ Catedral de San Patricio (revisita) <small>Ambiente especial en el día del patrón de Irlanda</small></p></div>
+<div class="event"><span class="time">14:30</span><p>⭐ Temple Bar District <small>Pubs en vivo, música tradicional · el momento del viaje</small></p></div>
+<div class="event"><span class="time">16:30</span><p>🌿 Parque de Merrion <small>Descanso en los jardines georgianos</small></p></div>
+<div class="event"><span class="time">17:00</span><p>🌉 Puente Samuel Beckett <small>El puente más icónico de Dublín — diseño de arpa irlandesa</small></p></div>
+<div class="event"><span class="time">18:00</span><p>🏨 The Morrison Dublin <small>22 min caminando</small></p></div>
+</div>
+</details>
+
+<details class="timeline-day" id="day-8">
+<summary class="day-top">
+<div>
+<h3><span class="day-kicker">Día 8</span><span class="day-title">Regreso a Washington DC</span><span class="day-mobile-title">Regreso a DC</span></h3>
+<p class="route"><span class="date-chip">18-mar-2026</span> ✈️ DUB → IAD · Aer Lingus EI 119</p>
+</div>
+<span class="tag">Cierre</span>
+</summary>
+<div class="mobile-day-meta"><strong>18-mar-2026</strong><span>DUB → IAD · Aer Lingus EI 119</span></div>
+<div class="event-list">
+<div class="event"><span class="time">13:00</span><p>🏨 Check out — The Morrison Dublin</p></div>
+<div class="event"><span class="time">13:20</span><p>🚗 Drive al aeropuerto <small>20 min, 14 km</small></p></div>
+<div class="event"><span class="time">14:00</span><p>🛫 Dublin Airport — Terminal 2 <small>Check-in y seguridad</small></p></div>
+<div class="event"><span class="time">16:20</span><p>✈️ Despegue DUB → IAD <small>Aer Lingus EI 119 · Economy Class · 8h 10m</small></p></div>
+<div class="event"><span class="time">20:30</span><p>🛬 Aterrizaje en Dulles International <small>IAD · hora local DC</small></p></div>
+</div>
+</details>
+
+</div>
+<p class="quick-note">☘️ Día 7 manda el viaje: San Patricio en Dublín es irrepetible. Día 3 es el épico visual: Dark Hedges + Giant's Causeway + Dunluce Castle.</p>
+</section>
+
+<section class="logistics">
+<details class="travel-panel">
+<summary>
+<span class="panel-icon">✈️</span>
+<span>
+<strong><img class="inline-icon" src="../logo.png" alt="">Vuelos & Alojamiento</strong>
+<small>Aer Lingus · ref 2T3LGJ · Quarter by the Warren + The Morrison Dublin</small>
+</span>
+</summary>
+<div class="panel-content">
+<div class="camper-hero">
+<div>
+<span class="mini-label">Vuelos Aer Lingus</span>
+<h2>Ref 2T3LGJ</h2>
+<p>Pedro Vásquez y Marielos Rodriguez · Economy Class · bolsos de mano 10kg incluidos. Sin maletas facturadas en la reserva — se pueden añadir en aer.lingus.com.</p>
+</div>
+<div class="cost-stack">
+<div><span>Tickets base</span><strong>$236.00</strong></div>
+<div><span>Tasas e impuestos</span><strong>$934.66</strong></div>
+<div><span>Total vuelos</span><strong>$1,170.66</strong></div>
+</div>
+</div>
+<div class="camping-grid">
+<div><strong>Ida — 11 Mar</strong><span>IAD → DUB · EI 116 · 18:05 → 04:55+1 · 6h 50m</span></div>
+<div><strong>Vuelta — 18 Mar</strong><span>DUB → IAD · EI 119 · 16:20 → 20:30 · 8h 10m</span></div>
+<div><strong>Belfast (12–14 Mar)</strong><span>Quarter by the Warren Collection · 70-74 Donegall Street</span></div>
+<div><strong>Dublín (14–18 Mar)</strong><span>The Morrison Dublin, Curio Collection by Hilton · Ormond Quay Lower</span></div>
+<div><strong>Equipaje</strong><span>Bolso de mano 10kg por persona · item personal 40×30×20 cm</span></div>
+<div><strong>Pasajeros</strong><span>Pedro A. Vásquez Valencia · Marielos I. Rodriguez Cornejo</span></div>
+</div>
+<p class="source-note">Confirmar asientos antes del viaje en aer.lingus.com · Check-in online disponible desde 48h antes.</p>
+</div>
+</details>
+</section>
+
+
+<div id="places" class="card">
+<div class="card-gallery">
+<img src="img/Irlanda/1592800181977371.jpg" alt="Columnas de basalto de la Calzada del Gigante" loading="lazy">
+<img src="img/Irlanda/1592800208644035.jpg" alt="Dunluce Castle en ruinas sobre el acantilado" loading="lazy">
+<img src="img/Irlanda/1592796218644434.jpg" alt="El túnel de hayas de The Dark Hedges" loading="lazy">
+<div class="carousel-hint" aria-hidden="true"><span></span><span></span><span></span></div>
+</div>
+<div class="content">
+<div class="badge">📅 Día 3 — Antrim Coast</div>
+<h2>Calzada del Gigante</h2>
+<h3>💥 WOW factor</h3>
+<p>40,000 columnas de basalto hexagonal formadas por lava volcánica hace 60 millones de años. Dunluce Castle en ruinas sobre el borde del acantilado. Y el túnel de hayas de Game of Thrones que parece sacado de otra dimensión.</p>
+</div>
+</div>
+
+<div class="card">
+<div class="card-gallery">
+<img src="img/Irlanda/1592796271977762.jpg" alt="Belfast Castle con jardines victorianos" loading="lazy">
+<img src="img/Irlanda/1592800155310707.jpg" alt="Exhibición del Titanic en Belfast" loading="lazy">
+<img src="img/Irlanda/1592796048644451.jpg" alt="Torre medieval con jardines en Irlanda" loading="lazy">
+<div class="carousel-hint" aria-hidden="true"><span></span><span></span><span></span></div>
+</div>
+<div class="content">
+<div class="badge">📅 Días 2–3 — Belfast</div>
+<h2>Belfast</h2>
+<h3>💥 WOW factor</h3>
+<p>El Castillo de Belfast con su arquitectura victoriana y jardines bajo el Cave Hill. El museo del Titanic — el barco más famoso de la historia fue construido aquí. Una ciudad con historia, carácter y ambiente propio.</p>
+</div>
+</div>
+
+<div class="card">
+<div class="card-gallery">
+<img src="img/Irlanda/1592796321977757.jpg" alt="Pedro en los Acantilados de Moher con el océano detrás" loading="lazy">
+<img src="img/Irlanda/1592796455311077.jpg" alt="Pedro con el coche frente a Doonagore Castle y el Atlántico" loading="lazy">
+<img src="img/Irlanda/1592796021977787.jpg" alt="Café mañanero en Doolin con vista al campo irlandés" loading="lazy">
+<div class="carousel-hint" aria-hidden="true"><span></span><span></span><span></span></div>
+</div>
+<div class="content">
+<div class="badge">📅 Día 5 — Costa Oeste</div>
+<h2>Acantilados de Moher</h2>
+<h3>💥 WOW factor</h3>
+<p>214 metros de acantilado vertical cayendo sobre el Atlántico. Doonagore Castle emergiendo de la colina con el océano de fondo. El día más largo del viaje: 586 km para ver el borde del mundo.</p>
+</div>
+</div>
+
+<div class="card">
+<div class="card-gallery">
+<img src="img/Irlanda/1592795968644459.jpg" alt="Pedro en el Guinness Storehouse" loading="lazy">
+<img src="img/Irlanda/1592795998644456.jpg" alt="Long Room de Trinity College con globo terráqueo" loading="lazy">
+<img src="img/Irlanda/1592796301977759.jpg" alt="Catedral de San Patricio de Dublín" loading="lazy">
+<div class="carousel-hint" aria-hidden="true"><span></span><span></span><span></span></div>
+</div>
+<div class="content">
+<div class="badge">📅 Días 4–7 — Dublín</div>
+<h2>Dublín</h2>
+<h3>💥 WOW factor</h3>
+<p>La Long Room de Trinity College con un globo terráqueo flotando entre cientos de miles de libros antiguos. La Guinness Storehouse con su pinta perfecta en el Gravity Bar. Y la Catedral de San Patricio el día de su fiesta.</p>
+</div>
+</div>
+
+<div class="card">
+<div class="card-gallery">
+<img src="img/Irlanda/1592796098644446.jpg" alt="Ruinas con torre redonda en Glendalough" loading="lazy">
+<img src="img/Irlanda/1592796135311109.jpg" alt="Árbol musgoso en el bosque de Wicklow" loading="lazy">
+<img src="img/Irlanda/1592796355311087.jpg" alt="Sendero entre árboles musgosos en Glendalough" loading="lazy">
+<div class="carousel-hint" aria-hidden="true"><span></span><span></span><span></span></div>
+</div>
+<div class="content">
+<div class="badge">📅 Día 6 — Wicklow</div>
+<h2>Glendalough</h2>
+<h3>💥 WOW factor</h3>
+<p>Un monasterio del siglo VI abandonado en un valle rodeado de dos lagos y bosque antiguo. La torre redonda sigue en pie después de 1,400 años. Wicklow: el jardín de Irlanda, todo musgo, niebla y silencio.</p>
+</div>
+</div>
+
+</div>
+
+<footer class="site-footer">
+<span>Gooligoog</span>
+<p>Del sueño al mapa. Del mapa a la memoria.</p>
+</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""></script>
 <script src="js/main.js"></script>
 </body>
 </html>

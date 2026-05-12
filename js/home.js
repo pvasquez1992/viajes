@@ -30,11 +30,11 @@ const trips = [
     {
         title: 'Irlanda 2026',
         href: 'irlanda2026/',
-        start: '2026-04-01',
-        end: '2026-04-10',
+        start: '2026-03-11',
+        end: '2026-03-18',
         phase: 'finished',
-        description: 'Listo para una ruta de pueblos, costa, castillos y pubs memorables.',
-        tags: ['2026', 'Europa', 'Draft']
+        description: 'Belfast, Calzada del Gigante, Cliffs of Moher y el Día de San Patricio en Dublín.',
+        tags: ['8 días', 'Mar 2026', 'Belfast · Dublín']
     }
 ];
 
