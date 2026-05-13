@@ -50,6 +50,7 @@ No es un viaje normal. Es una expedición cinematográfica por Islandia.
 <p>
 Itinerario real de camper: horarios, rutas, paradas clave, supermercados, gasolina y campings.
 </p>
+<button class="jarvis-btn" id="jarvisOpen">🤖 MODO JARVIS</button>
 <div class="trip-summary">
 <div class="summary-pill"><strong>7 días</strong><span>KEF → Reykjavik → Golden Circle → Costa Sur → Este → KEF</span></div>
 <div class="summary-pill"><strong>Modo</strong><span>Camper + campings estratégicos</span></div>
@@ -381,6 +382,27 @@ Esto es literalmente portada de National Geographic.
 <span>Gooligoog</span>
 <p>Del sueño al mapa. Del mapa a la memoria.</p>
 </footer>
+
+<div id="jarvisOverlay" class="j-overlay" aria-hidden="true">
+<div class="j-panel" role="dialog" aria-label="MODO JARVIS — Misión Islandia 2026">
+  <header class="j-header">
+    <div class="j-brand">
+      <span class="j-dot"></span>
+      <span>JARVIS</span>
+      <span class="j-mission-label">MISSION: ICELAND 2026</span>
+    </div>
+    <button class="j-close" id="jarvisClose" aria-label="Cerrar JARVIS">✕ EXIT</button>
+  </header>
+  <div class="j-map-wrap">
+    <div id="jarvisMap" class="j-map"></div>
+    <nav class="j-tabs" id="jarvisTabs" aria-label="Días"></nav>
+    <div class="j-sidebar" id="jarvisSidebar">
+      <button class="j-sidebar-toggle" id="jarvisSidebarToggle" title="Ocultar panel">◀</button>
+      <div class="j-body" id="jarvisBody" tabindex="0"></div>
+    </div>
+  </div>
+</div>
+</div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
