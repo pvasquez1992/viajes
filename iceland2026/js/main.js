@@ -21,33 +21,44 @@ document.querySelectorAll('.timeline-day').forEach((day) => {
 });
 
 const routeStops = [
-    { day: 1, name: 'KEF / Reykjavik', coords: [64.1466, -21.9426], anchor: 'day-1' },
-    { day: 2, name: 'Golden Circle', coords: [64.2559, -21.1295], anchor: 'day-2' },
-    { day: 3, name: 'Costa Sur / Vik', coords: [63.4186, -19.0060], anchor: 'day-3' },
-    { day: 4, name: 'Skaftafell / Jokulsarlon', coords: [64.0481, -16.1794], anchor: 'day-4', critical: true },
-    { day: 5, name: 'Vestrahorn / Hofn', coords: [64.2720, -14.9970], anchor: 'day-5' },
-    { day: 6, name: 'Regreso por Ring Road', coords: [63.5321, -19.5114], anchor: 'day-6' },
+    { day: 1, name: 'Llegada + Reykjavik', coords: [64.1466, -21.9426], anchor: 'day-1' },
+    { day: 2, name: 'Golden Circle + Reykjadalur', coords: [64.0416, -20.8859], anchor: 'day-2' },
+    { day: 3, name: 'Costa Sur / Skogar', coords: [63.5322, -19.5114], anchor: 'day-3' },
+    { day: 4, name: 'Skaftafell + Jokulsarlon', coords: [64.0481, -16.1794], anchor: 'day-4', critical: true },
+    { day: 5, name: 'Vestrahorn + Viking Set', coords: [64.2440, -15.2082], anchor: 'day-5' },
+    { day: 6, name: 'Regreso por Costa Sur', coords: [63.4186, -19.0060], anchor: 'day-6' },
     { day: 7, name: 'Salida por KEF', coords: [63.9850, -22.6056], anchor: 'day-7' }
 ];
 const routeLine = [
     [63.9850, -22.6056],
+    [63.8424, -22.4328],
     [64.1466, -21.9426],
     [64.2559, -21.1295],
-    [64.3138, -20.3008],
     [64.3271, -20.1199],
+    [64.3138, -20.3008],
+    [64.0416, -20.8859],
+    [64.0169, -21.2110],
     [63.9331, -20.9971],
     [63.6156, -19.9896],
+    [63.6210, -19.9848],
     [63.5321, -19.5114],
-    [63.4186, -19.0060],
+    [63.4031, -19.1288],
     [63.7713, -18.1718],
     [64.0167, -16.9667],
     [64.0481, -16.1794],
-    [64.2720, -14.9970],
+    [64.0393, -16.1869],
+    [64.0100, -16.9800],
     [64.2440, -15.2082],
-    [64.0481, -16.1794],
-    [63.4186, -19.0060],
+    [64.2468, -15.2022],
+    [64.2478, -15.1850],
+    [64.2480, -15.1500],
+    [63.7897, -18.0630],
+    [63.4062, -19.0442],
+    [63.4031, -19.1288],
+    [63.7529, -20.2243],
     [63.9850, -22.6056]
 ];
+const returnRouteStartIndex = 21;
 const map = L.map('routeMap', {
     zoomControl: !isSmallScreen,
     scrollWheelZoom: false,
@@ -60,13 +71,13 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 18,
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 }).addTo(map);
-L.polyline(routeLine.slice(0, 13), {
+L.polyline(routeLine.slice(0, returnRouteStartIndex + 1), {
     color: '#77d8ff',
     weight: 4,
     opacity: .9,
     lineJoin: 'round'
 }).addTo(map);
-L.polyline(routeLine.slice(12), {
+L.polyline(routeLine.slice(returnRouteStartIndex), {
     color: '#d9e8f5',
     weight: 2,
     opacity: .55,
@@ -93,88 +104,108 @@ map.fitBounds(L.latLngBounds(routeLine), {
 // ===== JARVIS MODE =====
 const jarvisData = [
     {
-        day: 1, name: 'Llegada + Reykjavik', date: '01-sept-2026',
+        day: 0, label: 'SALIDA', tab: 'SALIDA', name: 'Washington → Iceland', date: '31-ago-2026',
         stops: [
-            { time: '06:25', icon: '🛬', title: 'Llegada a KEF', coords: [63.9850, -22.6056] },
-            { time: '07:30', icon: '🚐', title: 'Recoger camper', sub: 'Ventana 07:30–08:30. Revisar tanque de gas e inventario.', coords: [63.9920, -22.5500] },
-            { time: '09:30', icon: '😴', title: 'Siesta estratégica', sub: '09:30–12:30. Zona Grindavík. No negociable.', coords: [63.8424, -22.4328] },
-            { time: '14:30', icon: '🏙️', title: '⭐ Hallgrímskirkja · Harpa · Sun Voyager', sub: 'Hasta 17:30. Ciudad entera en 3 horas.', star: true, coords: [64.1420, -21.9264] },
-            { time: '17:30', icon: '🛒', title: 'Supermercado Bónus', sub: 'Compra para 2–3 días. Alternativa: Krónan.', coords: [64.1366, -21.9344] },
-            { time: '18:30', icon: '🏕️', title: 'Reykjavík Eco Campsite', coords: [64.0830, -21.9070] }
+            { time: 'Inicio', icon: '🏠', title: '1201 S Eads St' },
+            { time: 'Metro', icon: '🚇', title: 'Pentagon City Metro Station' },
+            { time: 'IAD', icon: '✈️', title: 'Aeropuerto Washington-Dulles' },
+            { time: '20:30', icon: '🛫', title: 'Icelandair FI644', sub: 'Noche en el avión rumbo a Keflavík.' }
         ],
-        tip: 'Compra para 3 días aquí. La próxima parada estratégica para reabastecer es Selfoss, mañana.',
-        wow: 'Hallgrímskirkja parece un cohete vikingo. Desde arriba ves Reykjavik completa con techos de colores y el Atlántico detrás. Entrada oficial a Islandia.'
+        tip: 'Día de transición. Lleva batería, abrigo ligero y lo necesario para dormir algo en el vuelo.',
+        wow: 'El viaje empieza antes de Islandia: salir de noche desde Washington y amanecer en Keflavík ya cambia el chip completo.'
     },
     {
-        day: 2, name: 'Golden Circle', date: '02-sept-2026',
+        day: 1, name: 'Llegada, descanso y Reykjavik', date: '01-sept-2026',
         stops: [
-            { time: '09:00', icon: '🌋', title: '⭐ Þingvellir National Park', sub: 'Hasta 10:30. Ruta 36.', star: true, coords: [64.2559, -21.1295] },
-            { time: '11:30', icon: '💧', title: 'Geysir', sub: 'Strokkur erupciona cada 5–8 min.', coords: [64.3138, -20.3008] },
-            { time: '12:30', icon: '💧', title: 'Gullfoss Waterfall', coords: [64.3271, -20.1199] },
-            { time: '15:30', icon: '🌊', title: 'Kerið Crater', sub: 'Cráter volcánico con lago azul-verde. 30 min.', coords: [64.0416, -20.8859] },
-            { time: '17:00', icon: '🛒', title: 'Selfoss — IMPORTANTE', sub: 'Bónus + gasolinera N1. Última parada antes de Vík.', coords: [63.9331, -20.9971] },
-            { time: '18:30', icon: '🏕️', title: 'Selfoss Campsite', coords: [63.9280, -21.0060] }
+            { time: '06:25', icon: '🛬', title: 'Llegada a Keflavík', coords: [63.9850, -22.6056] },
+            { time: '07:30', icon: '🚐', title: 'Recoger Go Camper', coords: [63.9920, -22.5500] },
+            { time: 'Mañana', icon: '😴', title: 'Grindavík Campsite', sub: 'Parada opcional para descansar por el cambio de horario.', coords: [63.8424, -22.4328] },
+            { time: 'Ciudad', icon: '⛪', title: '⭐ Hallgrímskirkja', star: true, coords: [64.1420, -21.9266] },
+            { time: 'Ciudad', icon: '🌊', title: 'Viajero del Sol', coords: [64.1475, -21.9220] },
+            { time: 'Ciudad', icon: '🎵', title: 'Harpa', coords: [64.1503, -21.9328] },
+            { time: 'Noche', icon: '🏕️', title: 'Reykjavík Eco Campsite', coords: [64.0830, -21.9070] }
         ],
-        tip: 'Recarga gasolina SÍ O SÍ en N1 Selfoss. No hay nada útil entre Selfoss y Vík. Esto es crítico para el Día 3.',
-        wow: 'Þingvellir — caminarás entre las placas tectónicas de América y Europa. Uno de los lugares más épicos del planeta.'
+        tip: 'Conducción indicada: 1 h 13 min / 57 km. Mantén este día liviano: el descanso de la mañana vale oro.',
+        wow: 'Hallgrímskirkja, el Viajero del Sol y Harpa hacen una entrada limpia a Reykjavik sin quemar energía el primer día.'
+    },
+    {
+        day: 2, name: 'Golden Circle + Reykjadalur', date: '02-sept-2026',
+        stops: [
+            { time: 'Salida', icon: '🏕️', title: 'Reykjavík Eco Campsite', coords: [64.0830, -21.9070] },
+            { time: 'Ruta', icon: '🌋', title: '⭐ Þingvellir', star: true, coords: [64.2559, -21.1295] },
+            { time: 'Ruta', icon: '💧', title: 'Gullfoss Waterfall', coords: [64.3271, -20.1199] },
+            { time: 'Ruta', icon: '💦', title: 'Geysir / Strokkur', sub: 'Strokkur suele erupcionar cada pocos minutos.', coords: [64.3138, -20.3008] },
+            { time: 'Ruta', icon: '🌋', title: 'Kerið Crater', coords: [64.0416, -20.8859] },
+            { time: 'Ruta', icon: '♨️', title: '⭐ Reykjadalur Hot Spring Thermal River', sub: 'Cambio importante agregado oficialmente al plan.', star: true, coords: [64.0169, -21.2110] },
+            { time: 'Noche', icon: '🏕️', title: 'Camping Selfoss', coords: [63.9280, -21.0060] }
+        ],
+        tip: 'Conducción indicada: 3 h 45 min / 234 km. Reykjadalur agrega caminata y baño termal: deja margen real de tiempo.',
+        wow: 'Reykjadalur convierte el Golden Circle en algo más que paradas rápidas: termal, montaña y vapor saliendo del valle.'
     },
     {
         day: 3, name: 'Costa Sur', date: '03-sept-2026',
         stops: [
-            { time: '09:00', icon: '💧', title: 'Seljalandsfoss + Gljúfrabúi', sub: 'Puedes rodear Seljalandsfoss. Gljúfrabúi está escondida 5 min caminando.', coords: [63.6156, -19.9896] },
-            { time: '11:00', icon: '🌊', title: '⭐ Skógafoss', sub: 'La cascada más brutal de la Costa Sur.', star: true, coords: [63.5322, -19.5114] },
-            { time: '13:30', icon: '🦜', title: 'Dyrhólaey', sub: 'Arco de roca sobre el mar. Vista 360°.', coords: [63.4031, -19.1288] },
-            { time: '14:30', icon: '🏖️', title: '⭐ Reynisfjara Beach', sub: 'Arena negra + columnas basálticas.', star: true, coords: [63.4062, -19.0442] },
-            { time: '16:00', icon: '🛒', title: 'Vík í Mýrdal', sub: 'Krónan + N1. Última gasolinera antes de territorio glaciar.', coords: [63.4186, -19.0060] },
-            { time: '17:30', icon: '🏕️', title: 'Vik Campsite', coords: [63.4150, -18.9800] }
+            { time: 'Salida', icon: '🏕️', title: 'Camping Selfoss', coords: [63.9280, -21.0060] },
+            { time: 'Ruta', icon: '💧', title: 'Seljalandsfoss', coords: [63.6156, -19.9896] },
+            { time: 'Ruta', icon: '💧', title: 'Gljúfrabúi', sub: 'Cascada escondida junto a Seljalandsfoss.', coords: [63.6210, -19.9848] },
+            { time: 'Ruta', icon: '🌊', title: '⭐ Skógafoss', star: true, coords: [63.5322, -19.5114] },
+            { time: 'Ruta', icon: '🪨', title: 'Dyrhólaey', coords: [63.4031, -19.1288] },
+            { time: 'Noche', icon: '🏕️', title: 'Skógar Campsite', sub: 'Wanderlog lo marca como cerrado temporalmente; no aparece Vík Camping en esta versión.', coords: [63.5277, -19.5120] }
         ],
-        tip: '⚠️ Reynisfjara: nunca le des la espalda al mar. Las sneaker waves son reales y peligrosas. En serio.',
-        wow: 'Skógafoss — el sonido del agua retumba en el pecho. Arcoíris casi constantes. El sendero sube 370 escalones hasta la cima y vale cada uno.'
+        tip: 'Conducción indicada: 2 h 33 min / 155 km. Revisa Skógar Campsite antes del viaje porque Wanderlog lo muestra cerrado temporalmente.',
+        wow: 'Seljalandsfoss, Gljúfrabúi y Skógafoss en el mismo día: este es el primer bloque grande de cascadas.'
     },
     {
         day: 4, name: 'Glaciares + Jökulsárlón', date: '04-sept-2026',
         critical: true,
         stops: [
-            { time: '09:00', icon: '🏞️', title: 'Fjaðrárgljúfur', sub: '30 min máximo. Cañón verde surrealista.', coords: [63.7715, -18.1718] },
-            { time: '10:30', icon: '🧊', title: 'Skaftafell Visitor Center', coords: [64.0167, -16.9667] },
-            { time: '11:00', icon: '🧊', title: '⭐ Glacier Hike', sub: '11:00–14:00. Tour guiado sobre Vatnajökull. Reserva previa obligatoria.', star: true, crit: true, coords: [64.0700, -16.8500] },
-            { time: '15:30', icon: '🧊', title: '⭐⭐ Jökulsárlón', sub: 'EL momento del viaje. Icebergs en silencio absoluto.', star: true, crit: true, coords: [64.0481, -16.1794] },
-            { time: '16:30', icon: '💎', title: '⭐ Diamond Beach', sub: 'Hielo transparente sobre arena negra. 20 min caminando.', star: true, coords: [64.0393, -16.1869] },
-            { time: '18:30', icon: '🏕️', title: 'Skaftafell Campground', coords: [64.0100, -16.9800] }
+            { time: 'Salida', icon: '🏕️', title: 'Skógar Campsite', coords: [63.5277, -19.5120] },
+            { time: 'Ruta', icon: '🏞️', title: 'Fjaðrárgljúfur', coords: [63.7715, -18.1718] },
+            { time: 'Ruta', icon: '🧊', title: 'Skaftafell Terminal – Tour Center', coords: [64.0167, -16.9667] },
+            { time: 'Suave', icon: '🥾', title: 'Skaftafell', sub: 'Sin Glacier Hike. Mantenerlo liviano.', coords: [64.0167, -16.9667] },
+            { time: '15:50', icon: '🚤', title: '⭐ Zodiac Boat Tour en Jökulsárlón', sub: 'Mejor horario disponible para el tour.', star: true, crit: true, coords: [64.0481, -16.1794] },
+            { time: 'Después', icon: '🅿️', title: 'Jökulsárlón Glacier Lagoon Parking', coords: [64.0478, -16.1782] },
+            { time: 'Después', icon: '💎', title: '⭐ Diamond Beach', star: true, coords: [64.0393, -16.1869] },
+            { time: 'Noche', icon: '🏕️', title: 'Skaftafell Campground', sub: 'Wanderlog vuelve 52 min / 57 km desde Diamond Beach.', coords: [64.0100, -16.9800] }
         ],
-        tip: 'Jökulsárlón antes de las 16:00 tiene la mejor luz. No sacrifiques ni un minuto aquí. El Glacier Hike necesita reserva previa.',
-        wow: 'Jökulsárlón — icebergs flotando en silencio absoluto. Los colores del hielo cambian del blanco al azul profundo. Uno de los 10 lugares más impresionantes del planeta.'
+        tip: 'Conducción indicada: 4 h 33 min / 298 km. El plan ya no tiene Glacier Hike; protege el horario 15:50 del Zodiac.',
+        wow: 'Jökulsárlón + Zodiac + Diamond Beach es el centro emocional del viaje: hielo azul, laguna glaciar y arena negra en una sola tarde.'
     },
     {
-        day: 5, name: 'Vestrahorn', date: '05-sept-2026',
+        day: 5, name: 'Vestrahorn y pueblo vikingo', date: '05-sept-2026',
         stops: [
-            { time: '10:30', icon: '⛰️', title: '⭐ Vestrahorn + Stokksnes', sub: 'Hasta 13:00. Incluye Viking Village (tarifa local).', star: true, coords: [64.2440, -15.2082] },
-            { time: '13:30', icon: '🍔', title: 'Höfn', sub: 'Comida + gasolina. Buena langosta local.', coords: [64.2520, -15.2080] },
-            { time: '14:30', icon: '🏕️', title: 'Camping Vestrahorn / Höfn', coords: [64.2480, -15.1500] },
-            { time: 'Tarde', icon: '🕐', title: 'Tarde libre', sub: 'Sin agenda. Uno de los mejores momentos del viaje.', coords: [64.2440, -15.2082] }
+            { time: 'Salida', icon: '🏕️', title: 'Skaftafell Campground', coords: [64.0100, -16.9800] },
+            { time: 'Ruta', icon: '⛰️', title: '⭐ Vestrahorn', star: true, coords: [64.2440, -15.2082] },
+            { time: 'Ruta', icon: '🪞', title: 'Stokksnes Mirror Beach', coords: [64.2468, -15.2022] },
+            { time: 'Ruta', icon: '🎬', title: '⭐ Viking Village Film Set', sub: 'Este era el sitio missing del sábado 05.', star: true, coords: [64.2478, -15.1850] },
+            { time: 'Noche', icon: '🏕️', title: 'Vestrahorn Camping', coords: [64.2480, -15.1500] }
         ],
-        tip: 'Golden hour en Vestrahorn es entre 19:00–21:00 en septiembre. Si hay reflejo de agua en la playa, la foto es nivel National Geographic.',
-        wow: 'Vestrahorn — montañas negras gigantes reflejadas en agua tranquila. Stokksnes en luz dorada es surrealista. Portada de National Geographic.'
+        tip: 'Conducción indicada: 3 h 1 min / 147 km. Ya queda separado Vestrahorn, Stokksnes Mirror Beach y Viking Village Film Set.',
+        wow: 'Vestrahorn es la montaña dramática; Stokksnes es el espejo; el Viking Village Film Set es el detalle cinematográfico que faltaba.'
     },
     {
-        day: 6, name: 'Regreso por Ring Road', date: '06-sept-2026',
+        day: 6, name: 'Regreso por la costa sur', date: '06-sept-2026',
         stops: [
-            { time: '10:00', icon: '☕', title: 'Pausa en Skaftafell', sub: 'Café, vistas. Sin prisa.', coords: [64.0167, -16.9667] },
-            { time: '13:00', icon: '🍔', title: 'Vík', sub: 'Comida + gasolina.', coords: [63.4186, -19.0060] },
-            { time: '15:00', icon: '🦜', title: 'Dyrhólaey', sub: 'Opcional. 30 min rápidos.', coords: [63.4031, -19.1288] },
-            { time: '17:30', icon: '🏕️', title: 'Hvolsvöllur Campsite', coords: [63.5321, -20.2379] }
+            { time: 'Salida', icon: '🏕️', title: 'Vestrahorn Camping', coords: [64.2480, -15.1500] },
+            { time: 'Ruta', icon: '☕', title: 'Kirkjubæjarklaustur', coords: [63.7897, -18.0630] },
+            { time: 'Ruta', icon: '🏖️', title: '⭐ Reynisfjara Beach', star: true, coords: [63.4062, -19.0442] },
+            { time: 'Ruta', icon: '🪨', title: 'Dyrhólaey', coords: [63.4031, -19.1288] },
+            { time: 'Noche', icon: '🏕️', title: 'Hvolsvöllur Camp Site', sub: 'Wanderlog lo marca como cerrado temporalmente.', coords: [63.7529, -20.2243] }
         ],
-        tip: 'Día largo de roadtrip. Ya no hay presión de llegar a nada crítico. Pon música, disfruta el Ring Road y el paisaje. Es parte del viaje.',
-        wow: 'El Ring Road en sentido contrario tiene otra energía. Reconoces los paisajes pero todo se ve diferente. El viaje ya está ganado.'
+        tip: 'Conducción indicada: 5 h 38 min / 383 km. Es día largo; confirma Hvolsvöllur Camp Site o ten alternativa.',
+        wow: 'El regreso por la Costa Sur repite paisajes con otra luz: Reynisfjara y Dyrhólaey vuelven como cierre fuerte.'
     },
     {
-        day: 7, name: 'Salida — KEF', date: '07-sept-2026',
+        day: 7, name: 'Regreso a Washington', date: '07-sept-2026',
         stops: [
-            { time: '08:30', icon: '🌅', title: 'Salida hacia el aeropuerto', coords: [63.5321, -20.2379] },
-            { time: '10:30', icon: '✈️', title: 'KEF — Devolución camper + vuelo', sub: 'Deja el camper limpio y con gas. Llega 2h30 antes del vuelo.', coords: [63.9850, -22.6056] }
+            { time: 'Salida', icon: '🏕️', title: 'Hvolsvöllur Camp Site', coords: [63.7529, -20.2243] },
+            { time: 'Ruta', icon: '🚐', title: 'Manejo hacia Keflavík', coords: [63.9850, -22.6056] },
+            { time: '12:00', icon: '🔑', title: 'Devolver Go Camper', coords: [63.9920, -22.5500] },
+            { time: '16:50', icon: '🛫', title: 'Icelandair FI645', sub: 'Salida de Keflavík.' },
+            { time: '19:20', icon: '🛬', title: 'Llegada a Washington' }
         ],
-        tip: 'Deja el camper limpio, con el tanque lleno y sin basura. Evita cargos extra. 2h30 antes del vuelo mínimo.',
-        wow: 'Islandia desde el aire. Volcanes, glaciares, lava negra y el Atlántico Norte. Siete días que no se olvidan.'
+        tip: 'Conducción indicada: 2 h 15 min / 147 km. Devolución Go Camper a las 12:00; no apurar este cierre.',
+        wow: 'Última mirada a Islandia antes de despegar: lava negra, costa y Atlántico Norte en la memoria.'
     }
 ];
 
@@ -222,7 +253,7 @@ function jarvisMarkerIcon(idx, isActive) {
     const size = isActive ? 34 : 26;
     return L.divIcon({
         className: '',
-        html: `<span class="${cls}">${d.day}</span>`,
+        html: `<span class="${cls}">${d.markerLabel || d.day}</span>`,
         iconSize: [size, size],
         iconAnchor: [size / 2, size / 2],
         popupAnchor: [0, -20]
@@ -233,6 +264,7 @@ function renderJarvisDay(idx) {
     const d = jarvisData[idx];
     const body = document.getElementById('jarvisBody');
     body.scrollTop = 0;
+    const dayLabel = d.label || `DÍA ${d.day}`;
 
     const stopsHtml = d.stops.map((s) => {
         const clickable = s.coords ? ' j-entry-clickable' : '';
@@ -249,7 +281,7 @@ function renderJarvisDay(idx) {
 
     body.innerHTML = `
 <div class="j-day-title">
-  <span class="j-day-num">DÍA ${d.day}</span>
+  <span class="j-day-num">${dayLabel}</span>
   <span class="j-day-name">${d.name}</span>
   ${critLabel}
   <span class="j-day-date">${d.date}</span>
@@ -328,7 +360,11 @@ function switchJarvisDay(idx) {
     jarvisActiveDay = idx;
     document.querySelectorAll('.j-tab').forEach((t, i) => t.classList.toggle('active', i === idx));
     if (jarvisMarkers.length) {
-        jarvisMarkers.forEach((m, i) => m.marker.setIcon(jarvisMarkerIcon(i, i === idx)));
+        jarvisMarkers.forEach((m, i) => {
+            if (m) {
+                m.marker.setIcon(jarvisMarkerIcon(i, i === idx));
+            }
+        });
     }
     clearDayMarkers();
     if (jarvisMap) drawDayMarkers(idx);
@@ -340,7 +376,8 @@ function buildJarvisUI() {
     if (!tabs.children.length) {
         tabs.innerHTML = jarvisData.map((d, i) => {
             const critClass = d.critical ? ' j-tab-crit' : '';
-            return `<button class="j-tab${critClass}" data-idx="${i}">DÍA ${d.day}</button>`;
+            const tabLabel = d.tab || `DÍA ${d.day}`;
+            return `<button class="j-tab${critClass}" data-idx="${i}">${tabLabel}</button>`;
         }).join('');
         tabs.querySelectorAll('.j-tab').forEach((t) => {
             t.addEventListener('click', () => switchJarvisDay(+t.dataset.idx));
@@ -369,10 +406,13 @@ function buildJarvisUI() {
             attributionControl: false
         });
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(jarvisMap);
-        L.polyline(routeLine.slice(0, 13), { color: '#77d8ff', weight: 2, opacity: .35, lineJoin: 'round' }).addTo(jarvisMap);
-        L.polyline(routeLine.slice(12), { color: '#d9e8f5', weight: 1.5, opacity: .2, dashArray: '6 8' }).addTo(jarvisMap);
+        L.polyline(routeLine.slice(0, returnRouteStartIndex + 1), { color: '#77d8ff', weight: 2, opacity: .35, lineJoin: 'round' }).addTo(jarvisMap);
+        L.polyline(routeLine.slice(returnRouteStartIndex), { color: '#d9e8f5', weight: 1.5, opacity: .2, dashArray: '6 8' }).addTo(jarvisMap);
         jarvisMarkers = jarvisData.map((d, i) => {
             const stop = routeStops.find((s) => s.day === d.day);
+            if (!stop) {
+                return null;
+            }
             const marker = L.marker(stop.coords, { icon: jarvisMarkerIcon(i, false) }).addTo(jarvisMap);
             marker.on('click', () => switchJarvisDay(i));
             return { marker, coords: stop.coords };
