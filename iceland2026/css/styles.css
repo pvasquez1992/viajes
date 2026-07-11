@@ -496,6 +496,9 @@ p{
 .day-mobile-title{
     display:none;
 }
+.day-title{
+    margin-left:.32em;
+}
 .date-chip{
     display:inline-flex;
     align-items:center;
