@@ -5,8 +5,8 @@ const trips = [
         start: '2026-08-31',
         end: '2026-09-07',
         phase: 'planned',
-        description: 'Vuelo, camper, glaciares, Costa Sur, mapa real y roadbook por día.',
-        tags: ['31 ago-7 sept', 'Sep 2026', 'Roadtrip'],
+        description: 'Vuelo, camper, descanso primero, Reykjadalur, S1, Zodiac, Vestrahorn y Viking Set.',
+        tags: ['31 ago-7 sept', 'S1 + Zodiac', 'Roadtrip'],
         featured: true
     },
     {

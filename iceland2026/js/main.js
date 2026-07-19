@@ -21,21 +21,21 @@ document.querySelectorAll('.timeline-day').forEach((day) => {
 });
 
 const routeStops = [
-    { day: 1, name: 'Llegada + Reykjavik', coords: [64.1466, -21.9426], anchor: 'day-1' },
+    { day: 1, name: 'Dormir primero + Reykjavík', coords: [64.1466, -21.9426], anchor: 'day-1' },
     { day: 2, name: 'Golden Circle + Reykjadalur', coords: [64.0416, -20.8859], anchor: 'day-2' },
-    { day: 3, name: 'Costa Sur / Skogar', coords: [63.5322, -19.5114], anchor: 'day-3' },
-    { day: 4, name: 'Skaftafell + Jokulsarlon', coords: [64.0481, -16.1794], anchor: 'day-4', critical: true },
+    { day: 3, name: 'Costa Sur + camping por decidir', coords: [63.5322, -19.5114], anchor: 'day-3' },
+    { day: 4, name: 'S1 + Jökulsárlón + Zodiac', coords: [64.0481, -16.1794], anchor: 'day-4', critical: true },
     { day: 5, name: 'Vestrahorn + Viking Set', coords: [64.2440, -15.2082], anchor: 'day-5' },
-    { day: 6, name: 'Regreso por Costa Sur', coords: [63.4186, -19.0060], anchor: 'day-6' },
-    { day: 7, name: 'Salida por KEF', coords: [63.9850, -22.6056], anchor: 'day-7' }
+    { day: 6, name: 'Regreso + camping alterno', coords: [63.4186, -19.0060], anchor: 'day-6' },
+    { day: 7, name: 'Camper return + FI645', coords: [63.9850, -22.6056], anchor: 'day-7' }
 ];
 const routeLine = [
     [63.9850, -22.6056],
     [63.8424, -22.4328],
     [64.1466, -21.9426],
     [64.2559, -21.1295],
-    [64.3271, -20.1199],
     [64.3138, -20.3008],
+    [64.3271, -20.1199],
     [64.0416, -20.8859],
     [64.0169, -21.2110],
     [63.9331, -20.9971],
@@ -45,6 +45,8 @@ const routeLine = [
     [63.4031, -19.1288],
     [63.7713, -18.1718],
     [64.0167, -16.9667],
+    [64.0250, -16.9140],
+    [64.0164, -16.3725],
     [64.0481, -16.1794],
     [64.0393, -16.1869],
     [64.0100, -16.9800],
@@ -58,7 +60,7 @@ const routeLine = [
     [63.7529, -20.2243],
     [63.9850, -22.6056]
 ];
-const returnRouteStartIndex = 21;
+const returnRouteStartIndex = 23;
 const map = L.map('routeMap', {
     zoomControl: !isSmallScreen,
     scrollWheelZoom: false,
@@ -115,26 +117,29 @@ const jarvisData = [
         wow: 'El viaje empieza antes de Islandia: salir de noche desde Washington y amanecer en Keflavík ya cambia el chip completo.'
     },
     {
-        day: 1, name: 'Llegada, descanso y Reykjavik', date: '01-sept-2026',
+        day: 1, name: 'Dormir primero + Reykjavík', date: '01-sept-2026',
         stops: [
             { time: '06:25', icon: '🛬', title: 'Llegada a Keflavík', coords: [63.9850, -22.6056] },
             { time: '07:30', icon: '🚐', title: 'Recoger Go Camper', coords: [63.9920, -22.5500] },
-            { time: 'Mañana', icon: '😴', title: 'Grindavík Campsite', sub: 'Parada opcional para descansar por el cambio de horario.', coords: [63.8424, -22.4328] },
+            { time: '08:30', icon: '😴', title: 'Dormir / descanso obligatorio', sub: 'Ir directo a Grindavík Campsite o punto permitido. La Ruta 43 va después de dormir.', coords: [63.8424, -22.4328] },
+            { time: 'Opcional', icon: '🛣️', title: 'Ruta 43 / Svartsengi', sub: 'Solo si despiertas completamente bien.', coords: [63.8804, -22.4495] },
+            { time: 'Opcional', icon: '♨️', title: 'Blue Lagoon', sub: 'Solo si finalmente reservas; no es plan fijo.', coords: [63.8790, -22.4450] },
+            { time: 'Opcional', icon: '🥾', title: 'Úlfarsfell hike', sub: '1–2 h cerca de Reykjavík, solo si despiertas 10/10.', coords: [64.1518, -21.7546] },
             { time: 'Ciudad', icon: '⛪', title: '⭐ Hallgrímskirkja', star: true, coords: [64.1420, -21.9266] },
             { time: 'Ciudad', icon: '🌊', title: 'Viajero del Sol', coords: [64.1475, -21.9220] },
             { time: 'Ciudad', icon: '🎵', title: 'Harpa', coords: [64.1503, -21.9328] },
             { time: 'Noche', icon: '🏕️', title: 'Reykjavík Eco Campsite', coords: [64.0830, -21.9070] }
         ],
-        tip: 'Conducción indicada: 1 h 13 min / 57 km. Mantén este día liviano: el descanso de la mañana vale oro.',
-        wow: 'Hallgrímskirkja, el Viajero del Sol y Harpa hacen una entrada limpia a Reykjavik sin quemar energía el primer día.'
+        tip: 'Conducción indicada: 1 h 13 min / 57 km. Primero dormir. Ruta 43, Blue Lagoon o Úlfarsfell solo después de descansar y si el cuerpo está claro.',
+        wow: 'Hallgrímskirkja, el Viajero del Sol y Harpa hacen una entrada limpia a Reykjavík sin quemar energía el primer día.'
     },
     {
         day: 2, name: 'Golden Circle + Reykjadalur', date: '02-sept-2026',
         stops: [
             { time: 'Salida', icon: '🏕️', title: 'Reykjavík Eco Campsite', coords: [64.0830, -21.9070] },
             { time: 'Ruta', icon: '🌋', title: '⭐ Þingvellir', star: true, coords: [64.2559, -21.1295] },
-            { time: 'Ruta', icon: '💧', title: 'Gullfoss Waterfall', coords: [64.3271, -20.1199] },
             { time: 'Ruta', icon: '💦', title: 'Geysir / Strokkur', sub: 'Strokkur suele erupcionar cada pocos minutos.', coords: [64.3138, -20.3008] },
+            { time: 'Ruta', icon: '💧', title: 'Gullfoss Waterfall', coords: [64.3271, -20.1199] },
             { time: 'Ruta', icon: '🌋', title: 'Kerið Crater', coords: [64.0416, -20.8859] },
             { time: 'Ruta', icon: '♨️', title: '⭐ Reykjadalur Hot Spring Thermal River', sub: 'Cambio importante agregado oficialmente al plan.', star: true, coords: [64.0169, -21.2110] },
             { time: 'Noche', icon: '🏕️', title: 'Camping Selfoss', coords: [63.9280, -21.0060] }
@@ -143,32 +148,33 @@ const jarvisData = [
         wow: 'Reykjadalur convierte el Golden Circle en algo más que paradas rápidas: termal, montaña y vapor saliendo del valle.'
     },
     {
-        day: 3, name: 'Costa Sur', date: '03-sept-2026',
+        day: 3, name: 'Costa Sur + camping por decidir', date: '03-sept-2026',
         stops: [
             { time: 'Salida', icon: '🏕️', title: 'Camping Selfoss', coords: [63.9280, -21.0060] },
             { time: 'Ruta', icon: '💧', title: 'Seljalandsfoss', coords: [63.6156, -19.9896] },
             { time: 'Ruta', icon: '💧', title: 'Gljúfrabúi', sub: 'Cascada escondida junto a Seljalandsfoss.', coords: [63.6210, -19.9848] },
             { time: 'Ruta', icon: '🌊', title: '⭐ Skógafoss', star: true, coords: [63.5322, -19.5114] },
             { time: 'Ruta', icon: '🪨', title: 'Dyrhólaey', coords: [63.4031, -19.1288] },
-            { time: 'Noche', icon: '🏕️', title: 'Skógar Campsite', sub: 'Wanderlog lo marca como cerrado temporalmente; no aparece Vík Camping en esta versión.', coords: [63.5277, -19.5120] }
+            { time: 'Decidir', icon: '🏕️', title: 'Skógar Campsite / Vík Camping', sub: 'Wanderlog marca Skógar como cerrado temporalmente; Vík queda como alternativa práctica.', coords: [63.5277, -19.5120] }
         ],
-        tip: 'Conducción indicada: 2 h 33 min / 155 km. Revisa Skógar Campsite antes del viaje porque Wanderlog lo muestra cerrado temporalmente.',
+        tip: 'Conducción indicada: 2 h 33 min / 155 km. Revisa Skógar Campsite antes del viaje; si sigue raro, mueve la noche a Vík Camping.',
         wow: 'Seljalandsfoss, Gljúfrabúi y Skógafoss en el mismo día: este es el primer bloque grande de cascadas.'
     },
     {
-        day: 4, name: 'Glaciares + Jökulsárlón', date: '04-sept-2026',
+        day: 4, name: 'S1 + Jökulsárlón + Zodiac', date: '04-sept-2026',
         critical: true,
         stops: [
             { time: 'Salida', icon: '🏕️', title: 'Skógar Campsite', coords: [63.5277, -19.5120] },
             { time: 'Ruta', icon: '🏞️', title: 'Fjaðrárgljúfur', coords: [63.7715, -18.1718] },
             { time: 'Ruta', icon: '🧊', title: 'Skaftafell Terminal – Tour Center', coords: [64.0167, -16.9667] },
-            { time: 'Suave', icon: '🥾', title: 'Skaftafell', sub: 'Sin Glacier Hike. Mantenerlo liviano.', coords: [64.0167, -16.9667] },
+            { time: 'Suave', icon: '🥾', title: '⭐ Skaftafellsjökull S1 Glacier Trail', sub: 'Ruta por libre; sustituye el tour de Tröll.', star: true, coords: [64.0250, -16.9140] },
+            { time: 'Opcional', icon: '🧊', title: 'Fjallsárlón', sub: 'Recomendado si el horario va bien antes del Zodiac.', coords: [64.0164, -16.3725] },
             { time: '15:50', icon: '🚤', title: '⭐ Zodiac Boat Tour en Jökulsárlón', sub: 'Mejor horario disponible para el tour.', star: true, crit: true, coords: [64.0481, -16.1794] },
             { time: 'Después', icon: '🅿️', title: 'Jökulsárlón Glacier Lagoon Parking', coords: [64.0478, -16.1782] },
             { time: 'Después', icon: '💎', title: '⭐ Diamond Beach', star: true, coords: [64.0393, -16.1869] },
             { time: 'Noche', icon: '🏕️', title: 'Skaftafell Campground', sub: 'Wanderlog vuelve 52 min / 57 km desde Diamond Beach.', coords: [64.0100, -16.9800] }
         ],
-        tip: 'Conducción indicada: 4 h 33 min / 298 km. El plan ya no tiene Glacier Hike; protege el horario 15:50 del Zodiac.',
+        tip: 'Conducción indicada: 4 h 33 min / 298 km. El plan ya no tiene Glacier Hike: S1 por libre, Fjallsárlón opcional y horario 15:50 protegido para el Zodiac.',
         wow: 'Jökulsárlón + Zodiac + Diamond Beach es el centro emocional del viaje: hielo azul, laguna glaciar y arena negra en una sola tarde.'
     },
     {
@@ -178,19 +184,20 @@ const jarvisData = [
             { time: 'Ruta', icon: '⛰️', title: '⭐ Vestrahorn', star: true, coords: [64.2440, -15.2082] },
             { time: 'Ruta', icon: '🪞', title: 'Stokksnes Mirror Beach', coords: [64.2468, -15.2022] },
             { time: 'Ruta', icon: '🎬', title: '⭐ Viking Village Film Set', sub: 'Este era el sitio missing del sábado 05.', star: true, coords: [64.2478, -15.1850] },
+            { time: 'Opcional', icon: '🍔', title: 'Höfn', sub: 'Comida, supermercado o combustible si hace falta.', coords: [64.2520, -15.2080] },
             { time: 'Noche', icon: '🏕️', title: 'Vestrahorn Camping', coords: [64.2480, -15.1500] }
         ],
         tip: 'Conducción indicada: 3 h 1 min / 147 km. Ya queda separado Vestrahorn, Stokksnes Mirror Beach y Viking Village Film Set.',
         wow: 'Vestrahorn es la montaña dramática; Stokksnes es el espejo; el Viking Village Film Set es el detalle cinematográfico que faltaba.'
     },
     {
-        day: 6, name: 'Regreso por la costa sur', date: '06-sept-2026',
+        day: 6, name: 'Regreso + camping alterno', date: '06-sept-2026',
         stops: [
             { time: 'Salida', icon: '🏕️', title: 'Vestrahorn Camping', coords: [64.2480, -15.1500] },
             { time: 'Ruta', icon: '☕', title: 'Kirkjubæjarklaustur', coords: [63.7897, -18.0630] },
             { time: 'Ruta', icon: '🏖️', title: '⭐ Reynisfjara Beach', star: true, coords: [63.4062, -19.0442] },
             { time: 'Ruta', icon: '🪨', title: 'Dyrhólaey', coords: [63.4031, -19.1288] },
-            { time: 'Noche', icon: '🏕️', title: 'Hvolsvöllur Camp Site', sub: 'Wanderlog lo marca como cerrado temporalmente.', coords: [63.7529, -20.2243] }
+            { time: 'Noche', icon: '🏕️', title: 'Hvolsvöllur Camp Site', sub: 'Wanderlog lo marca como cerrado temporalmente. Tener alternativa cercana: Hella / Hellishólar.', coords: [63.7529, -20.2243] }
         ],
         tip: 'Conducción indicada: 5 h 38 min / 383 km. Es día largo; confirma Hvolsvöllur Camp Site o ten alternativa.',
         wow: 'El regreso por la Costa Sur repite paisajes con otra luz: Reynisfjara y Dyrhólaey vuelven como cierre fuerte.'
@@ -200,11 +207,13 @@ const jarvisData = [
         stops: [
             { time: 'Salida', icon: '🏕️', title: 'Hvolsvöllur Camp Site', coords: [63.7529, -20.2243] },
             { time: 'Ruta', icon: '🚐', title: 'Manejo hacia Keflavík', coords: [63.9850, -22.6056] },
+            { time: 'Antes', icon: '⛽', title: 'Cargar combustible', coords: [63.9950, -22.5500] },
+            { time: 'Antes', icon: '🧹', title: 'Ordenar y limpiar la camper', sub: 'Basura, interiores y pertenencias listas antes de devolver.' },
             { time: '12:00', icon: '🔑', title: 'Devolver Go Camper', coords: [63.9920, -22.5500] },
             { time: '16:50', icon: '🛫', title: 'Icelandair FI645', sub: 'Salida de Keflavík.' },
             { time: '19:20', icon: '🛬', title: 'Llegada a Washington' }
         ],
-        tip: 'Conducción indicada: 2 h 15 min / 147 km. Devolución Go Camper a las 12:00; no apurar este cierre.',
+        tip: 'Conducción indicada: 2 h 15 min / 147 km. Antes de devolver: gasolina, limpieza, basura y pertenencias. Devolución Go Camper a las 12:00.',
         wow: 'Última mirada a Islandia antes de despegar: lava negra, costa y Atlántico Norte en la memoria.'
     }
 ];

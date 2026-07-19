@@ -716,6 +716,22 @@ p{
     font-size:15px;
     line-height:1.35;
 }
+.decision-grid{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    margin-top:18px;
+}
+.decision-grid div{
+    border-color:#33516f;
+    background:
+        linear-gradient(135deg,rgba(119,216,255,.08),rgba(15,23,34,0) 55%),
+        #0f1722;
+}
+.decision-grid strong{
+    color:#77d8ff;
+}
+.decision-grid span{
+    font-size:14px;
+}
 .source-note{
     margin:14px 0 0;
     color:#8fa3b8;
@@ -793,6 +809,12 @@ p{
     color:#77d8ff;
     font-weight:900;
     margin-right:8px;
+}
+.highlight-heading{
+    margin:38px 0 18px;
+}
+.highlight-heading h2{
+    margin:0;
 }
 @media (max-width:900px){
     .hero-inner{
