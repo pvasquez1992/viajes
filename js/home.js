@@ -2,11 +2,11 @@ const trips = [
     {
         title: 'Iceland 2026',
         href: 'iceland2026/',
-        start: '2026-09-01',
+        start: '2026-08-31',
         end: '2026-09-07',
         phase: 'planned',
-        description: 'Camper, glaciares, Costa Sur, mapa real y roadbook por día.',
-        tags: ['7 días', 'Sep 2026', 'Roadtrip'],
+        description: 'Vuelo, camper, descanso primero, Reykjadalur, S1, Zodiac, Vestrahorn y Viking Set.',
+        tags: ['31 ago-7 sept', 'S1 + Zodiac', 'Roadtrip'],
         featured: true
     },
     {
