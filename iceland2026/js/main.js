@@ -155,7 +155,14 @@ const returnRouteStartIndex = 23;
 const routeMapElement = document.getElementById('routeMap');
 let map = null;
 
-function addBaseMap(targetMap) {
+function addBaseMap(targetMap, theme = 'dark') {
+    if (theme === 'street') {
+        return L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(targetMap);
+    }
+
     return L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
         subdomains: 'abcd',
         maxZoom: 19,
@@ -557,9 +564,9 @@ function buildJarvisUI() {
             tap: true,
             attributionControl: true
         });
-        addBaseMap(jarvisMap);
-        L.polyline(routeLine.slice(0, returnRouteStartIndex + 1), { color: '#72d9c2', weight: 2, opacity: .48, lineJoin: 'round' }).addTo(jarvisMap);
-        L.polyline(routeLine.slice(returnRouteStartIndex), { color: '#c4d4ce', weight: 1.5, opacity: .26, dashArray: '6 8' }).addTo(jarvisMap);
+        addBaseMap(jarvisMap, 'street');
+        L.polyline(routeLine.slice(0, returnRouteStartIndex + 1), { color: '#0f766e', weight: 3, opacity: .82, lineJoin: 'round' }).addTo(jarvisMap);
+        L.polyline(routeLine.slice(returnRouteStartIndex), { color: '#475569', weight: 2, opacity: .5, dashArray: '6 8' }).addTo(jarvisMap);
         jarvisMarkers = jarvisData.map((d, i) => {
             const stop = routeStops.find((s) => s.day === d.day);
             if (!stop) {

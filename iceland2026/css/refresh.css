@@ -735,10 +735,15 @@ p{
 }
 
 .timeline-day[open]{
+    grid-column:1 / -1;
     border-color:rgba(185,238,224,.21);
     border-left-color:rgba(185,238,224,.21);
     background:var(--surface);
     box-shadow:0 20px 45px rgba(0,0,0,.17);
+}
+
+#day-0{
+    grid-column:1 / -1;
 }
 
 .timeline-day.critical{
@@ -767,14 +772,23 @@ p{
     font-size:19px;
 }
 
-.timeline-day h3{
+.day-copy{
+    display:block;
+    flex:1;
+    min-width:0;
+}
+
+.day-heading{
+    display:block;
     margin:0 0 10px;
     color:var(--text);
     font-size:20px;
+    font-weight:800;
     letter-spacing:-.02em;
+    line-height:1.2;
 }
 
-.timeline-day h3::before{
+.day-heading::before{
     width:6px;
     height:6px;
     background:var(--day-accent);
@@ -1230,11 +1244,21 @@ p{
 }
 
 .j-overlay[aria-hidden="true"]{
+    display:none;
     visibility:hidden;
+    opacity:0;
+    pointer-events:none;
 }
 
 .j-overlay{
-    background:rgba(2,8,7,.97);
+    background:rgba(2,8,7,.94);
+}
+
+.j-overlay.active{
+    display:flex;
+    visibility:visible;
+    opacity:1;
+    pointer-events:auto;
 }
 
 .j-panel{
@@ -1242,12 +1266,41 @@ p{
 }
 
 .j-header{
+    position:relative;
+    z-index:20;
     background:rgba(5,14,12,.96);
     border-color:var(--line);
 }
 
+.j-close{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-height:38px;
+    margin-left:auto;
+    padding:0 14px;
+    border:1px solid rgba(255,142,121,.52);
+    border-radius:10px;
+    background:rgba(255,142,121,.14);
+    box-shadow:0 0 0 1px rgba(255,255,255,.04) inset;
+    color:#ffd8d0;
+    font-size:12px;
+    font-weight:900;
+    white-space:nowrap;
+}
+
+.j-close:hover{
+    border-color:rgba(255,142,121,.72);
+    background:rgba(255,142,121,.22);
+    color:#fff;
+}
+
 .j-map{
-    background:#07110f;
+    background:#c7d8d4;
+}
+
+.j-map .leaflet-tile{
+    filter:saturate(.82) brightness(.9) contrast(.94);
 }
 
 .j-sidebar{
@@ -1632,13 +1685,13 @@ p{
         padding:15px 48px 14px 15px;
     }
 
-    .timeline-day h3{
+    .day-heading{
         display:block;
         margin-bottom:4px;
         font-size:17px;
     }
 
-    .timeline-day h3::before{
+    .day-heading::before{
         margin-right:8px;
     }
 
