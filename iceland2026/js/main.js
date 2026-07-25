@@ -1,4 +1,7 @@
-const isSmallScreen = window.matchMedia('(max-width: 640px)').matches;
+const smallScreenQuery = window.matchMedia('(max-width: 640px)');
+const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+const isSmallScreen = smallScreenQuery.matches;
+
 function openDay(anchor) {
     const target = document.getElementById(anchor);
     if (!target) {
@@ -7,7 +10,10 @@ function openDay(anchor) {
     if (target.tagName.toLowerCase() === 'details') {
         target.open = true;
     }
-    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    target.scrollIntoView({
+        behavior: reduceMotionQuery.matches ? 'auto' : 'smooth',
+        block: 'start'
+    });
 }
 
 document.querySelectorAll('.timeline-day').forEach((day) => {
@@ -19,6 +25,91 @@ document.querySelectorAll('.timeline-day').forEach((day) => {
         }
     });
 });
+
+const scrollProgress = document.getElementById('scrollProgress');
+function updateScrollProgress() {
+    if (!scrollProgress) return;
+    const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = scrollable > 0 ? Math.min(100, Math.max(0, (window.scrollY / scrollable) * 100)) : 0;
+    scrollProgress.style.width = `${progress}%`;
+}
+window.addEventListener('scroll', updateScrollProgress, { passive: true });
+window.addEventListener('resize', updateScrollProgress);
+updateScrollProgress();
+
+const dayLinks = [...document.querySelectorAll('[data-day-target]')];
+dayLinks.forEach((link) => {
+    link.addEventListener('click', (event) => {
+        event.preventDefault();
+        openDay(link.dataset.dayTarget);
+        history.replaceState(null, '', `#${link.dataset.dayTarget}`);
+    });
+});
+
+if ('IntersectionObserver' in window && dayLinks.length) {
+    const dayObserver = new IntersectionObserver((entries) => {
+        const visible = entries
+            .filter((entry) => entry.isIntersecting)
+            .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (!visible) return;
+        dayLinks.forEach((link) => {
+            const active = link.dataset.dayTarget === visible.target.id;
+            link.classList.toggle('is-active', active);
+            if (active) link.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+        });
+    }, { rootMargin: '-24% 0px -62% 0px', threshold: [0, .2, .6] });
+    document.querySelectorAll('.timeline-day').forEach((day) => dayObserver.observe(day));
+}
+
+const toggleDays = document.getElementById('toggleDays');
+if (toggleDays) {
+    toggleDays.addEventListener('click', () => {
+        const days = [...document.querySelectorAll('.timeline-day')];
+        const shouldOpen = days.some((day) => !day.open);
+        days.forEach((day) => { day.open = shouldOpen; });
+        toggleDays.setAttribute('aria-pressed', String(shouldOpen));
+        toggleDays.textContent = shouldOpen ? 'Cerrar todos' : 'Abrir todos';
+    });
+}
+
+document.querySelectorAll('.card-gallery').forEach((gallery) => {
+    const dots = [...gallery.querySelectorAll('.carousel-hint span')];
+    const images = [...gallery.querySelectorAll('img')];
+    if (!dots.length || !images.length) return;
+
+    const updateGalleryDots = () => {
+        const galleryCenter = gallery.scrollLeft + gallery.clientWidth / 2;
+        let closestIndex = 0;
+        let closestDistance = Infinity;
+        images.forEach((image, index) => {
+            const imageCenter = image.offsetLeft + image.offsetWidth / 2;
+            const distance = Math.abs(imageCenter - galleryCenter);
+            if (distance < closestDistance) {
+                closestDistance = distance;
+                closestIndex = index;
+            }
+        });
+        dots.forEach((dot, index) => dot.classList.toggle('is-active', index === closestIndex));
+    };
+
+    dots[0].classList.add('is-active');
+    gallery.addEventListener('scroll', updateGalleryDots, { passive: true });
+});
+
+if ('IntersectionObserver' in window) {
+    const navLinks = [...document.querySelectorAll('[data-nav]')];
+    const sectionObserver = new IntersectionObserver((entries) => {
+        const activeEntry = entries
+            .filter((entry) => entry.isIntersecting)
+            .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (!activeEntry) return;
+        navLinks.forEach((link) => link.classList.toggle('is-active', link.dataset.nav === activeEntry.target.id));
+    }, { rootMargin: '-18% 0px -70% 0px', threshold: [0, .1, .35] });
+    ['library', 'logistics', 'highlights'].forEach((id) => {
+        const section = document.getElementById(id);
+        if (section) sectionObserver.observe(section);
+    });
+}
 
 const routeStops = [
     { day: 1, name: 'Dormir primero + Reykjavík', coords: [64.1466, -21.9426], anchor: 'day-1' },
@@ -61,47 +152,58 @@ const routeLine = [
     [63.9850, -22.6056]
 ];
 const returnRouteStartIndex = 23;
-const map = L.map('routeMap', {
-    zoomControl: !isSmallScreen,
-    scrollWheelZoom: false,
-    dragging: !isSmallScreen,
-    touchZoom: !isSmallScreen,
-    doubleClickZoom: !isSmallScreen,
-    tap: true
-});
-L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 18,
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-}).addTo(map);
-L.polyline(routeLine.slice(0, returnRouteStartIndex + 1), {
-    color: '#77d8ff',
-    weight: 4,
-    opacity: .9,
-    lineJoin: 'round'
-}).addTo(map);
-L.polyline(routeLine.slice(returnRouteStartIndex), {
-    color: '#d9e8f5',
-    weight: 2,
-    opacity: .55,
-    dashArray: '7 8'
-}).addTo(map);
-routeStops.forEach((stop) => {
-    const icon = L.divIcon({
-        className: '',
-        html: `<span class="route-marker${stop.critical ? ' route-marker-critical' : ''}">${stop.day}</span>`,
-        iconSize: [26, 26],
-        iconAnchor: [13, 13],
-        popupAnchor: [0, -14]
+const routeMapElement = document.getElementById('routeMap');
+let map = null;
+
+function addBaseMap(targetMap) {
+    return L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        subdomains: 'abcd',
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+    }).addTo(targetMap);
+}
+
+if (window.L && routeMapElement) {
+    map = L.map(routeMapElement, {
+        zoomControl: !smallScreenQuery.matches,
+        scrollWheelZoom: false,
+        dragging: !smallScreenQuery.matches,
+        touchZoom: !smallScreenQuery.matches,
+        doubleClickZoom: !smallScreenQuery.matches,
+        tap: true
     });
-    const marker = L.marker(stop.coords, { icon }).addTo(map);
-    marker.bindPopup(`<strong>Dia ${stop.day}</strong><br>${stop.name}`);
-    marker.on('click', () => {
-        openDay(stop.anchor);
+    addBaseMap(map);
+    L.polyline(routeLine.slice(0, returnRouteStartIndex + 1), {
+        color: '#72d9c2',
+        weight: 4,
+        opacity: .92,
+        lineJoin: 'round'
+    }).addTo(map);
+    L.polyline(routeLine.slice(returnRouteStartIndex), {
+        color: '#c4d4ce',
+        weight: 2,
+        opacity: .55,
+        dashArray: '7 8'
+    }).addTo(map);
+    routeStops.forEach((stop) => {
+        const icon = L.divIcon({
+            className: '',
+            html: `<span class="route-marker${stop.critical ? ' route-marker-critical' : ''}">${stop.day}</span>`,
+            iconSize: [30, 30],
+            iconAnchor: [15, 15],
+            popupAnchor: [0, -16]
+        });
+        const marker = L.marker(stop.coords, { icon }).addTo(map);
+        marker.bindPopup(`<strong>Día ${stop.day}</strong><br>${stop.name}`);
+        marker.on('click', () => openDay(stop.anchor));
     });
-});
-map.fitBounds(L.latLngBounds(routeLine), {
-    padding: isSmallScreen ? [18, 18] : [28, 28]
-});
+    map.fitBounds(L.latLngBounds(routeLine), {
+        padding: smallScreenQuery.matches ? [18, 18] : [28, 28]
+    });
+} else if (routeMapElement) {
+    routeMapElement.classList.add('map-unavailable');
+    routeMapElement.innerHTML = '<p>El mapa no está disponible sin conexión. El itinerario completo sigue visible debajo.</p>';
+}
 
 // ===== JARVIS MODE =====
 const jarvisData = [
@@ -224,6 +326,8 @@ let jarvisMarkers = [];
 let jarvisStopMarkers = [];
 let jarvisDayRoute = null;
 let selectedStopMarker = null;
+let jarvisTipTimer = null;
+let lastJarvisTrigger = null;
 
 function makePinIcon(s, selected) {
     const dotClass = ['j-pin-dot', s.star ? 'j-pin-star' : '', s.crit ? 'j-pin-crit' : ''].filter(Boolean).join(' ');
@@ -253,7 +357,10 @@ function selectStopMarker(marker, s) {
     }
     selectedStopMarker = marker;
     marker.setIcon(makePinIcon(s, true));
-    jarvisMap.flyTo(s.coords, 13, { animate: true, duration: 1.0 });
+    jarvisMap.flyTo(s.coords, 13, {
+        animate: !reduceMotionQuery.matches,
+        duration: reduceMotionQuery.matches ? 0 : 1
+    });
 }
 
 function jarvisMarkerIcon(idx, isActive) {
@@ -281,7 +388,13 @@ function renderJarvisDay(idx) {
         const entryClass = ['j-entry', s.star ? 'star' : '', s.crit ? 'crit-stop' : ''].filter(Boolean).join(' ') + clickable;
         const titleClass = s.star ? 'j-entry-title star-title' : 'j-entry-title';
         const subHtml = s.sub ? `<div class="j-entry-sub">${s.sub}</div>` : '';
-        return `<div class="${entryClass}"${coordsAttr}><div class="j-entry-top"><span class="j-time">${s.time}</span><div class="j-entry-content"><div class="${titleClass}">${s.icon} ${s.title}</div>${subHtml}</div></div></div>`;
+        const entryContent = `<div class="j-entry-top"><span class="j-time">${s.time}</span><div class="j-entry-content"><div class="${titleClass}">${s.icon} ${s.title}</div>${subHtml}</div></div>`;
+        if (!s.coords) return `<div class="${entryClass}">${entryContent}</div>`;
+        const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${s.coords[0]},${s.coords[1]}`;
+        return `<div class="${entryClass}">
+            <button class="j-entry-map" type="button"${coordsAttr} aria-label="Ver ${s.title.replace('⭐ ', '')} en el mapa">${entryContent}</button>
+            <div class="j-entry-actions"><a class="j-navigate" href="${directionsUrl}" target="_blank" rel="noopener">Navegar ↗</a></div>
+        </div>`;
     }).join('');
 
     const critLabel = d.critical
@@ -305,7 +418,7 @@ function renderJarvisDay(idx) {
   <div class="j-wow-text">${d.wow}</div>
 </div>`;
 
-    body.querySelectorAll('.j-entry-clickable').forEach((el) => {
+    body.querySelectorAll('.j-entry-map').forEach((el) => {
         el.addEventListener('click', () => {
             if (!jarvisMap) return;
             const lat = +el.dataset.lat;
@@ -321,13 +434,21 @@ function renderJarvisDay(idx) {
         });
     });
 
+    if (jarvisTipTimer) clearInterval(jarvisTipTimer);
     let i = 0;
     const text = d.tip;
     const tipEl = document.getElementById('jarvisTipText');
+    if (reduceMotionQuery.matches) {
+        tipEl.textContent = text;
+        return;
+    }
     tipEl.textContent = '';
-    const timer = setInterval(() => {
+    jarvisTipTimer = setInterval(() => {
         tipEl.textContent += text[i++];
-        if (i >= text.length) clearInterval(timer);
+        if (i >= text.length) {
+            clearInterval(jarvisTipTimer);
+            jarvisTipTimer = null;
+        }
     }, 18);
 }
 
@@ -361,13 +482,24 @@ function drawDayMarkers(idx) {
     if (stopsWithCoords.length) {
         const bounds = L.latLngBounds(stopsWithCoords.map((s) => s.coords));
         const isMobile = window.innerWidth <= 640;
-        jarvisMap.flyToBounds(bounds, { padding: isMobile ? [32, 32] : [60, 60], maxZoom: 12, duration: 0.9 });
+        jarvisMap.flyToBounds(bounds, {
+            padding: isMobile ? [32, 32] : [60, 60],
+            maxZoom: 12,
+            animate: !reduceMotionQuery.matches,
+            duration: reduceMotionQuery.matches ? 0 : .9
+        });
     }
 }
 
 function switchJarvisDay(idx) {
     jarvisActiveDay = idx;
-    document.querySelectorAll('.j-tab').forEach((t, i) => t.classList.toggle('active', i === idx));
+    document.querySelectorAll('.j-tab').forEach((tab, i) => {
+        const active = i === idx;
+        tab.classList.toggle('active', active);
+        tab.setAttribute('aria-selected', String(active));
+        tab.tabIndex = active ? 0 : -1;
+        if (active) tab.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    });
     if (jarvisMarkers.length) {
         jarvisMarkers.forEach((m, i) => {
             if (m) {
@@ -386,10 +518,21 @@ function buildJarvisUI() {
         tabs.innerHTML = jarvisData.map((d, i) => {
             const critClass = d.critical ? ' j-tab-crit' : '';
             const tabLabel = d.tab || `DÍA ${d.day}`;
-            return `<button class="j-tab${critClass}" data-idx="${i}">${tabLabel}</button>`;
+            return `<button class="j-tab${critClass}" type="button" role="tab" aria-selected="false" tabindex="-1" data-idx="${i}">${tabLabel}</button>`;
         }).join('');
         tabs.querySelectorAll('.j-tab').forEach((t) => {
             t.addEventListener('click', () => switchJarvisDay(+t.dataset.idx));
+            t.addEventListener('keydown', (event) => {
+                if (!['ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(event.key)) return;
+                event.preventDefault();
+                let next = +t.dataset.idx;
+                if (event.key === 'ArrowRight') next = Math.min(next + 1, jarvisData.length - 1);
+                if (event.key === 'ArrowLeft') next = Math.max(next - 1, 0);
+                if (event.key === 'Home') next = 0;
+                if (event.key === 'End') next = jarvisData.length - 1;
+                switchJarvisDay(next);
+                tabs.querySelector(`[data-idx="${next}"]`)?.focus();
+            });
         });
 
         document.getElementById('jarvisSidebarToggle').addEventListener('click', () => {
@@ -404,19 +547,19 @@ function buildJarvisUI() {
         });
     }
 
-    if (!jarvisMap) {
+    if (!jarvisMap && window.L) {
         jarvisMap = L.map('jarvisMap', {
-            zoomControl: !isSmallScreen,
+            zoomControl: !smallScreenQuery.matches,
             scrollWheelZoom: false,
             dragging: true,
             touchZoom: true,
             doubleClickZoom: false,
             tap: true,
-            attributionControl: false
+            attributionControl: true
         });
-        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(jarvisMap);
-        L.polyline(routeLine.slice(0, returnRouteStartIndex + 1), { color: '#77d8ff', weight: 2, opacity: .35, lineJoin: 'round' }).addTo(jarvisMap);
-        L.polyline(routeLine.slice(returnRouteStartIndex), { color: '#d9e8f5', weight: 1.5, opacity: .2, dashArray: '6 8' }).addTo(jarvisMap);
+        addBaseMap(jarvisMap);
+        L.polyline(routeLine.slice(0, returnRouteStartIndex + 1), { color: '#72d9c2', weight: 2, opacity: .48, lineJoin: 'round' }).addTo(jarvisMap);
+        L.polyline(routeLine.slice(returnRouteStartIndex), { color: '#c4d4ce', weight: 1.5, opacity: .26, dashArray: '6 8' }).addTo(jarvisMap);
         jarvisMarkers = jarvisData.map((d, i) => {
             const stop = routeStops.find((s) => s.day === d.day);
             if (!stop) {
@@ -427,33 +570,74 @@ function buildJarvisUI() {
             return { marker, coords: stop.coords };
         });
         jarvisMap.fitBounds(L.latLngBounds(routeLine), { padding: [24, 24] });
+    } else if (!window.L) {
+        document.getElementById('jarvisMap').innerHTML = '<p class="j-map-fallback">Mapa no disponible sin conexión.</p>';
     }
-    setTimeout(() => jarvisMap.invalidateSize(), 60);
+    if (jarvisMap) setTimeout(() => jarvisMap.invalidateSize(), 60);
 }
 
 const jarvisOverlay = document.getElementById('jarvisOverlay');
+const jarvisPanel = jarvisOverlay?.querySelector('.j-panel');
 
-document.getElementById('jarvisOpen').addEventListener('click', () => {
+function setPageInert(inert) {
+    document.querySelectorAll('.site-header, main, .site-footer').forEach((element) => {
+        element.inert = inert;
+    });
+}
+
+function openJarvis(event) {
+    if (!jarvisOverlay || !jarvisPanel) return;
+    lastJarvisTrigger = event?.currentTarget || document.activeElement;
     jarvisOverlay.classList.add('active');
-    jarvisOverlay.removeAttribute('aria-hidden');
+    jarvisOverlay.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
+    setPageInert(true);
     buildJarvisUI();
     switchJarvisDay(jarvisActiveDay);
-});
+    requestAnimationFrame(() => jarvisPanel.focus());
+}
 
-document.getElementById('jarvisClose').addEventListener('click', () => {
+function closeJarvis() {
+    if (!jarvisOverlay) return;
     jarvisOverlay.classList.remove('active');
     jarvisOverlay.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
+    setPageInert(false);
+    if (jarvisTipTimer) {
+        clearInterval(jarvisTipTimer);
+        jarvisTipTimer = null;
+    }
+    if (lastJarvisTrigger instanceof HTMLElement) lastJarvisTrigger.focus();
+}
+
+document.querySelectorAll('[data-jarvis-open]').forEach((button) => {
+    button.addEventListener('click', openJarvis);
 });
+document.getElementById('jarvisClose')?.addEventListener('click', closeJarvis);
 
 document.addEventListener('keydown', (e) => {
-    if (!jarvisOverlay.classList.contains('active')) return;
+    if (!jarvisOverlay?.classList.contains('active')) return;
     if (e.key === 'Escape') {
-        jarvisOverlay.classList.remove('active');
-        jarvisOverlay.setAttribute('aria-hidden', 'true');
-        document.body.style.overflow = '';
+        e.preventDefault();
+        closeJarvis();
     }
-    if (e.key === 'ArrowRight') switchJarvisDay(Math.min(jarvisActiveDay + 1, jarvisData.length - 1));
-    if (e.key === 'ArrowLeft') switchJarvisDay(Math.max(jarvisActiveDay - 1, 0));
+    if (e.key !== 'Tab' || !jarvisPanel) return;
+
+    const focusable = [...jarvisPanel.querySelectorAll(
+        'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    )].filter((element) => !element.closest('[aria-hidden="true"]'));
+    if (!focusable.length) {
+        e.preventDefault();
+        jarvisPanel.focus();
+        return;
+    }
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+    }
 });

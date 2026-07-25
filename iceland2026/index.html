@@ -6,59 +6,100 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="google" content="notranslate">
 <meta http-equiv="Content-Language" content="es">
-<title>Iceland 2026</title>
+<meta name="theme-color" content="#07110f">
+<meta name="description" content="Roadbook de Islandia 2026: ruta en camper, mapa, campings y paradas de la Costa Sur.">
+<title>Islandia 2026 · Roadbook</title>
 <link rel="icon" href="../logo.png" type="image/png">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
     crossorigin="">
 <link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/refresh.css">
 </head>
 <body>
+<a class="skip-link" href="#library">Saltar al itinerario</a>
+<div class="scroll-progress" aria-hidden="true"><span id="scrollProgress"></span></div>
 <header class="site-header">
 <div class="site-header-inner">
 <a class="brand" href="../">
 <img src="../logo.png" alt="">
-<span>Gooligoog</span>
+<span><strong>Gooligoog</strong><small>Roadbooks</small></span>
 </a>
 <nav aria-label="Navegación principal">
-<a href="../">Viajes</a>
-<a href="#library">Roadbook</a>
-<a href="#places">Lugares</a>
+<a href="../">Inicio</a>
+<a href="#library" data-nav="library">Ruta</a>
+<a href="#logistics" data-nav="logistics">Campings</a>
+<a href="#highlights" data-nav="highlights">Postales</a>
 </nav>
 </div>
 </header>
 
-<section class="hero">
+<section class="hero" id="top">
 <div class="hero-inner">
 <div class="hero-copy">
-<h1><img class="title-icon" src="../logo.png" alt="">ICELAND 2026</h1>
+<p class="hero-eyebrow"><span></span>Roadbook 2026 · Costa Sur</p>
+<h1><span>ISLANDIA</span><em>al borde del mundo</em></h1>
 <p>
-Del 31 de agosto al 7 de septiembre: vuelo, camper, volcanes, glaciares, playas negras y montañas imposibles.
-No es un viaje normal. Es una expedición cinematográfica por Islandia.
+Ocho días entre lava, glaciares, playas negras y montañas imposibles.
+Una expedición en camper del 31 de agosto al 7 de septiembre.
 </p>
+<div class="hero-facts" aria-label="Resumen del viaje">
+<span><strong>8</strong> días</span>
+<span><strong>Camper</strong> roadtrip</span>
+<span><strong>15:50</strong> Zodiac</span>
 </div>
-<div class="route-map" aria-label="Mapa de ruta Iceland 2026">
-<div class="map-title"><strong>Ruta real</strong><span>OpenStreetMap</span></div>
-<div id="routeMap" class="real-map" role="img" aria-label="Mapa real de la ruta Iceland 2026"></div>
-<p class="map-note">Toca un marcador para ver el tramo y saltar al dia. En mobile el mapa queda fijo para no interrumpir el scroll.</p>
+<div class="hero-actions">
+<a class="primary-action" href="#library">Ver ruta día a día <span aria-hidden="true">↓</span></a>
+<button class="secondary-action" type="button" data-jarvis-open>Activar Jarvis <span aria-hidden="true">⌁</span></button>
+</div>
+</div>
+<div class="route-map" aria-label="Mapa interactivo de la ruta por Islandia">
+<div class="map-title">
+<span><i aria-hidden="true"></i>Ruta en camper</span>
+<strong>KEF ↔ Vestrahorn</strong>
+</div>
+<div id="routeMap" class="real-map" role="region" aria-label="Mapa interactivo de la ruta Islandia 2026"></div>
+<div class="map-footer">
+<p class="map-note">Selecciona un número para abrir ese día del roadbook.</p>
+<span class="map-legend"><i></i> Ida <i></i> Regreso</span>
+</div>
+<noscript><p class="map-fallback">Activa JavaScript para ver el mapa interactivo.</p></noscript>
 </div>
 </div>
 </section>
 
+<main>
 <div class="container">
 
 <section class="itinerary" id="library">
-<h2><img class="heading-icon" src="../logo.png" alt="">Roadbook Iceland 2026</h2>
-<p>
-Itinerario real de camper: horarios, rutas, paradas clave, supermercados, gasolina y campings.
-</p>
-<button class="jarvis-btn" id="jarvisOpen">🤖 MODO JARVIS</button>
-<div class="trip-summary">
-<div class="summary-pill"><strong>31 ago - 7 sept</strong><span>Washington → KEF → Ring Road sur → Washington</span></div>
-<div class="summary-pill"><strong>Modo</strong><span>Camper + campings estratégicos</span></div>
-<div class="summary-pill"><strong>Clave</strong><span>Día 4: S1 Glacier Trail + Fjallsárlón opcional + Zodiac 15:50</span></div>
-<div class="summary-pill"><strong>Nuevo</strong><span>Descanso primero, Reykjadalur y Viking Village Film Set incluidos</span></div>
+<div class="section-heading">
+<div>
+<p class="section-kicker">Misión · Islandia 2026</p>
+<h2>La ruta, día a día</h2>
+<p>Horarios, paradas clave, kilómetros y campings en una sola vista.</p>
 </div>
+<div class="section-actions">
+<button class="quiet-action" id="toggleDays" type="button" aria-pressed="false">Abrir todos</button>
+<button class="jarvis-btn" id="jarvisOpen" type="button" data-jarvis-open><span aria-hidden="true">⌁</span> Modo Jarvis</button>
+</div>
+</div>
+<div class="trip-summary">
+<div class="summary-pill"><span class="summary-icon" aria-hidden="true">01</span><strong>31 ago — 7 sept</strong><span>Washington → KEF → Costa Sur</span></div>
+<div class="summary-pill"><span class="summary-icon" aria-hidden="true">02</span><strong>Camper</strong><span>Seis noches en campings estratégicos</span></div>
+<div class="summary-pill"><span class="summary-icon" aria-hidden="true">03</span><strong>Día clave</strong><span>S1 + Zodiac 15:50 + Diamond Beach</span></div>
+<div class="summary-pill"><span class="summary-icon" aria-hidden="true">04</span><strong>Regla de oro</strong><span>Clima y descanso mandan sobre el plan</span></div>
+</div>
+
+<nav class="day-switcher" aria-label="Acceso rápido por día">
+<a href="#day-0" data-day-target="day-0"><small>31 ago</small><strong>Salida</strong></a>
+<a href="#day-1" data-day-target="day-1"><small>1 sept</small><strong>Día 1</strong></a>
+<a href="#day-2" data-day-target="day-2"><small>2 sept</small><strong>Día 2</strong></a>
+<a href="#day-3" data-day-target="day-3"><small>3 sept</small><strong>Día 3</strong></a>
+<a href="#day-4" data-day-target="day-4" class="is-critical"><small>4 sept</small><strong>Día 4</strong></a>
+<a href="#day-5" data-day-target="day-5"><small>5 sept</small><strong>Día 5</strong></a>
+<a href="#day-6" data-day-target="day-6"><small>6 sept</small><strong>Día 6</strong></a>
+<a href="#day-7" data-day-target="day-7"><small>7 sept</small><strong>Regreso</strong></a>
+</nav>
 
 <div class="timeline-grid">
 <details class="timeline-day" id="day-0">
@@ -222,7 +263,7 @@ Itinerario real de camper: horarios, rutas, paradas clave, supermercados, gasoli
 <p class="quick-note">🧠 Lectura rápida: el día 1 empieza con dormir sí o sí. Día 4 queda como S1 Glacier Trail + Fjallsárlón opcional + Zodiac 15:50 + Diamond Beach.</p>
 </section>
 
-<section class="logistics">
+<section class="logistics" id="logistics">
 <details class="travel-panel">
 <summary>
 <span class="panel-icon">🚐</span>
@@ -372,12 +413,14 @@ Itinerario real de camper: horarios, rutas, paradas clave, supermercados, gasoli
 </div>
 </section>
 
-<div class="highlight-heading" aria-label="Highlights visuales">
+<section class="highlights" id="highlights" aria-labelledby="highlightsTitle">
+<div class="highlight-heading">
 <p class="section-kicker">Highlights visuales</p>
-<h2><img class="heading-icon" src="../logo.png" alt="">Paradas destacadas</h2>
+<h2 id="highlightsTitle">Postales del camino</h2>
+<p>Una vista previa de los paisajes que marcan cada tramo.</p>
 </div>
 
-<div class="card">
+<div class="card accent-sky">
 <div class="card-gallery">
 <img src="img/hallgrimskirkja-1.jpg" alt="Hallgrímskirkja en Reykjavik" loading="lazy">
 <img src="img/hallgrimskirkja-2.jpg" alt="Fachada de Hallgrímskirkja en Reykjavik" loading="lazy">
@@ -395,7 +438,7 @@ La entrada oficial a Islandia.
 </div>
 </div>
 
-<div class="card">
+<div class="card accent-moss">
 <div class="card-gallery">
 <img src="img/thingvellir-1.jpg" alt="Paisaje real de Þingvellir National Park" loading="lazy">
 <img src="img/thingvellir-2.jpg" alt="Valle rocoso de Þingvellir en Islandia" loading="lazy">
@@ -413,7 +456,7 @@ Uno de los lugares más épicos y simbólicos del planeta.
 </div>
 </div>
 
-<div class="card">
+<div class="card accent-gold">
 <div class="card-gallery">
 <img src="img/skogafoss-1.jpg" alt="Skógafoss con arcoíris frente a la cascada" loading="lazy">
 <img src="img/skogafoss-2.jpg" alt="Skógafoss vista de frente" loading="lazy">
@@ -431,7 +474,7 @@ El sonido del agua literalmente retumba en el pecho.
 </div>
 </div>
 
-<div class="card">
+<div class="card accent-coral">
 <div class="card-gallery">
 <img src="img/reynisfjara-1.jpg" alt="Arena negra de Reynisfjara con formaciones rocosas" loading="lazy">
 <img src="img/reynisfjara-2.jpg" alt="Columnas basálticas en Reynisfjara" loading="lazy">
@@ -449,7 +492,7 @@ Parece un planeta alienígena.
 </div>
 </div>
 
-<div class="card">
+<div class="card accent-ice">
 <div class="card-gallery">
 <img src="img/fjadrargljufur-1.jpg" alt="Cañón Fjaðrárgljúfur en Islandia" loading="lazy">
 <img src="img/fjadrargljufur-2.jpg" alt="Vista del cañón Fjaðrárgljúfur" loading="lazy">
@@ -467,7 +510,7 @@ Parece sacado de una película de fantasía.
 </div>
 </div>
 
-<div class="card">
+<div class="card accent-blue">
 <div class="card-gallery">
 <img src="img/jokulsarlon-1.jpg" alt="Jökulsárlón con icebergs flotando" loading="lazy">
 <img src="img/jokulsarlon-2.jpg" alt="Iceberg azul en Jökulsárlón" loading="lazy">
@@ -485,7 +528,7 @@ Uno de los lugares más impresionantes de toda Islandia.
 </div>
 </div>
 
-<div class="card">
+<div class="card accent-violet">
 <div class="card-gallery">
 <img src="img/diamond-beach-1.jpg" alt="Bloques de hielo sobre la arena negra de Diamond Beach" loading="lazy">
 <img src="img/diamond-beach-2.jpg" alt="Hielo transparente en Diamond Beach" loading="lazy">
@@ -503,7 +546,7 @@ El contraste más surrealista del viaje.
 </div>
 </div>
 
-<div class="card">
+<div class="card accent-rose">
 <div class="card-gallery">
 <img src="img/vestrahorn-1.jpg" alt="Montañas Vestrahorn en Islandia" loading="lazy">
 <img src="img/vestrahorn-2.jpg" alt="Vestrahorn junto a la costa sur de Islandia" loading="lazy">
@@ -521,7 +564,7 @@ Esto es literalmente portada de National Geographic.
 </div>
 </div>
 
-<div class="card">
+<div class="card accent-ember">
 <div class="card-gallery">
 <img src="img/vestrahorn-1.jpg" alt="Entorno de Vestrahorn cerca de Stokksnes" loading="lazy">
 <img src="img/vestrahorn-2.jpg" alt="Stokksnes Mirror Beach junto a Vestrahorn" loading="lazy">
@@ -539,28 +582,31 @@ Ese era el sitio faltante del sábado 05 de septiembre.
 </div>
 </div>
 
+</section>
 </div>
+</main>
 
 <footer class="site-footer">
-<span>Gooligoog</span>
+<div><span>Gooligoog</span><small>Islandia · 2026</small></div>
 <p>Del sueño al mapa. Del mapa a la memoria.</p>
+<a href="#top">Volver arriba ↑</a>
 </footer>
 
 <div id="jarvisOverlay" class="j-overlay" aria-hidden="true">
-<div class="j-panel" role="dialog" aria-label="MODO JARVIS — Misión Islandia 2026">
+<div class="j-panel" role="dialog" aria-modal="true" aria-labelledby="jarvisTitle" tabindex="-1">
   <header class="j-header">
     <div class="j-brand">
       <span class="j-dot"></span>
-      <span>JARVIS</span>
+      <span id="jarvisTitle">JARVIS</span>
       <span class="j-mission-label">MISSION: ICELAND 2026</span>
     </div>
-    <button class="j-close" id="jarvisClose" aria-label="Cerrar JARVIS">✕ EXIT</button>
+    <button class="j-close" id="jarvisClose" type="button" aria-label="Cerrar JARVIS">✕ EXIT</button>
   </header>
   <div class="j-map-wrap">
     <div id="jarvisMap" class="j-map"></div>
-    <nav class="j-tabs" id="jarvisTabs" aria-label="Días"></nav>
+    <nav class="j-tabs" id="jarvisTabs" role="tablist" aria-label="Días"></nav>
     <div class="j-sidebar" id="jarvisSidebar">
-      <button class="j-sidebar-toggle" id="jarvisSidebarToggle" title="Ocultar panel">◀</button>
+      <button class="j-sidebar-toggle" id="jarvisSidebarToggle" type="button" title="Ocultar panel" aria-label="Ocultar panel">◀</button>
       <div class="j-body" id="jarvisBody" tabindex="0"></div>
     </div>
   </div>
