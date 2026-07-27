@@ -227,6 +227,145 @@ if (window.L && routeMapElement) {
     routeMapElement.innerHTML = '<p>El mapa no está disponible sin conexión. El itinerario completo sigue visible debajo.</p>';
 }
 
+const reviewData = {
+    'troll-skaftafell': {
+        eyebrow: 'Review · Día 4 · Glaciar guiado',
+        title: 'Tröll Skaftafell · 3 h',
+        verdict: 'No lo leería como una “caminata larga”, sino como una mini expedición sobre hielo: crampones, guía, grietas, morrena, viento frío y esa sensación rara de estar pisando un ser vivo que se mueve lento.',
+        stats: [
+            ['Duración', '3 h total'],
+            ['En el hielo', '1–1.5 h aprox.'],
+            ['Dificultad', 'Fácil–moderada'],
+            ['Llegada', '20 min antes']
+        ],
+        blocks: [
+            {
+                label: 'Cómo se siente',
+                text: 'La parte memorable no es la distancia: es el cambio de textura. Sales de la camper/carretera, te equipan, haces una aproximación corta y de pronto estás sobre Falljökull con piolet y crampones. Es más “wow controlado” que trekking duro.'
+            },
+            {
+                label: 'Qué se camina',
+                text: 'Según Tröll, la logística incluye base de encuentro, equipo de seguridad, traslado corto hacia el glaciar, caminata de aproximación y luego exploración guiada sobre el hielo. Dependiendo de la temporada pueden aparecer grietas, formas azules, moulins o hielo más gris de verano.'
+            },
+            {
+                label: 'Nivel realista',
+                text: 'Fácil–moderado si van descansados y con botas correctas. El cansancio del Día 4 viene más por la salida temprana desde Skógar + manejar + bote 15:50 que por la actividad en sí.'
+            },
+            {
+                label: 'Equipo mental Jarvis',
+                text: 'Regla de oro: llegar sin drama. N1 Kirkjubæjarklaustur es parada express; nada de convertirla en desayuno largo. Llevar capas, guantes, gorro, agua pequeña y cero jeans.'
+            }
+        ],
+        sources: [
+            { label: 'Tröll · tour oficial 3 h', url: 'https://troll.is/tour/skaftafell-3-hour-glacier-hike/' },
+            { label: 'Wikiloc · track de referencia en Skaftafell', url: 'https://www.wikiloc.com/hiking-trails/skaftafellsjokull-33770401' }
+        ]
+    }
+};
+
+const reviewOverlay = document.getElementById('reviewOverlay');
+const reviewPanel = reviewOverlay?.querySelector('.review-panel');
+const reviewBody = document.getElementById('reviewBody');
+let lastReviewTrigger = null;
+let reviewPreservedBodyLock = false;
+
+function escapeHtml(value) {
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function renderReview(review) {
+    const statsHtml = review.stats.map(([label, value]) => `
+        <div><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>
+    `).join('');
+    const blocksHtml = review.blocks.map((block) => `
+        <section>
+            <h3>${escapeHtml(block.label)}</h3>
+            <p>${escapeHtml(block.text)}</p>
+        </section>
+    `).join('');
+    const sourcesHtml = review.sources.map((source) => `
+        <a href="${escapeHtml(source.url)}" target="_blank" rel="noopener">${escapeHtml(source.label)} ↗</a>
+    `).join('');
+
+    reviewBody.innerHTML = `
+        <p class="review-eyebrow">${escapeHtml(review.eyebrow)}</p>
+        <h2 id="reviewTitle">${escapeHtml(review.title)}</h2>
+        <p class="review-verdict">${escapeHtml(review.verdict)}</p>
+        <div class="review-stats">${statsHtml}</div>
+        <div class="review-sections">${blocksHtml}</div>
+        <div class="review-sources"><span>Fuentes usadas</span>${sourcesHtml}</div>
+    `;
+}
+
+function openReview(key, event) {
+    const review = reviewData[key];
+    if (!review || !reviewOverlay || !reviewPanel || !reviewBody) return;
+    lastReviewTrigger = event?.target?.closest('[data-review]') || document.activeElement;
+    reviewPreservedBodyLock = document.body.style.overflow === 'hidden';
+    renderReview(review);
+    reviewOverlay.classList.add('active');
+    reviewOverlay.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    requestAnimationFrame(() => reviewPanel.focus());
+}
+
+function closeReview() {
+    if (!reviewOverlay) return;
+    reviewOverlay.classList.remove('active');
+    reviewOverlay.setAttribute('aria-hidden', 'true');
+    if (!reviewPreservedBodyLock) document.body.style.overflow = '';
+    if (lastReviewTrigger instanceof HTMLElement) lastReviewTrigger.focus();
+}
+
+document.addEventListener('click', (event) => {
+    const closeTrigger = event.target.closest('[data-review-close]');
+    if (closeTrigger) {
+        event.preventDefault();
+        closeReview();
+        return;
+    }
+
+    const reviewTrigger = event.target.closest('[data-review]');
+    if (!reviewTrigger) return;
+    event.preventDefault();
+    event.stopPropagation();
+    openReview(reviewTrigger.dataset.review, event);
+});
+
+document.addEventListener('keydown', (event) => {
+    if (!reviewOverlay?.classList.contains('active')) return;
+    if (event.key === 'Escape') {
+        event.preventDefault();
+        event.stopPropagation();
+        closeReview();
+        return;
+    }
+    if (event.key !== 'Tab' || !reviewPanel) return;
+
+    const focusable = [...reviewPanel.querySelectorAll(
+        'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    )];
+    if (!focusable.length) {
+        event.preventDefault();
+        reviewPanel.focus();
+        return;
+    }
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+    }
+}, true);
+
 // ===== JARVIS MODE =====
 const jarvisData = [
     {
@@ -292,7 +431,7 @@ const jarvisData = [
         stops: [
             { time: 'Salida', icon: '🏕️', title: 'Skógar Campsite', coords: [63.5277, -19.5120] },
             { time: '⛽ Rápido', icon: '⛽', title: 'N1 Kirkjubæjarklaustur', sub: 'Repostar breve y continuar; actividad con horario fijo.', coords: [63.7897, -18.0630] },
-            { time: '09:30', icon: '🥾', title: '⭐ Tröll Expeditions Skaftafell', sub: 'Tour guiado Tröll Skaftafell, duración 3 h.', star: true, crit: true, coords: [64.0167, -16.9667] },
+            { time: '09:30', icon: '🥾', title: '⭐ Tröll Expeditions Skaftafell', sub: 'Tour guiado Tröll Skaftafell, duración 3 h.', star: true, crit: true, coords: [64.0167, -16.9667], review: 'troll-skaftafell' },
             { time: 'Almuerzo', icon: '🧊', title: 'Jökulsárlón', sub: 'Laguna, icebergs y comida antes del bote.', coords: [64.0481, -16.1794] },
             { time: 'Después', icon: '🅿️', title: 'Jökulsárlón Glacier Lagoon Parking', coords: [64.0478, -16.1782] },
             { time: '15:50', icon: '🚤', title: '⭐ Glacier Lagoon Trip Boat', sub: 'Paseo en bote reservado.', star: true, crit: true, coords: [64.0481, -16.1794] },
@@ -421,9 +560,10 @@ function renderJarvisDay(idx) {
         const entryContent = `<div class="j-entry-top"><span class="j-time">${s.time}</span><div class="j-entry-content"><div class="${titleClass}">${s.icon} ${s.title}</div>${subHtml}</div></div>`;
         if (!s.coords) return `<div class="${entryClass}">${entryContent}</div>`;
         const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${s.coords[0]},${s.coords[1]}`;
+        const reviewAction = s.review ? `<button class="j-review-action" type="button" data-review="${escapeHtml(s.review)}">Review</button>` : '';
         return `<div class="${entryClass}">
             <button class="j-entry-map" type="button"${coordsAttr} aria-label="Ver ${s.title.replace('⭐ ', '')} en el mapa">${entryContent}</button>
-            <div class="j-entry-actions"><a class="j-navigate" href="${directionsUrl}" target="_blank" rel="noopener">Navegar ↗</a></div>
+            <div class="j-entry-actions">${reviewAction}<a class="j-navigate" href="${directionsUrl}" target="_blank" rel="noopener">Navegar ↗</a></div>
         </div>`;
     }).join('');
 
@@ -574,7 +714,8 @@ function drawDayMarkers(idx) {
         marker._baseCoords = s.coords;
         marker._stopIndex = d.stops.indexOf(s);
         const subHtml = s.sub ? `<small>${s.sub}</small>` : '';
-        marker.bindPopup(`<strong>${s.icon} ${s.title}</strong>${subHtml ? '<br>' + subHtml : ''}`);
+        const reviewHtml = s.review ? `<br><button class="j-popup-review" type="button" data-review="${escapeHtml(s.review)}">Ver review</button>` : '';
+        marker.bindPopup(`<strong>${s.icon} ${s.title}</strong>${subHtml ? '<br>' + subHtml : ''}${reviewHtml}`);
         marker.on('click', () => { selectStopMarker(marker, s); setTimeout(() => marker.openPopup(), 600); });
         jarvisStopMarkers.push(marker);
     });
