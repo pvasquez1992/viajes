@@ -115,7 +115,7 @@ const routeStops = [
     { day: 1, name: 'Llegada + Reykjavík', coords: [64.0830, -21.9070], anchor: 'day-1' },
     { day: 2, name: 'Golden Circle + Reykjadalur', coords: [64.0416, -20.8859], anchor: 'day-2' },
     { day: 3, name: 'Costa Sur + Skógar', coords: [63.5322, -19.5114], anchor: 'day-3' },
-    { day: 4, name: 'Tröll S1 + Jökulsárlón + bote 15:50', coords: [64.0481, -16.1794], anchor: 'day-4', critical: true },
+    { day: 4, name: 'Tröll Skaftafell 3 h + Jökulsárlón + bote 15:50', coords: [64.0481, -16.1794], anchor: 'day-4', critical: true },
     { day: 5, name: 'Höfn + termales + Vestrahorn', coords: [64.2440, -14.9650], anchor: 'day-5' },
     { day: 6, name: 'Fjaðrárgljúfur + Vík + Dyrhólaey', coords: [63.7715, -18.1718], anchor: 'day-6' },
     { day: 7, name: 'Devolución + FI645', coords: [63.9850, -22.6056], anchor: 'day-7' }
@@ -194,15 +194,15 @@ if (window.L && routeMapElement) {
         doubleClickZoom: !smallScreenQuery.matches,
         tap: true
     });
-    addBaseMap(map);
+    addBaseMap(map, 'street');
     L.polyline(routeLine.slice(0, returnRouteStartIndex + 1), {
-        color: '#72d9c2',
+        color: '#0f766e',
         weight: 4,
         opacity: .92,
         lineJoin: 'round'
     }).addTo(map);
     L.polyline(routeLine.slice(returnRouteStartIndex), {
-        color: '#c4d4ce',
+        color: '#475569',
         weight: 2,
         opacity: .55,
         dashArray: '7 8'
@@ -287,19 +287,19 @@ const jarvisData = [
         wow: 'Seljalandsfoss, Gljúfrabúi y Skógafoss en el mismo día: este es el primer bloque grande de cascadas.'
     },
     {
-        day: 4, name: 'Tröll S1 + Jökulsárlón + bote', date: '04-sept-2026',
+        day: 4, name: 'Tröll Skaftafell + Jökulsárlón + bote', date: '04-sept-2026',
         critical: true,
         stops: [
             { time: 'Salida', icon: '🏕️', title: 'Skógar Campsite', coords: [63.5277, -19.5120] },
             { time: '⛽ Rápido', icon: '⛽', title: 'N1 Kirkjubæjarklaustur', sub: 'Repostar breve y continuar; actividad con horario fijo.', coords: [63.7897, -18.0630] },
-            { time: '09:30', icon: '🥾', title: '⭐ Tröll Expeditions Skaftafell', sub: 'Hiking guiado Skaftafellsjökull S1, aprox. 9:30 a 12:30.', star: true, crit: true, coords: [64.0167, -16.9667] },
+            { time: '09:30', icon: '🥾', title: '⭐ Tröll Expeditions Skaftafell', sub: 'Tour guiado Tröll Skaftafell, duración 3 h.', star: true, crit: true, coords: [64.0167, -16.9667] },
             { time: 'Almuerzo', icon: '🧊', title: 'Jökulsárlón', sub: 'Laguna, icebergs y comida antes del bote.', coords: [64.0481, -16.1794] },
             { time: 'Después', icon: '🅿️', title: 'Jökulsárlón Glacier Lagoon Parking', coords: [64.0478, -16.1782] },
             { time: '15:50', icon: '🚤', title: '⭐ Glacier Lagoon Trip Boat', sub: 'Paseo en bote reservado.', star: true, crit: true, coords: [64.0481, -16.1794] },
             { time: 'Después', icon: '💎', title: '⭐ Diamond Beach', star: true, coords: [64.0393, -16.1869] },
             { time: 'Noche', icon: '🏕️', title: 'Skaftafell Campground', sub: 'Regresar, cenar, ducharse y descansar.', coords: [64.0100, -16.9800] }
         ],
-        tip: 'La parada en N1 Kirkjubæjarklaustur debe ser rápida: Tröll S1 va de 9:30 a 12:30 y el bote de Jökulsárlón está reservado para las 15:50.',
+        tip: 'La parada en N1 Kirkjubæjarklaustur debe ser rápida: Tröll Skaftafell dura 3 h y el bote de Jökulsárlón está reservado para las 15:50.',
         wow: 'Jökulsárlón + bote + Diamond Beach es el centro emocional del viaje: hielo azul, laguna glaciar y arena negra en una sola tarde.'
     },
     {

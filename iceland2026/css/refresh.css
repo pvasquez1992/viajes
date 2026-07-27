@@ -399,6 +399,10 @@ summary:focus-visible,
     background:#08110f;
 }
 
+.real-map .leaflet-tile{
+    filter:saturate(.82) brightness(.9) contrast(.94);
+}
+
 .leaflet-container{
     font-family:inherit;
 }
