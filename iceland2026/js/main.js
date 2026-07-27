@@ -118,11 +118,11 @@ const routeStops = [
     { day: 4, name: 'Tröll Skaftafell 3 h + Jökulsárlón + bote 15:50', coords: [64.0481, -16.1794], anchor: 'day-4', critical: true },
     { day: 5, name: 'Höfn + termales + Vestrahorn', coords: [64.2440, -14.9650], anchor: 'day-5' },
     { day: 6, name: 'Fjaðrárgljúfur + Vík + Dyrhólaey', coords: [63.7715, -18.1718], anchor: 'day-6' },
-    { day: 7, name: 'Devolución + FI645', coords: [63.9850, -22.6056], anchor: 'day-7' }
+    { day: 7, name: 'Blue Lagoon + devolución + FI645', coords: [63.8804, -22.4495], anchor: 'day-7' }
 ];
 const routeLine = [
     [63.9850, -22.6056],
-    [63.8424, -22.4328],
+    [64.1377, -21.9344],
     [64.1420, -21.9266],
     [64.1475, -21.9220],
     [64.1503, -21.9328],
@@ -162,6 +162,8 @@ const routeLine = [
     [63.4062, -19.0442],
     [63.4031, -19.1288],
     [63.7529, -20.2243],
+    [64.1377, -21.9344],
+    [63.8804, -22.4495],
     [63.9980, -22.5630],
     [63.9920, -22.5500],
     [63.9850, -22.6056]
@@ -281,7 +283,7 @@ const reviewData = {
         eyebrow: 'Día 1 · Equipo · BSÍ Reykjavík',
         title: 'Iceland Camping Equipment',
         verdict: 'Primera parada de equipo: recoger bastones y rain pants para los dos antes de comenzar la ruta.',
-        stats: [['Para', '2 personas'], ['Recoger', '09:00'], ['Lugar', 'Terminal BSÍ'], ['Horario', '09:00–17:00']],
+        stats: [['Para', '2 personas'], ['Recoger', '09:35'], ['Lugar', 'Terminal BSÍ'], ['Devolver', '09:00 · día 7']],
         feel: 'Parada práctica y corta dentro de la terminal BSÍ.',
         route: 'Recoger dos pares de bastones ajustables y rain pants reservados para ambos.',
         level: 'Fácil; estacionar, comprobar tallas y revisar el equipo antes de salir.',
@@ -398,7 +400,7 @@ const reviewData = {
         feel: 'La parte memorable no es la distancia: es el cambio de textura. Sales de la carretera, te equipan y de pronto estás sobre hielo con piolet y crampones.',
         route: 'El Wikiloc que pasaste registra una experiencia con Tröll: bus corto al parking del glaciar, inicio a nivel de laguna, subida progresiva, crampones y recorrido entre grietas/moulins.',
         level: 'Fácil–moderado si van descansados y con botas correctas. El cansancio del Día 4 viene más por salida temprana + manejo + bote 15:50.',
-        jarvis: 'N1 Kirkjubæjarklaustur es parada express; nada de desayuno largo. Capas, guantes, gorro, agua pequeña y cero jeans.',
+        jarvis: 'Salir con el tanque lleno. N1 Kirkjubæjarklaustur queda solo para emergencia. Capas, guantes, gorro, agua pequeña y cero jeans.',
         sources: [
             { label: 'Tröll · tour oficial 3 h', url: 'https://troll.is/tour/skaftafell-3-hour-glacier-hike/' },
             { label: 'Wikiloc · Iceland 05 Skaftafell Glacier Travelling', url: 'https://www.wikiloc.com/snowshoeing-trails/iceland-05-skaftafell-glacier-travelling-148975965' }
@@ -765,10 +767,11 @@ const jarvisData = [
     {
         day: 0, label: 'SALIDA', tab: 'SALIDA', name: 'Washington → Islandia', date: '31-ago-2026',
         stops: [
-            { time: 'Inicio', icon: '🏠', title: '1201 S Eads St' },
-            { time: 'Metro', icon: '🚇', title: 'Pentagon City Metro Station' },
-            { time: 'IAD', icon: '✈️', title: 'Aeropuerto Washington-Dulles' },
-            { time: '20:30', icon: '🛫', title: 'Icelandair FI644', sub: 'Noche en el avión rumbo a Keflavík.' }
+            { time: '16:30', icon: '🏠', title: '1201 S Eads St', sub: 'Salir con equipaje y documentos.' },
+            { time: '16:40–18:00', icon: '🚇', title: 'Pentagon City → IAD', sub: 'Traslado al aeropuerto.' },
+            { time: '18:00–20:00', icon: '✈️', title: 'Washington Dulles', sub: 'Check-in, seguridad y comida.' },
+            { time: '20:30 🔒', icon: '🛫', title: 'Icelandair FI644', sub: 'Vuelo nocturno IAD → KEF.' },
+            { time: '06:25 +1 🔒', icon: '🛬', title: 'Llegada a Keflavík' }
         ],
         tip: 'Día de transición. Lleva batería, abrigo ligero y lo necesario para dormir algo en el vuelo.',
         wow: 'El viaje empieza antes de Islandia: salir de noche desde Washington y amanecer en Keflavík ya cambia el chip completo.'
@@ -776,31 +779,43 @@ const jarvisData = [
     {
         day: 1, name: 'Llegada + Reykjavík', date: '01-sept-2026',
         stops: [
-            { time: '06:25', icon: '🛬', title: 'Llegada a Keflavík', coords: [63.9850, -22.6056] },
-            { time: '07:30', icon: '🚐', title: 'Recoger Go Camper', coords: [63.9920, -22.5500] },
-            { time: '09:00', icon: '🥾', title: 'Iceland Camping Equipment', sub: 'Recoger 2 pares de bastones y rain pants para ambos en la terminal BSÍ.', coords: [64.1377, -21.9344], review: 'iceland-camping-equipment' },
-            { time: 'Ciudad', icon: '⛪', title: '⭐ Hallgrímskirkja', star: true, coords: [64.1420, -21.9266] },
-            { time: 'Ciudad', icon: '🌊', title: 'Viajero del Sol', coords: [64.1475, -21.9220] },
-            { time: 'Ciudad', icon: '🎵', title: 'Harpa', coords: [64.1503, -21.9328] },
-            { time: '⛽ Gas', icon: '⛽', title: 'Orkan Kleppsvegur', sub: 'Parada técnica antes del camping.', coords: [64.1467, -21.8730] },
-            { time: 'Noche', icon: '🏕️', title: 'Reykjavík Eco Campsite', coords: [64.0830, -21.9070] }
+            { time: '06:25–07:15', icon: '🛬', title: 'Aeropuerto KEF', sub: 'Migración, equipaje y shuttle.', coords: [63.9850, -22.6056] },
+            { time: '07:15–07:30', icon: '🚐', title: 'Shuttle Go Campers', coords: [63.9920, -22.5500] },
+            { time: '07:30–08:45 🔒', icon: '🔑', title: 'Go Campers Iceland', sub: 'Recoger e inspeccionar la camper.', coords: [63.9920, -22.5500] },
+            { time: '08:45–09:35', icon: '🛣️', title: 'Conducción a Reykjavík' },
+            { time: '09:35–10:00', icon: '🥾', title: 'Iceland Camping Equipment', sub: 'Recoger bastones y rain pants para ambos.', coords: [64.1377, -21.9344], review: 'iceland-camping-equipment' },
+            { time: '10:00–10:15 ◇', icon: '⛽', title: 'Orkan Reykjavík', coords: [64.1467, -21.8730] },
+            { time: '10:25–11:20', icon: '⛪', title: '⭐ Hallgrímskirkja', star: true, coords: [64.1420, -21.9266] },
+            { time: '11:30–12:00', icon: '🌭', title: 'Bæjarins Beztu Pylsur', coords: [64.1506, -21.9388] },
+            { time: '12:05–12:40', icon: '🎵', title: 'Harpa', coords: [64.1503, -21.9328] },
+            { time: '12:40–13:00 ◇', icon: '🌊', title: 'Viajero del Sol', coords: [64.1475, -21.9220] },
+            { time: '13:15–13:45 🔒', icon: '🏕️', title: 'Reykjavík Eco Campsite', sub: 'Check-in y preparar la cama.', coords: [64.0830, -21.9070] },
+            { time: '13:45–17:00', icon: '😴', title: 'Descanso' },
+            { time: '17:15–18:00', icon: '🛒', title: 'Supermercado' },
+            { time: '18:15–20:00', icon: '🏕️', title: 'Reykjavík Eco Campsite', sub: 'Cena, ducha y descanso.', coords: [64.0830, -21.9070] }
         ],
-        tip: 'Orden refinado: Go Campers, Iceland Camping Equipment en BSÍ, Hallgrímskirkja, Viajero del Sol, Harpa, Orkan Kleppsvegur y Reykjavík Eco Campsite como única base del día.',
+        tip: 'Día ligero. Después de recoger equipo y recorrer tres puntos urbanos, el bloque 13:45–17:00 queda protegido para dormir.',
         wow: 'Hallgrímskirkja, el Viajero del Sol y Harpa hacen una entrada limpia a Reykjavík sin quemar energía el primer día.'
     },
     {
         day: 2, name: 'Golden Circle + Reykjadalur', date: '02-sept-2026',
         stops: [
-            { time: 'Salida', icon: '🏕️', title: 'Reykjavík Eco Campsite', coords: [64.0830, -21.9070] },
-            { time: 'Ruta', icon: '🌋', title: '⭐ Þingvellir', star: true, coords: [64.2559, -21.1295] },
-            { time: 'Ruta', icon: '🪨', title: 'Almannagjá', sub: 'Caminar por la falla tectónica dentro de Þingvellir.', coords: [64.2610, -21.1210] },
-            { time: 'Ruta', icon: '💦', title: 'Geysir / Strokkur', sub: 'Strokkur suele erupcionar cada pocos minutos.', coords: [64.3138, -20.3008] },
-            { time: 'Parada', icon: '🐴', title: 'Brú Horsefarm', sub: 'Caballos islandeses; compras opcionales.', coords: [64.1760, -20.4850] },
-            { time: 'Ruta', icon: '💧', title: 'Gullfoss Waterfall', coords: [64.3271, -20.1199] },
-            { time: 'Ruta', icon: '🌋', title: 'Kerið', sub: 'Caminar el borde; bajar al lago es opcional.', coords: [64.0416, -20.8859] },
-            { time: 'Termal', icon: '♨️', title: '⭐ Reykjadalur Hot Spring Thermal River', sub: 'Hiking, baño termal, descanso y regreso caminando.', star: true, coords: [64.0169, -21.2110] },
-            { time: '⛽ Gas', icon: '⛽', title: 'Orkan Suðurlandsvegur, Selfoss', coords: [63.9331, -20.9971] },
-            { time: 'Noche', icon: '🏕️', title: 'Camping Selfoss', coords: [63.9280, -21.0060] }
+            { time: '06:30–07:00', icon: '🏕️', title: 'Reykjavík Eco Campsite', coords: [64.0830, -21.9070] },
+            { time: '07:00–07:50', icon: '🛣️', title: 'Reykjavík → Þingvellir' },
+            { time: '07:50–09:20', icon: '🌋', title: '⭐ Þingvellir + Almannagjá', star: true, coords: [64.2559, -21.1295] },
+            { time: '09:20–10:20', icon: '🛣️', title: 'Þingvellir → Geysir' },
+            { time: '10:20–11:05', icon: '💦', title: 'Geysir / Strokkur', coords: [64.3138, -20.3008] },
+            { time: '11:10–11:35', icon: '🐴', title: 'Brú Horsefarm', coords: [64.1760, -20.4850] },
+            { time: '11:45–12:35', icon: '💧', title: 'Gullfoss', coords: [64.3271, -20.1199] },
+            { time: '12:35–13:10', icon: '🥪', title: 'Almuerzo' },
+            { time: '13:10–14:00', icon: '🛣️', title: 'Gullfoss → Kerið' },
+            { time: '14:00–14:40', icon: '🌋', title: 'Kerið', coords: [64.0416, -20.8859] },
+            { time: '14:40–15:10', icon: '🛣️', title: 'Kerið → Reykjadalur' },
+            { time: '15:10–18:30', icon: '♨️', title: '⭐ Reykjadalur', star: true, coords: [64.0169, -21.2110] },
+            { time: '18:30–18:50', icon: '🛣️', title: 'Reykjadalur → Selfoss' },
+            { time: '18:50–19:05', icon: '⛽', title: 'Orkan Selfoss', coords: [63.9331, -20.9971] },
+            { time: '19:10–19:50', icon: '🛒', title: 'Selfoss' },
+            { time: '20:00', icon: '🏕️', title: 'Camping Selfoss', coords: [63.9280, -21.0060] }
         ],
         tip: 'Orden refinado: Þingvellir, Almannagjá, Geysir, Brú Horsefarm, Gullfoss, Kerið, Reykjadalur, Orkan Selfoss y Camping Selfoss.',
         wow: 'Reykjadalur convierte el Golden Circle en algo más que paradas rápidas: termal, montaña y vapor saliendo del valle.'
@@ -808,13 +823,21 @@ const jarvisData = [
     {
         day: 3, name: 'Costa Sur + Skógar', date: '03-sept-2026',
         stops: [
-            { time: 'Salida', icon: '🏕️', title: 'Camping Selfoss', coords: [63.9280, -21.0060] },
-            { time: '⛽ Gas', icon: '⛽', title: 'N1 Hvolsvöllur', sub: 'Repostar, baños, café o snacks antes de continuar.', coords: [63.7529, -20.2243] },
-            { time: 'Ruta', icon: '💧', title: 'Seljalandsfoss', coords: [63.6156, -19.9896] },
-            { time: 'Ruta', icon: '💧', title: 'Gljúfrabúi', sub: 'Cascada escondida junto a Seljalandsfoss.', coords: [63.6210, -19.9848] },
-            { time: 'Ruta', icon: '🌊', title: '⭐ Skógafoss', star: true, coords: [63.5322, -19.5114] },
-            { time: 'Pausa', icon: '☕', title: 'Skógar', sub: 'Almuerzo, café, baños o descanso.', coords: [63.5269, -19.5060] },
-            { time: 'Noche', icon: '🏕️', title: 'Skógar Campsite', sub: 'Instalarse temprano y preparar el equipo del glaciar.', coords: [63.5277, -19.5120] }
+            { time: '07:30–08:15', icon: '🏕️', title: 'Camping Selfoss', coords: [63.9280, -21.0060] },
+            { time: '08:15–09:00', icon: '🛣️', title: 'Selfoss → Hvolsvöllur' },
+            { time: '09:00–09:15', icon: '⛽', title: 'N1 Hvolsvöllur', coords: [63.7529, -20.2243] },
+            { time: '09:15–09:35', icon: '🛣️', title: 'N1 → Seljalandsfoss' },
+            { time: '09:35–10:25', icon: '💧', title: 'Seljalandsfoss', coords: [63.6156, -19.9896] },
+            { time: '10:25–11:00', icon: '💧', title: 'Gljúfrabúi', coords: [63.6210, -19.9848] },
+            { time: '11:00–11:30', icon: '🛣️', title: 'Traslado a Skógafoss' },
+            { time: '11:30–12:30', icon: '🌊', title: '⭐ Skógafoss', star: true, coords: [63.5322, -19.5114] },
+            { time: '12:30–13:15', icon: '🥪', title: 'Skógar', coords: [63.5269, -19.5060] },
+            { time: '13:15–15:00', icon: '🏛️', title: 'Skógar Museum', coords: [63.5258, -19.4932] },
+            { time: '15:10', icon: '🏕️', title: 'Skógar Campsite', coords: [63.5277, -19.5120] },
+            { time: '15:10–18:00', icon: '😴', title: 'Descanso' },
+            { time: '18:00–19:00', icon: '🍲', title: 'Cena' },
+            { time: '19:00–20:00', icon: '🎒', title: 'Preparación del glaciar' },
+            { time: '20:30', icon: '🌙', title: 'Dormir' }
         ],
         tip: 'Orden refinado: Camping Selfoss, N1 Hvolsvöllur, Seljalandsfoss, Gljúfrabúi, Skógafoss, Skógar y Skógar Campsite.',
         wow: 'Seljalandsfoss, Gljúfrabúi y Skógafoss en el mismo día: este es el primer bloque grande de cascadas.'
@@ -823,30 +846,40 @@ const jarvisData = [
         day: 4, name: 'Tröll Skaftafell + Jökulsárlón + bote', date: '04-sept-2026',
         critical: true,
         stops: [
-            { time: 'Salida', icon: '🏕️', title: 'Skógar Campsite', coords: [63.5277, -19.5120] },
-            { time: '⛽ Rápido', icon: '⛽', title: 'N1 Kirkjubæjarklaustur', sub: 'Repostar breve y continuar; actividad con horario fijo.', coords: [63.7897, -18.0630] },
-            { time: '09:30', icon: '🥾', title: '⭐ Tröll Expeditions Skaftafell', sub: 'Tour guiado Tröll Skaftafell, duración 3 h.', star: true, crit: true, coords: [64.0167, -16.9667], review: 'troll-skaftafell' },
-            { time: 'Almuerzo', icon: '🧊', title: 'Jökulsárlón', sub: 'Laguna, icebergs y comida antes del bote.', coords: [64.0481, -16.1794] },
-            { time: 'Después', icon: '🅿️', title: 'Jökulsárlón Glacier Lagoon Parking', coords: [64.0478, -16.1782] },
-            { time: '15:50', icon: '🚤', title: '⭐ Glacier Lagoon Trip Boat', sub: 'Paseo en bote reservado.', star: true, crit: true, coords: [64.0481, -16.1794] },
-            { time: 'Después', icon: '💎', title: '⭐ Diamond Beach', star: true, coords: [64.0393, -16.1869] },
-            { time: 'Noche', icon: '🏕️', title: 'Skaftafell Campground', sub: 'Regresar, cenar, ducharse y descansar.', coords: [64.0100, -16.9800] }
+            { time: '05:45–06:10', icon: '🏕️', title: 'Skógar Campsite', coords: [63.5277, -19.5120] },
+            { time: '06:10–08:50', icon: '🛣️', title: 'Skógar → Skaftafell', sub: 'N1 Kirkjubæjarklaustur solo en emergencia.' },
+            { time: '08:50–09:30 🔒', icon: '🥾', title: '⭐ Tröll Expeditions', sub: 'Registro, equipo e instrucciones.', star: true, crit: true, coords: [64.0167, -16.9667], review: 'troll-skaftafell' },
+            { time: '09:30–12:30 🔒', icon: '🧊', title: 'Glacier Hike', sub: 'Caminata guiada sobre Vatnajökull.', crit: true, coords: [64.0167, -16.9667], review: 'troll-skaftafell' },
+            { time: '12:30–13:05', icon: '🛣️', title: 'Skaftafell → Jökulsárlón' },
+            { time: '13:05–14:00', icon: '🥪', title: 'Jökulsárlón', coords: [64.0481, -16.1794] },
+            { time: '14:00–15:20', icon: '🧊', title: 'Laguna glaciar', coords: [64.0481, -16.1794] },
+            { time: '15:20–15:50 🔒', icon: '🎟️', title: 'Check-in del bote', crit: true, coords: [64.0478, -16.1782] },
+            { time: '15:50–17:00 🔒', icon: '🚤', title: '⭐ Glacier Lagoon Boat', star: true, crit: true, coords: [64.0481, -16.1794] },
+            { time: '17:00–17:45', icon: '💎', title: '⭐ Diamond Beach', star: true, coords: [64.0393, -16.1869] },
+            { time: '17:45–18:40', icon: '🛣️', title: 'Regreso a Skaftafell' },
+            { time: '18:40–21:00', icon: '🏕️', title: 'Skaftafell Campground', coords: [64.0100, -16.9800] }
         ],
-        tip: 'La parada en N1 Kirkjubæjarklaustur debe ser rápida: Tröll Skaftafell dura 3 h y el bote de Jökulsárlón está reservado para las 15:50.',
+        tip: 'El tanque debe quedar lleno desde el día anterior. N1 Kirkjubæjarklaustur es solo una gasolinera de emergencia; proteger el registro 08:50 y el bote 15:50.',
         wow: 'Jökulsárlón + bote + Diamond Beach es el centro emocional del viaje: hielo azul, laguna glaciar y arena negra en una sola tarde.'
     },
     {
         day: 5, name: 'Höfn + termales + Vestrahorn', date: '05-sept-2026',
         stops: [
-            { time: 'Salida', icon: '🏕️', title: 'Skaftafell Campground', coords: [64.0100, -16.9800] },
-            { time: '⛽ Höfn', icon: '⛽', title: 'N1 Höfn', sub: 'Repostar, baños y revisar aire de llantas si hace falta.', coords: [64.2520, -15.2080] },
-            { time: 'Compras', icon: '🛒', title: 'Nettó', sub: 'Comida, agua, snacks y provisiones.', coords: [64.2530, -15.2090] },
-            { time: 'Termal', icon: '♨️', title: 'Hoffell Hot Tubs', sub: 'Baño termal con vistas a las montañas.', coords: [64.3970, -15.3420] },
-            { time: 'Acceso', icon: '☕', title: 'Viking Cafe & Guesthouse', sub: 'Comprar acceso a Stokksnes; café o comida opcional.', coords: [64.2490, -14.9720] },
-            { time: 'Ruta', icon: '⛰️', title: '⭐ Vestrahorn', star: true, coords: [64.2440, -14.9650] },
-            { time: 'Ruta', icon: '🪞', title: 'Stokksnes Mirror Beach', coords: [64.2468, -14.9600] },
-            { time: 'Ruta', icon: '🎬', title: '⭐ Viking Village Film Set', star: true, coords: [64.2478, -14.9580] },
-            { time: 'Noche', icon: '🏕️', title: 'Vestrahorn Camping', coords: [64.2480, -14.9820] }
+            { time: '07:30–08:00', icon: '🏕️', title: 'Skaftafell Campground', coords: [64.0100, -16.9800] },
+            { time: '08:00–09:58', icon: '🛣️', title: 'Skaftafell → Höfn' },
+            { time: '09:58–10:15', icon: '⛽', title: 'N1 Höfn', coords: [64.2520, -15.2080] },
+            { time: '10:15–10:45', icon: '🛒', title: 'Nettó', coords: [64.2530, -15.2090] },
+            { time: '10:45–11:05', icon: '🛣️', title: 'Höfn → Hoffell' },
+            { time: '11:05–12:30', icon: '♨️', title: 'Hoffell Hot Tubs', coords: [64.3970, -15.3420] },
+            { time: '12:30–13:00', icon: '🥪', title: 'Almuerzo' },
+            { time: '13:00–13:30', icon: '🛣️', title: 'Hoffell → Viking Café' },
+            { time: '13:30–14:00', icon: '☕', title: 'Viking Café', coords: [64.2490, -14.9720] },
+            { time: '14:00–15:00', icon: '⛰️', title: '⭐ Vestrahorn', star: true, coords: [64.2440, -14.9650] },
+            { time: '15:00–16:00', icon: '🪞', title: 'Mirror Beach', coords: [64.2468, -14.9600] },
+            { time: '16:00–16:40', icon: '🎬', title: '⭐ Viking Village', star: true, coords: [64.2478, -14.9580] },
+            { time: '16:45', icon: '🏕️', title: 'Vestrahorn Camping', coords: [64.2480, -14.9820] },
+            { time: '17:00–19:30', icon: '🌅', title: 'Camping / Vestrahorn' },
+            { time: '20:30', icon: '🌙', title: 'Dormir' }
         ],
         tip: 'Orden refinado: Skaftafell, N1 Höfn, Nettó, Hoffell Hot Tubs, Viking Cafe, Vestrahorn, Mirror Beach, Viking Village y Vestrahorn Camping.',
         wow: 'Vestrahorn es la montaña dramática; Stokksnes es el espejo; el Viking Village Film Set es el detalle cinematográfico que faltaba.'
@@ -854,29 +887,46 @@ const jarvisData = [
     {
         day: 6, name: 'Fjaðrárgljúfur + Vík + Dyrhólaey', date: '06-sept-2026',
         stops: [
-            { time: 'Salida', icon: '🏕️', title: 'Vestrahorn Camping', coords: [64.2480, -14.9820] },
-            { time: 'Ruta', icon: '☕', title: 'Kirkjubæjarklaustur', coords: [63.7897, -18.0630] },
-            { time: 'Cañón', icon: '🏞️', title: '⭐ Fjaðrárgljúfur', star: true, coords: [63.7715, -18.1718] },
-            { time: '⛽ Vík', icon: '⛽', title: 'Orkan Vík', sub: 'Repostar antes de Reynisfjara y Dyrhólaey.', coords: [63.4186, -19.0060] },
-            { time: 'Ruta', icon: '🏖️', title: '⭐ Reynisfjara Beach', star: true, coords: [63.4062, -19.0442] },
-            { time: 'Ruta', icon: '🪨', title: 'Dyrhólaey', coords: [63.4031, -19.1288] },
-            { time: 'Opcional', icon: '🌋', title: 'LAVA Centre', sub: 'Museo interactivo sobre volcanes si queda energía.', coords: [63.7532, -20.2241] },
-            { time: 'Noche', icon: '🏕️', title: 'Hvolsvöllur Camp Site', sub: 'Última noche: cenar, ducharse, ordenar y limpiar la camper.', coords: [63.7529, -20.2243] }
+            { time: '06:30–07:15', icon: '🏕️', title: 'Vestrahorn Camping', coords: [64.2480, -14.9820] },
+            { time: '07:15–10:15', icon: '🛣️', title: 'Vestrahorn → Kirkjubæjarklaustur' },
+            { time: '10:15–10:40', icon: '☕', title: 'Kirkjubæjarklaustur', coords: [63.7897, -18.0630] },
+            { time: '10:40–11:05 ◇', icon: '💧', title: 'Stjórnarfoss', coords: [63.7930, -18.0457] },
+            { time: '11:15–12:30', icon: '🏞️', title: '⭐ Fjaðrárgljúfur', star: true, coords: [63.7715, -18.1718] },
+            { time: '12:30–13:30', icon: '🛣️', title: 'Traslado a Vík' },
+            { time: '13:30–14:30', icon: '⛪', title: 'Vík', coords: [63.4194, -19.0097] },
+            { time: '14:30–14:45', icon: '⛽', title: 'Orkan Vík', coords: [63.4186, -19.0060] },
+            { time: '15:00–15:50', icon: '🏖️', title: '⭐ Reynisfjara', star: true, coords: [63.4062, -19.0442] },
+            { time: '16:10–17:00', icon: '🪨', title: 'Dyrhólaey', coords: [63.4031, -19.1288] },
+            { time: '17:00–18:10', icon: '🛣️', title: 'Dyrhólaey → Hvolsvöllur' },
+            { time: '18:10–19:00', icon: '🏕️', title: 'Hvolsvöllur Camp Site', coords: [63.7529, -20.2243] },
+            { time: '19:00–20:30', icon: '🧹', title: 'Preparación final' },
+            { time: '21:00', icon: '🌙', title: 'Dormir' }
         ],
-        tip: 'Día largo. El nuevo orden mete Fjaðrárgljúfur antes de Vík; luego Orkan Vík, Reynisfjara, Dyrhólaey, LAVA Centre opcional y Hvolsvöllur.',
+        tip: 'Día largo. Si hay retraso, Stjórnarfoss es lo primero que se elimina; mantener Fjaðrárgljúfur, Reynisfjara y Dyrhólaey.',
         wow: 'El regreso por la Costa Sur repite paisajes con otra luz: Fjaðrárgljúfur, Reynisfjara y Dyrhólaey hacen un cierre fuerte.'
     },
     {
-        day: 7, name: 'Regreso a Washington', date: '07-sept-2026',
+        day: 7, name: 'Blue Lagoon + regreso', date: '07-sept-2026',
         stops: [
-            { time: 'Salida', icon: '🏕️', title: 'Hvolsvöllur Camp Site', coords: [63.7529, -20.2243] },
-            { time: '⛽ Final', icon: '⛽', title: 'Orkan Fitjar, Reykjanesbær', sub: 'Llenar completamente el tanque y guardar el recibo.', coords: [63.9980, -22.5630] },
-            { time: '12:00', icon: '🔑', title: 'Go Campers Iceland', sub: 'Entregar la camper y completar inspección final.', coords: [63.9920, -22.5500] },
-            { time: 'KEF', icon: '🛂', title: 'Aeropuerto Internacional de Keflavík', sub: 'Check-in, seguridad y comida antes del vuelo.', coords: [63.9850, -22.6056] },
-            { time: '16:50', icon: '🛫', title: 'Icelandair FI645', sub: 'Salida de Keflavík hacia Washington.' },
-            { time: '19:20', icon: '🛬', title: 'Llegada a Washington' }
+            { time: '06:45–07:10', icon: '🏕️', title: 'Hvolsvöllur Camp Site', coords: [63.7529, -20.2243] },
+            { time: '07:10–08:48', icon: '🛣️', title: 'Hvolsvöllur → Reykjavík BSÍ' },
+            { time: '08:48–09:00', icon: '🅿️', title: 'BSÍ', coords: [64.1377, -21.9344] },
+            { time: '09:00–09:10 🔒', icon: '🥾', title: 'Iceland Camping Equipment', sub: 'Devolver bastones y rain pants.', coords: [64.1377, -21.9344], review: 'iceland-camping-equipment' },
+            { time: '09:10–09:58', icon: '🛣️', title: 'BSÍ → Blue Lagoon' },
+            { time: '09:58–10:30', icon: '🎟️', title: 'Blue Lagoon check-in', coords: [63.8804, -22.4495] },
+            { time: '10:30–12:30 🔒', icon: '♨️', title: 'Blue Lagoon', coords: [63.8804, -22.4495] },
+            { time: '12:30–12:55', icon: '🛣️', title: 'Blue Lagoon → Reykjanesbær' },
+            { time: '12:55–13:10', icon: '⛽', title: 'Gasolinera', sub: 'Llenar tanque y guardar recibo.', coords: [63.9980, -22.5630] },
+            { time: '13:10–13:25', icon: '🛣️', title: 'Gasolinera → Go Campers' },
+            { time: '13:25–14:00', icon: '🧳', title: 'Go Campers', sub: 'Sacar equipaje y revisión previa.', coords: [63.9920, -22.5500] },
+            { time: '14:00–14:30 🔒', icon: '🔑', title: 'Go Campers', sub: 'Entrega e inspección oficial.', coords: [63.9920, -22.5500] },
+            { time: '14:30–14:45', icon: '🚐', title: 'Shuttle a KEF' },
+            { time: '14:45–16:20', icon: '🛂', title: 'Aeropuerto KEF', coords: [63.9850, -22.6056] },
+            { time: '16:50–19:20 🔒', icon: '🛫', title: 'Icelandair FI645' },
+            { time: '19:20–20:10', icon: '🛬', title: 'Washington Dulles' },
+            { time: '20:10–21:15', icon: '🏠', title: 'IAD → Pentagon City' }
         ],
-        tip: 'Orden refinado: Hvolsvöllur, Orkan Fitjar para llenar tanque, Go Campers 12:00, aeropuerto de Keflavík y FI645 16:50.',
+        tip: 'Devolver equipo a las 09:00, proteger Blue Lagoon 10:30–12:30 y la entrega oficial de Go Campers a las 14:00 antes de FI645.',
         wow: 'Última mirada a Islandia antes de despegar: lava negra, costa y Atlántico Norte en la memoria.'
     }
 ];

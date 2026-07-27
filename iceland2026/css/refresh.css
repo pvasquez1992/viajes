@@ -854,7 +854,7 @@ p{
 
 .event{
     position:relative;
-    grid-template-columns:82px minmax(0,1fr);
+    grid-template-columns:112px minmax(0,1fr);
     gap:12px;
     padding:10px 10px 10px 24px;
     border-bottom:1px solid rgba(213,239,230,.07);
@@ -884,6 +884,7 @@ p{
     font-weight:850;
     letter-spacing:.02em;
     text-transform:uppercase;
+    white-space:nowrap;
 }
 
 .event p{
@@ -1865,6 +1866,15 @@ p{
     color:#79a8b8;
 }
 
+.j-time{
+    min-width:112px;
+    white-space:nowrap;
+}
+
+.j-entry-actions{
+    margin-left:122px;
+}
+
 .j-entry-sub{
     color:#75a2b3;
 }
@@ -2241,7 +2251,7 @@ p{
     }
 
     .event{
-        grid-template-columns:65px minmax(0,1fr);
+        grid-template-columns:92px minmax(0,1fr);
         padding:9px 5px 9px 21px;
     }
 
@@ -2251,6 +2261,16 @@ p{
 
     .time{
         font-size:9px;
+        letter-spacing:-.02em;
+    }
+
+    .j-time{
+        min-width:92px;
+        font-size:10px;
+    }
+
+    .j-entry-actions{
+        margin-left:102px;
     }
 
     .event p{
