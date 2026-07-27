@@ -1774,8 +1774,13 @@ p{
 }
 
 .j-sidebar{
+    width:380px;
     background:rgba(5,14,12,.92);
     border-color:var(--line);
+}
+
+.j-tabs{
+    max-width:calc(100% - 400px);
 }
 
 .j-entry-clickable{
@@ -1787,6 +1792,7 @@ p{
 }
 
 .j-entry-map{
+    position:relative;
     display:block;
     width:100%;
     margin:0;
@@ -1799,10 +1805,39 @@ p{
     cursor:pointer;
 }
 
+.j-entry-map[data-tooltip]::after{
+    content:attr(data-tooltip);
+    position:absolute;
+    top:calc(100% + 7px);
+    right:4px;
+    z-index:40;
+    width:min(270px,calc(100% - 10px));
+    padding:9px 11px;
+    border:1px solid rgba(255,176,96,.3);
+    border-radius:10px;
+    background:rgba(3,12,10,.97);
+    box-shadow:0 12px 30px rgba(0,0,0,.4);
+    color:#dce9e4;
+    font-size:12px;
+    line-height:1.45;
+    text-align:left;
+    white-space:normal;
+    opacity:0;
+    pointer-events:none;
+    transform:translateY(4px);
+    transition:opacity .14s ease,transform .14s ease;
+}
+
+.j-entry-map[data-tooltip]:hover::after,
+.j-entry-map[data-tooltip]:focus-visible::after{
+    opacity:1;
+    transform:translateY(0);
+}
+
 .j-entry-actions{
     display:flex;
     gap:6px;
-    margin:7px 0 0 56px;
+    margin:5px 0 0 104px;
 }
 
 .j-navigate,
@@ -1867,20 +1902,78 @@ p{
 }
 
 .j-time{
-    min-width:112px;
+    min-width:94px;
+    font-size:10px;
+    letter-spacing:-.03em;
     white-space:nowrap;
 }
 
 .j-entry-actions{
-    margin-left:122px;
+    margin-left:104px;
 }
 
 .j-entry-sub{
     color:#75a2b3;
+    overflow:hidden;
+    max-width:100%;
+    text-overflow:ellipsis;
+    white-space:nowrap;
 }
 
 .j-tab.j-tab-crit{
-    color:#d69968;
+    border-color:rgba(119,216,255,.15);
+    color:#5a8aa0;
+}
+
+.j-tab.active,
+.j-tab.j-tab-crit.active{
+    background:rgba(255,160,80,.14);
+    border-color:rgba(255,160,80,.55);
+    color:#ffb060;
+    box-shadow:0 0 10px rgba(255,160,80,.2);
+}
+
+.j-jmarker-active,
+.j-jmarker-crit.j-jmarker-active{
+    background:rgba(255,160,80,.18);
+    border-color:#ffb060;
+    color:#fff;
+    box-shadow:0 0 16px rgba(255,160,80,.6),0 2px 8px rgba(0,0,0,.5);
+    animation:j-marker-crit-glow 1.6s ease-in-out infinite;
+}
+
+@media (max-width:900px){
+    .j-sidebar{
+        width:340px;
+    }
+
+    .j-tabs{
+        max-width:calc(100% - 360px);
+    }
+}
+
+@media (max-width:640px){
+    .j-sidebar{
+        width:100%;
+    }
+
+    .j-tabs{
+        max-width:100%;
+    }
+
+    .j-time{
+        min-width:82px;
+        font-size:9px;
+    }
+
+    .j-entry-actions{
+        margin-left:92px;
+    }
+
+    .j-entry{
+        padding-top:7px;
+        padding-bottom:7px;
+    }
 }
 
 .j-overlay .leaflet-control-attribution{
@@ -2265,12 +2358,12 @@ p{
     }
 
     .j-time{
-        min-width:92px;
-        font-size:10px;
+        min-width:82px;
+        font-size:9px;
     }
 
     .j-entry-actions{
-        margin-left:102px;
+        margin-left:92px;
     }
 
     .event p{
