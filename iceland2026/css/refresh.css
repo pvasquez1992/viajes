@@ -948,6 +948,32 @@ p{
     text-transform:uppercase;
 }
 
+.event-inline-review{
+    display:inline-flex;
+    align-items:center;
+    min-height:27px;
+    margin:8px 0 0;
+    padding:0 9px;
+    border:1px solid rgba(255,176,96,.3);
+    border-radius:999px;
+    background:rgba(255,176,96,.08);
+    color:#ffd29b;
+    font:inherit;
+    font-size:10px;
+    font-weight:900;
+    letter-spacing:.05em;
+    text-transform:uppercase;
+    cursor:pointer;
+}
+
+.event-inline-review:hover,
+.event-inline-review:focus-visible{
+    border-color:rgba(255,176,96,.58);
+    background:rgba(255,176,96,.16);
+    color:#fff0da;
+    outline:none;
+}
+
 .mobile-day-meta{
     color:var(--muted);
 }
@@ -1330,13 +1356,13 @@ p{
 .review-panel{
     position:relative;
     z-index:2;
-    width:min(520px,100%);
+    width:min(1180px,100%);
     max-height:calc(100vh - 28px);
     overflow:auto;
     overscroll-behavior:contain;
-    padding:22px;
+    padding:10px;
     border:1px solid rgba(178,230,216,.2);
-    border-radius:28px;
+    border-radius:26px;
     background:
         radial-gradient(circle at 18% 0%,rgba(114,217,194,.15),transparent 34%),
         radial-gradient(circle at 100% 18%,rgba(255,176,96,.16),transparent 28%),
@@ -1350,22 +1376,31 @@ p{
 }
 
 .review-close{
-    position:sticky;
-    top:0;
-    z-index:4;
-    float:right;
-    min-height:34px;
-    margin:0 0 8px 12px;
-    padding:0 12px;
-    border:1px solid rgba(255,142,121,.42);
-    border-radius:999px;
-    background:rgba(255,142,121,.12);
-    color:#ffd8d0;
-    font-size:11px;
+    position:absolute;
+    top:20px;
+    right:20px;
+    z-index:6;
+    width:38px;
+    min-height:38px;
+    overflow:hidden;
+    padding:0;
+    border:1px solid rgba(255,255,255,.24);
+    border-radius:50%;
+    background:rgba(4,12,10,.62);
+    color:transparent;
+    font-size:0;
     font-weight:900;
     letter-spacing:.05em;
     text-transform:uppercase;
     cursor:pointer;
+}
+
+.review-close::after{
+    content:"×";
+    color:#fff;
+    font-size:24px;
+    font-weight:400;
+    line-height:1;
 }
 
 .review-close:hover,
@@ -1379,14 +1414,53 @@ p{
 .review-body{
     display:flex;
     flex-direction:column;
-    gap:18px;
+    gap:12px;
+}
+
+.review-body:has(.review-more[open]){
+    display:grid;
+    grid-template-columns:minmax(0,1.7fr) minmax(340px,.9fr);
+    align-items:stretch;
+}
+
+.review-body:has(.review-more[open]) .review-visual{
+    min-height:min(82vh,780px);
+}
+
+.review-visual{
+    position:relative;
+    min-height:min(82vh,780px);
+    overflow:hidden;
+    border-radius:18px;
+    background:#14241f;
+}
+
+.review-visual img{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
+.review-visual-shade{
+    position:absolute;
+    inset:0;
+    background:linear-gradient(180deg,rgba(2,8,7,.05) 28%,rgba(2,8,7,.88) 100%);
+}
+
+.review-heading{
+    position:absolute;
+    right:20px;
+    bottom:26px;
+    left:26px;
 }
 
 .review-eyebrow{
-    margin:4px 0 -8px;
-    color:#9fe6d5;
+    margin:0 0 8px;
+    color:#c2f3e7;
     font-family:monospace;
-    font-size:12px;
+    font-size:11px;
     font-weight:900;
     letter-spacing:.12em;
     text-transform:uppercase;
@@ -1394,31 +1468,36 @@ p{
 
 .review-body h2{
     margin:0;
-    max-width:12ch;
+    max-width:15ch;
     color:#fff;
     font-family:Georgia,serif;
-    font-size:clamp(38px,6vw,58px);
-    line-height:.93;
+    font-family:Arial,sans-serif;
+    font-size:clamp(28px,5vw,48px);
+    font-weight:750;
+    letter-spacing:-.04em;
+    line-height:1;
 }
 
 .review-verdict{
     margin:0;
+    padding:0;
     color:#c8d8d2;
-    font-size:15px;
-    line-height:1.65;
+    font-size:14px;
+    line-height:1.5;
 }
 
 .review-stats{
     display:grid;
     grid-template-columns:repeat(2,minmax(0,1fr));
-    gap:8px;
+    gap:6px;
+    padding:0;
 }
 
 .review-stats div{
-    min-height:76px;
-    padding:12px;
+    min-height:58px;
+    padding:9px 8px;
     border:1px solid rgba(178,230,216,.15);
-    border-radius:18px;
+    border-radius:12px;
     background:rgba(255,255,255,.045);
 }
 
@@ -1435,8 +1514,69 @@ p{
     display:block;
     margin-top:7px;
     color:#f4fbf8;
-    font-size:17px;
+    font-size:12px;
     line-height:1.2;
+}
+
+.review-more{
+    margin:0 10px 8px;
+}
+
+.review-body:has(.review-more[open]) .review-more{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:18px;
+    margin:0;
+    padding:32px 24px;
+}
+
+.review-more summary{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    min-height:40px;
+    color:#bfeade;
+    font-size:12px;
+    font-weight:900;
+    letter-spacing:.08em;
+    list-style:none;
+    text-transform:uppercase;
+    cursor:pointer;
+}
+
+.review-more summary::-webkit-details-marker{
+    display:none;
+}
+
+.review-more summary span{
+    font-size:20px;
+    transition:transform .2s ease;
+}
+
+.review-more[open] summary span{
+    transform:rotate(45deg);
+}
+
+.review-essential{
+    padding:16px;
+    border-left:2px solid #ffb060;
+    background:rgba(255,176,96,.06);
+}
+
+.review-essential span{
+    color:#ffbd7b;
+    font-size:10px;
+    font-weight:900;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+}
+
+.review-essential p{
+    margin:7px 0 0;
+    color:#d1dfda;
+    font-size:14px;
+    line-height:1.5;
 }
 
 .review-sections{
@@ -1514,8 +1654,20 @@ p{
     .review-panel{
         width:100%;
         max-height:88vh;
-        padding:18px;
+        padding:8px;
         border-radius:24px 24px 18px 18px;
+    }
+
+    .review-body:has(.review-more[open]){
+        display:flex;
+    }
+
+    .review-body:has(.review-more[open]) .review-visual{
+        min-height:42vh;
+    }
+
+    .review-body:has(.review-more[open]) .review-more{
+        padding:8px 10px 14px;
     }
 
     .event-with-review{
@@ -1535,13 +1687,28 @@ p{
         font-size:10px;
     }
 
+    .event-inline-review{
+        min-height:32px;
+        margin-top:9px;
+        padding:0 11px;
+        font-size:10px;
+    }
+
     .review-body h2{
-        max-width:11ch;
-        font-size:40px;
+        max-width:14ch;
+        font-size:34px;
     }
 
     .review-stats{
-        grid-template-columns:1fr 1fr;
+        grid-template-columns:repeat(2,minmax(0,1fr));
+    }
+
+    .review-stats div{
+        min-width:0;
+    }
+
+    .review-visual{
+        min-height:min(72vh,620px);
     }
 }
 

@@ -227,40 +227,304 @@ if (window.L && routeMapElement) {
     routeMapElement.innerHTML = '<p>El mapa no está disponible sin conexión. El itinerario completo sigue visible debajo.</p>';
 }
 
+function makeReview({ eyebrow, title, verdict, stats, feel, route, level, jarvis, sources = [] }) {
+    return {
+        eyebrow,
+        title,
+        verdict,
+        stats,
+        blocks: [
+            { label: 'Cómo se siente', text: feel },
+            { label: 'Qué se hace', text: route },
+            { label: 'Nivel realista', text: level },
+            { label: 'Equipo mental Jarvis', text: jarvis }
+        ],
+        sources
+    };
+}
+
 const reviewData = {
-    'troll-skaftafell': {
+    'hallgrimskirkja': makeReview({
+        eyebrow: 'Review · Día 1 · Reykjavík',
+        title: 'Hallgrímskirkja',
+        verdict: 'La entrada ceremonial a Reykjavík: arquitectura rara, limpia, casi volcánica. Vale por el golpe visual y por orientarte mentalmente en la ciudad.',
+        stats: [['Tipo', 'Ciudad'], ['Tiempo', '30–60 min'], ['Esfuerzo', 'Bajo'], ['Extra', 'Torre opcional']],
+        feel: 'Se siente como llegar a una capital pequeña pero con carácter propio: concreto claro, líneas de basalto y una plaza abierta para respirar después del vuelo.',
+        route: 'Entrar a la iglesia es rápido; la torre es el plus si quieren ver Reykjavík desde arriba y ubicar mar, montañas y techos de colores.',
+        level: 'Muy fácil. Lo único que decide el plan es energía post-vuelo y clima para la vista desde la torre.',
+        jarvis: 'Si están cansados, hagan exterior + interior y sigan. La torre es premio, no obligación.',
+        sources: [{ label: 'Hallgrímskirkja oficial', url: 'https://www.hallgrimskirkja.is/en' }]
+    }),
+    'sun-voyager': makeReview({
+        eyebrow: 'Review · Día 1 · Costa urbana',
+        title: 'Viajero del Sol',
+        verdict: 'Una parada corta pero poética: escultura frente al mar, viento, horizonte y esa primera foto que dice “ya estamos en Islandia”.',
+        stats: [['Tipo', 'Foto / paseo'], ['Tiempo', '10–20 min'], ['Esfuerzo', 'Bajo'], ['Mejor', 'Luz lateral']],
+        feel: 'No es una caminata grande; es un gesto. Atlántico Norte, metal brillante y montañas al fondo si el día ayuda.',
+        route: 'Llegar, caminar el borde marítimo, foto rápida y continuar hacia Harpa o el camping.',
+        level: 'Muy fácil, pero puede sentirse frío por el viento junto al agua.',
+        jarvis: 'Perfecto si necesitan “despertar” sin gastar piernas. No lo conviertan en parada larga.',
+        sources: [{ label: 'Visit Reykjavík', url: 'https://visitreykjavik.is/service/sun-voyager' }]
+    }),
+    'harpa': makeReview({
+        eyebrow: 'Review · Día 1 · Arquitectura',
+        title: 'Harpa',
+        verdict: 'Cristal, geometría y reflejos. Es una pausa urbana elegante antes de entrar de lleno al paisaje salvaje.',
+        stats: [['Tipo', 'Arquitectura'], ['Tiempo', '20–40 min'], ['Esfuerzo', 'Bajo'], ['Costo', 'Áreas públicas']],
+        feel: 'El edificio se siente como una cueva de vidrio: luz fría, patrones, mar cerca y mucha textura para fotos.',
+        route: 'Recorrer áreas públicas, mirar el lobby, fachada y vistas hacia el puerto.',
+        level: 'Fácil y bajo riesgo; ideal para un día de llegada.',
+        jarvis: 'Úsenlo como parada de transición: bonito, cubierto y sin exigir energía.',
+        sources: [{ label: 'Harpa oficial', url: 'https://www.harpa.is/en' }]
+    }),
+    'iceland-camping-equipment': makeReview({
+        eyebrow: 'Día 1 · Equipo · BSÍ Reykjavík',
+        title: 'Iceland Camping Equipment',
+        verdict: 'Primera parada de equipo: recoger bastones y rain pants para los dos antes de comenzar la ruta.',
+        stats: [['Para', '2 personas'], ['Recoger', '09:00'], ['Lugar', 'Terminal BSÍ'], ['Horario', '09:00–17:00']],
+        feel: 'Parada práctica y corta dentro de la terminal BSÍ.',
+        route: 'Recoger dos pares de bastones ajustables y rain pants reservados para ambos.',
+        level: 'Fácil; estacionar, comprobar tallas y revisar el equipo antes de salir.',
+        jarvis: 'Reservar antes del viaje. Confirmen dos pares de bastones, las dos tallas de rain pants y el método de devolución.',
+        sources: [
+            { label: 'Sitio oficial', url: 'https://www.iceland-camping-equipment.com/' },
+            { label: 'Hiking & trekking gear', url: 'https://www.iceland-camping-equipment.com/collections/iceland-hiking-trekking-gear' }
+        ]
+    }),
+    'thingvellir': makeReview({
+        eyebrow: 'Review · Día 2 · Golden Circle',
+        title: 'Þingvellir',
+        verdict: 'Aquí el viaje cambia de ciudad a geología: caminar entre placas tectónicas le da peso real al mapa.',
+        stats: [['Tipo', 'Parque nacional'], ['Tiempo', '60–90 min'], ['Esfuerzo', 'Bajo–medio'], ['Clave', 'Miradores']],
+        feel: 'Amplio, histórico y mineral. No es solo “ver una vista”: es caminar dentro de una fractura del planeta.',
+        route: 'Combinar miradores con Almannagjá; caminar lo suficiente para sentir la falla sin comerse todo el día.',
+        level: 'Fácil si se quedan en senderos principales. Puede alargarse por fotos y desvíos.',
+        jarvis: 'Mantenerlo compacto: el Día 2 todavía tiene Geysir, Gullfoss, Kerið y Reykjadalur.',
+        sources: [{ label: 'Þingvellir oficial', url: 'https://www.thingvellir.is/en/' }]
+    }),
+    'almannagja': makeReview({
+        eyebrow: 'Review · Día 2 · Falla tectónica',
+        title: 'Almannagjá',
+        verdict: 'La parte más caminable y narrativa de Þingvellir: paredes de roca, sendero claro y sensación de grieta continental.',
+        stats: [['Tipo', 'Sendero corto'], ['Tiempo', '20–45 min'], ['Esfuerzo', 'Bajo'], ['Terreno', 'Marcado']],
+        feel: 'Es un pasillo de roca; sobrio, fotogénico y muy “Islandia sin filtro”.',
+        route: 'Caminar por la garganta y conectar con miradores cercanos si el clima acompaña.',
+        level: 'Fácil. El reto real es no quedarse demasiado si el calendario va apretado.',
+        jarvis: 'Hagan la caminata como núcleo de Þingvellir y sigan; el día tiene demasiadas piezas buenas.',
+        sources: [{ label: 'Þingvellir oficial', url: 'https://www.thingvellir.is/en/' }]
+    }),
+    'geysir': makeReview({
+        eyebrow: 'Review · Día 2 · Geotermia',
+        title: 'Geysir / Strokkur',
+        verdict: 'La parada de “espera y explosión”: vapor, olor mineral y Strokkur disparando agua cada pocos minutos.',
+        stats: [['Tipo', 'Geotérmico'], ['Tiempo', '30–45 min'], ['Esfuerzo', 'Bajo'], ['Ritmo', 'Ciclos cortos']],
+        feel: 'Es turística, sí, pero tiene teatro natural: todo el mundo mirando un charco hasta que el suelo decide respirar.',
+        route: 'Caminar el área geotérmica, esperar 1–2 erupciones de Strokkur y continuar.',
+        level: 'Muy fácil; mantenerse en senderos y respetar áreas calientes.',
+        jarvis: 'No esperen la “erupción perfecta” diez veces. Una buena y seguimos.',
+        sources: [{ label: 'Visit Iceland · Geysir', url: 'https://www.visiticeland.com/article/geysir-geothermal-area/' }]
+    }),
+    'gullfoss': makeReview({
+        eyebrow: 'Review · Día 2 · Cascada',
+        title: 'Gullfoss',
+        verdict: 'Una cascada grande de verdad: dos niveles, niebla, ruido y una escala que empieza a preparar el ojo para la Costa Sur.',
+        stats: [['Tipo', 'Cascada'], ['Tiempo', '35–60 min'], ['Esfuerzo', 'Bajo–medio'], ['Clave', 'Miradores']],
+        feel: 'Poderosa, amplia, con sensación de cañón abierto. En días de sol puede regalar arcoíris.',
+        route: 'Mirador superior + sendero hacia la zona baja si está abierto y seguro.',
+        level: 'Fácil, aunque el spray y el viento pueden hacerla más intensa.',
+        jarvis: 'Impermeable a mano. Fotos rápidas si el viento está agresivo.',
+        sources: [{ label: 'Visit Iceland · Gullfoss', url: 'https://www.visiticeland.com/article/gullfoss-waterfall/' }]
+    }),
+    'kerid': makeReview({
+        eyebrow: 'Review · Día 2 · Cráter',
+        title: 'Kerið',
+        verdict: 'Un cierre visual compacto del Golden Circle: cráter rojo, lago azul y una caminata corta que no rompe el día.',
+        stats: [['Tipo', 'Cráter'], ['Tiempo', '25–45 min'], ['Esfuerzo', 'Bajo'], ['Ruta', 'Borde + lago']],
+        feel: 'Color y forma. Después de cascadas y geotermia, Kerið se siente más gráfico, casi como una postal de geología.',
+        route: 'Caminar el borde; bajar al lago solo si hay energía y buen clima.',
+        level: 'Fácil. Ojo con viento en el borde.',
+        jarvis: 'Si Reykjadalur sigue en pie, Kerið debe ser eficiente: una vuelta corta y listo.',
+        sources: [{ label: 'Guide to Iceland · Kerið', url: 'https://guidetoiceland.is/travel-iceland/drive/kerid' }]
+    }),
+    'reykjadalur': makeReview({
+        eyebrow: 'Review · Día 2 · Hiking termal',
+        title: 'Reykjadalur',
+        verdict: 'Esta sí cuenta como experiencia grande: subir por un valle humeante y terminar metido en un río caliente. Cansa, pero paga.',
+        stats: [['Tipo', 'Hike + baño'], ['Distancia', '3.5 km ida aprox.'], ['Tiempo', '2.5–4 h'], ['Esfuerzo', 'Medio']],
+        feel: 'Vapor, montaña, barro si llueve y recompensa termal. Es de esas paradas que convierten el día en memoria, no solo checklist.',
+        route: 'Desde Hveragerði se sube por sendero marcado hacia el río termal; bañarse y volver por el mismo camino.',
+        level: 'Moderado por desnivel, clima y duración. No técnico, pero no es “bajar del carro y ya”.',
+        jarvis: 'Llevar traje de baño accesible, toalla rápida y bolsa para ropa mojada. Si llegan tarde, recorten antes otra parada.',
+        sources: [{ label: 'Arctic Adventures · Reykjadalur', url: 'https://adventures.is/iceland/attractions/reykjadalur/' }]
+    }),
+    'seljalandsfoss': makeReview({
+        eyebrow: 'Review · Día 3 · Cascada',
+        title: 'Seljalandsfoss',
+        verdict: 'La cascada de caminar detrás. Muy fotogénica, muy húmeda, muy fácil de subestimar hasta que sales empapado.',
+        stats: [['Tipo', 'Cascada'], ['Tiempo', '30–45 min'], ['Esfuerzo', 'Bajo'], ['Riesgo', 'Resbaloso']],
+        feel: 'El wow está en pasar detrás de la cortina de agua: ruido, spray y pared verde alrededor.',
+        route: 'Ver desde el frente y, si el sendero está seguro, hacer el circuito detrás de la caída.',
+        level: 'Fácil pero mojado. Piedras resbalosas y viento pueden cambiarlo todo.',
+        jarvis: 'Ponchos/impermeable antes de acercarse. Cámara protegida.',
+        sources: [{ label: 'South Iceland · Seljalandsfoss', url: 'https://www.south.is/en/place/seljalandsfoss-waterfall' }]
+    }),
+    'gljufrabui': makeReview({
+        eyebrow: 'Review · Día 3 · Cascada escondida',
+        title: 'Gljúfrabúi',
+        verdict: 'Pequeña, escondida y teatral: entrar al cañóncito la hace sentirse más secreta que Seljalandsfoss.',
+        stats: [['Tipo', 'Cascada corta'], ['Tiempo', '20–35 min'], ['Esfuerzo', 'Bajo'], ['Clave', 'Zapatos mojables']],
+        feel: 'Es más aventura de bolsillo: roca, agua, entrada estrecha y una cascada escondida al final.',
+        route: 'Caminar desde Seljalandsfoss y entrar solo si el paso por agua/rocas está razonable.',
+        level: 'Fácil, pero los pies pueden mojarse y las rocas resbalan.',
+        jarvis: 'No gastar demasiado tiempo: vale mucho, pero Skógafoss espera.',
+        sources: [{ label: 'South Iceland · Gljúfrabúi', url: 'https://www.south.is/en/place/gljufrabui' }]
+    }),
+    'skogafoss': makeReview({
+        eyebrow: 'Review · Día 3 · Cascada grande',
+        title: 'Skógafoss',
+        verdict: 'Uno de los golpes visuales fuertes del viaje: una pared de agua de 60 m, niebla, arcoíris posible y escaleras si quieren mirar desde arriba.',
+        stats: [['Tipo', 'Cascada'], ['Caída', '60 m'], ['Tiempo', '30–60 min'], ['Extra', 'Escaleras arriba']],
+        feel: 'Desde abajo se siente brutal y simple: agua cayendo como una sábana gigante. Desde arriba cambia a paisaje de río y acantilado.',
+        route: 'Base de la cascada primero; subir escaleras solo si piernas/clima lo justifican.',
+        level: 'Base muy fácil. Escaleras: cardio corto y posiblemente resbaloso con lluvia.',
+        jarvis: 'El día siguiente es crítico; disfruten Skógafoss, pero no quemen piernas absurdamente.',
+        sources: [{ label: 'South Iceland · Skógafoss', url: 'https://www.south.is/en/place/skogafoss-waterfall' }]
+    }),
+    'troll-skaftafell': makeReview({
         eyebrow: 'Review · Día 4 · Glaciar guiado',
         title: 'Tröll Skaftafell · 3 h',
         verdict: 'No lo leería como una “caminata larga”, sino como una mini expedición sobre hielo: crampones, guía, grietas, morrena, viento frío y esa sensación rara de estar pisando un ser vivo que se mueve lento.',
-        stats: [
-            ['Duración', '3 h total'],
-            ['En el hielo', '1–1.5 h aprox.'],
-            ['Dificultad', 'Fácil–moderada'],
-            ['Llegada', '20 min antes']
-        ],
-        blocks: [
-            {
-                label: 'Cómo se siente',
-                text: 'La parte memorable no es la distancia: es el cambio de textura. Sales de la camper/carretera, te equipan, haces una aproximación corta y de pronto estás sobre Falljökull con piolet y crampones. Es más “wow controlado” que trekking duro.'
-            },
-            {
-                label: 'Qué se camina',
-                text: 'Según Tröll, la logística incluye base de encuentro, equipo de seguridad, traslado corto hacia el glaciar, caminata de aproximación y luego exploración guiada sobre el hielo. Dependiendo de la temporada pueden aparecer grietas, formas azules, moulins o hielo más gris de verano.'
-            },
-            {
-                label: 'Nivel realista',
-                text: 'Fácil–moderado si van descansados y con botas correctas. El cansancio del Día 4 viene más por la salida temprana desde Skógar + manejar + bote 15:50 que por la actividad en sí.'
-            },
-            {
-                label: 'Equipo mental Jarvis',
-                text: 'Regla de oro: llegar sin drama. N1 Kirkjubæjarklaustur es parada express; nada de convertirla en desayuno largo. Llevar capas, guantes, gorro, agua pequeña y cero jeans.'
-            }
-        ],
+        stats: [['Reserva', '3 h'], ['Wikiloc ref.', '3 mi / +512 ft'], ['Track', '3 h 30 min'], ['Dificultad', 'Fácil']],
+        feel: 'La parte memorable no es la distancia: es el cambio de textura. Sales de la carretera, te equipan y de pronto estás sobre hielo con piolet y crampones.',
+        route: 'El Wikiloc que pasaste registra una experiencia con Tröll: bus corto al parking del glaciar, inicio a nivel de laguna, subida progresiva, crampones y recorrido entre grietas/moulins.',
+        level: 'Fácil–moderado si van descansados y con botas correctas. El cansancio del Día 4 viene más por salida temprana + manejo + bote 15:50.',
+        jarvis: 'N1 Kirkjubæjarklaustur es parada express; nada de desayuno largo. Capas, guantes, gorro, agua pequeña y cero jeans.',
         sources: [
             { label: 'Tröll · tour oficial 3 h', url: 'https://troll.is/tour/skaftafell-3-hour-glacier-hike/' },
-            { label: 'Wikiloc · track de referencia en Skaftafell', url: 'https://www.wikiloc.com/hiking-trails/skaftafellsjokull-33770401' }
+            { label: 'Wikiloc · Iceland 05 Skaftafell Glacier Travelling', url: 'https://www.wikiloc.com/snowshoeing-trails/iceland-05-skaftafell-glacier-travelling-148975965' }
         ]
-    }
+    }),
+    'jokulsarlon': makeReview({
+        eyebrow: 'Review · Día 4 · Laguna glaciar',
+        title: 'Jökulsárlón',
+        verdict: 'El centro emocional del viaje: icebergs flotando, silencio frío y una escala azul que no se parece a las cascadas ni a las playas.',
+        stats: [['Tipo', 'Laguna'], ['Tiempo', '45–90 min'], ['Esfuerzo', 'Bajo'], ['Clave', 'No correr']],
+        feel: 'Se siente lento y enorme. Es una parada para bajar revoluciones después del glaciar y antes del bote.',
+        route: 'Miradores junto a la laguna, comida rápida si toca, fotos y conexión con el parking/punto del bote.',
+        level: 'Muy fácil; lo importante es proteger tiempo para el tour de las 15:50.',
+        jarvis: 'Llegar con margen. Jökulsárlón no se disfruta mirando el reloj cada 12 segundos.',
+        sources: [{ label: 'Visit Iceland · Jökulsárlón', url: 'https://www.visiticeland.com/article/jokulsarlon-glacier-lagoon/' }]
+    }),
+    'glacier-lagoon-boat': makeReview({
+        eyebrow: 'Review · Día 4 · Bote 15:50',
+        title: 'Glacier Lagoon Trip',
+        verdict: 'La versión inmersiva de Jökulsárlón: ya no miras los icebergs desde fuera, te metes entre ellos.',
+        stats: [['Tipo', 'Bote'], ['Hora', '15:50'], ['Esfuerzo', 'Bajo'], ['Riesgo', 'Puntualidad']],
+        feel: 'Frío, azul y cinematográfico. El bote convierte la laguna en algo cercano, no solo panorámico.',
+        route: 'Parking, check-in, equipo si aplica, salida al agua y regreso con margen para Diamond Beach.',
+        level: 'Fácil físicamente. Logísticamente sensible: si se atrasa el glaciar, este bloque sufre.',
+        jarvis: 'Este horario manda. Todo el Día 4 debe proteger el 15:50.',
+        sources: [{ label: 'Jökulsárlón oficial', url: 'https://icelagoon.is/' }]
+    }),
+    'diamond-beach': makeReview({
+        eyebrow: 'Review · Día 4 · Playa negra',
+        title: 'Diamond Beach',
+        verdict: 'Hielo transparente sobre arena negra: simple, absurdo y precioso. Es el epílogo perfecto después de la laguna.',
+        stats: [['Tipo', 'Playa / fotos'], ['Tiempo', '25–45 min'], ['Esfuerzo', 'Bajo'], ['Clave', 'Oleaje']],
+        feel: 'La playa parece una mesa de obsidiana con cristales gigantes. Cada bloque de hielo cambia con la luz.',
+        route: 'Caminar por la zona segura, buscar bloques interesantes, mantener distancia del agua.',
+        level: 'Fácil, pero nunca confiarse con el mar islandés.',
+        jarvis: 'Ideal después del bote. Si están fundidos, hagan una visita corta y memorable.',
+        sources: [{ label: 'Visit Iceland · Diamond Beach', url: 'https://www.visiticeland.com/article/diamond-beach/' }]
+    }),
+    'hoffell': makeReview({
+        eyebrow: 'Review · Día 5 · Termales',
+        title: 'Hoffell Hot Tubs',
+        verdict: 'La pausa de recuperación: agua caliente, montañas y el cuerpo diciendo “gracias” después del día glaciar.',
+        stats: [['Tipo', 'Baño termal'], ['Tiempo', '60–90 min'], ['Esfuerzo', 'Bajo'], ['Función', 'Recuperar']],
+        feel: 'Menos turístico que una laguna grande; más íntimo, práctico y perfecto para resetear piernas.',
+        route: 'Llegar, pagar si aplica, baño, ducha/orden y seguir hacia Vestrahorn.',
+        level: 'Fácil. El valor está en bajar el ritmo.',
+        jarvis: 'No lo saltes si el cuerpo viene cargado. Este baño compra energía para Vestrahorn.',
+        sources: [{ label: 'Hoffell Hot Tubs', url: 'https://www.hoffell.com/hot-tubs/' }]
+    }),
+    'vestrahorn': makeReview({
+        eyebrow: 'Review · Día 5 · Montaña',
+        title: 'Vestrahorn',
+        verdict: 'La montaña dramática del viaje: negra, afilada, cinematográfica. Si hay reflejos, puede ser top 3 del roadbook.',
+        stats: [['Tipo', 'Miradores'], ['Tiempo', '60–120 min'], ['Esfuerzo', 'Bajo'], ['Mejor', 'Luz baja']],
+        feel: 'Dunas, mar, montaña oscura y sensación de estar en una película cara.',
+        route: 'Comprar acceso en Viking Cafe, recorrer puntos de Stokksnes, buscar composiciones con dunas/reflejos.',
+        level: 'Fácil; depende más de clima, viento y visibilidad que de piernas.',
+        jarvis: 'Si el cielo abre, no tengan prisa. Este es lugar de paciencia fotográfica.',
+        sources: [{ label: 'Viking Cafe / Stokksnes', url: 'https://www.vikingcafe.is/' }]
+    }),
+    'mirror-beach': makeReview({
+        eyebrow: 'Review · Día 5 · Stokksnes',
+        title: 'Mirror Beach',
+        verdict: 'La búsqueda del reflejo: Vestrahorn duplicado en arena mojada. Si marea/luz ayudan, magia silenciosa.',
+        stats: [['Tipo', 'Foto / playa'], ['Tiempo', '30–60 min'], ['Esfuerzo', 'Bajo'], ['Clave', 'Marea / luz']],
+        feel: 'Minimalista: agua fina, arena oscura, montaña enorme. Muy de caminar lento mirando el suelo.',
+        route: 'Explorar la playa de Stokksnes y moverse hasta encontrar charcos/reflejos limpios.',
+        level: 'Fácil, con viento posible.',
+        jarvis: 'No forzar si el clima está cerrado. Vestrahorn también funciona con nubes dramáticas.',
+        sources: [{ label: 'Viking Cafe / Stokksnes', url: 'https://www.vikingcafe.is/' }]
+    }),
+    'viking-village': makeReview({
+        eyebrow: 'Review · Día 5 · Film set',
+        title: 'Viking Village',
+        verdict: 'No es naturaleza pura, es textura cinematográfica: un set vikingo abandonado que suma una capa rara al día de Vestrahorn.',
+        stats: [['Tipo', 'Set / paseo'], ['Tiempo', '25–45 min'], ['Esfuerzo', 'Bajo'], ['Acceso', 'Viking Cafe']],
+        feel: 'Madera, pasto, montañas y una vibra de “esto parece real pero no del todo”.',
+        route: 'Entrar con el acceso de Stokksnes y recorrer el set sin convertirlo en actividad larga.',
+        level: 'Muy fácil.',
+        jarvis: 'Buen complemento, no plato principal. El plato principal sigue siendo Vestrahorn.',
+        sources: [{ label: 'Viking Cafe / Stokksnes', url: 'https://www.vikingcafe.is/' }]
+    }),
+    'fjadrargljufur': makeReview({
+        eyebrow: 'Review · Día 6 · Cañón',
+        title: 'Fjaðrárgljúfur',
+        verdict: 'Un cañón serpenteante, verde y extraño. Es corto, potente y perfecto para romper el regreso largo.',
+        stats: [['Tipo', 'Miradores'], ['Longitud', '2 km aprox.'], ['Tiempo', '45–75 min'], ['Esfuerzo', 'Bajo–medio']],
+        feel: 'Paredes altas, río abajo y curvas suaves. Parece diseñado por alguien con buen gusto excesivo.',
+        route: 'Caminar por los miradores autorizados, sin salirse a zonas cerradas o frágiles.',
+        level: 'Moderado suave por pendiente y clima; técnicamente sencillo.',
+        jarvis: 'Va antes de Vík: llegar, caminar miradores, fotos y seguir. No improvisar senderos.',
+        sources: [{ label: 'South Iceland · Fjaðrárgljúfur', url: 'https://www.south.is/en/place/fjadrargljufur-canyon' }]
+    }),
+    'reynisfjara': makeReview({
+        eyebrow: 'Review · Día 6 · Playa negra',
+        title: 'Reynisfjara',
+        verdict: 'Bellísima y seria. Arena negra, columnas basálticas y Reynisdrangar; pero aquí el mar no es decoración, es peligro real.',
+        stats: [['Tipo', 'Playa / basalto'], ['Tiempo', '30–50 min'], ['Esfuerzo', 'Bajo'], ['Clave', 'Lejos del agua']],
+        feel: 'Oscura, ruidosa, poderosa. Una de las playas más memorables del viaje si se respeta.',
+        route: 'Columnas basálticas, vistas de la playa y fotos desde distancia segura del oleaje.',
+        level: 'Fácil físicamente; alta atención por sneaker waves.',
+        jarvis: 'Nunca dar la espalda al mar. Si hay alerta o mal oleaje, se mira desde lejos y ya.',
+        sources: [{ label: 'Visit Iceland · seguridad Reynisfjara', url: 'https://www.visiticeland.com/article/reynisfjara-black-sand-beach-is-dangerous/' }]
+    }),
+    'dyrholaey': makeReview({
+        eyebrow: 'Review · Día 6 · Acantilados',
+        title: 'Dyrhólaey',
+        verdict: 'El mirador que ordena la Costa Sur: arco natural, acantilados, mar negro y vista larga hacia Reynisfjara.',
+        stats: [['Tipo', 'Mirador'], ['Tiempo', '30–60 min'], ['Esfuerzo', 'Bajo'], ['Clave', 'Viento']],
+        feel: 'Más aéreo que Reynisfjara. Aquí la costa se entiende desde arriba.',
+        route: 'Subir a miradores habilitados, fotos del arco y vistas hacia playas negras.',
+        level: 'Fácil, pero viento fuerte puede hacerlo incómodo.',
+        jarvis: 'Después de Reynisfjara, este es cierre panorámico. Si el clima está feo, hacerlo corto.',
+        sources: [{ label: 'South Iceland · Dyrhólaey', url: 'https://www.south.is/en/place/dyrholaey' }]
+    }),
+    'lava-centre': makeReview({
+        eyebrow: 'Review · Día 6 · Opcional cubierto',
+        title: 'LAVA Centre',
+        verdict: 'Plan B inteligente: si el cuerpo o el clima fallan, volcanes bajo techo y contexto para todo lo que viste afuera.',
+        stats: [['Tipo', 'Museo'], ['Tiempo', '45–90 min'], ['Esfuerzo', 'Bajo'], ['Uso', 'Opcional']],
+        feel: 'Interactivo, cómodo y educativo. Cambia lava/montañas de “paisaje bonito” a sistema vivo.',
+        route: 'Entrar solo si queda energía o si el clima castiga demasiado las paradas exteriores.',
+        level: 'Muy fácil.',
+        jarvis: 'No es obligación. Es carta comodín para cerrar el día con cabeza y sin mojarse más.',
+        sources: [{ label: 'LAVA Centre oficial', url: 'https://lavacentre.is/' }]
+    })
 };
 
 const reviewOverlay = document.getElementById('reviewOverlay');
@@ -278,27 +542,155 @@ function escapeHtml(value) {
         .replace(/'/g, '&#39;');
 }
 
-function renderReview(review) {
+const reviewMatchers = [
+    { key: 'hallgrimskirkja', patterns: ['hallgrimskirkja', 'hallgrímskirkja'] },
+    { key: 'sun-voyager', patterns: ['viajero del sol', 'sun voyager'] },
+    { key: 'harpa', patterns: ['harpa'] },
+    { key: 'iceland-camping-equipment', patterns: ['iceland camping equipment'] },
+    { key: 'thingvellir', patterns: ['thingvellir', 'þingvellir'] },
+    { key: 'almannagja', patterns: ['almannagja', 'almannagjá'] },
+    { key: 'geysir', patterns: ['geysir', 'strokkur'] },
+    { key: 'gullfoss', patterns: ['gullfoss'] },
+    { key: 'kerid', patterns: ['kerid', 'kerið'] },
+    { key: 'reykjadalur', patterns: ['reykjadalur', 'thermal river', 'rio termal', 'río termal'] },
+    { key: 'seljalandsfoss', patterns: ['seljalandsfoss'] },
+    { key: 'gljufrabui', patterns: ['gljufrabui', 'gljúfrabúi'] },
+    { key: 'skogafoss', patterns: ['skogafoss', 'skógafoss'] },
+    { key: 'troll-skaftafell', patterns: ['troll expeditions skaftafell', 'tröll expeditions skaftafell', 'troll skaftafell', 'tröll skaftafell'] },
+    { key: 'glacier-lagoon-boat', patterns: ['glacier lagoon trip boat'] },
+    { key: 'jokulsarlon', patterns: ['jokulsarlon', 'jökulsárlón'] },
+    { key: 'diamond-beach', patterns: ['diamond beach'] },
+    { key: 'hoffell', patterns: ['hoffell hot tubs'] },
+    { key: 'viking-village', patterns: ['viking village film set'] },
+    { key: 'mirror-beach', patterns: ['stokksnes mirror beach', 'mirror beach'] },
+    { key: 'vestrahorn', patterns: ['vestrahorn'] },
+    { key: 'fjadrargljufur', patterns: ['fjadrargljufur', 'fjaðrárgljúfur'] },
+    { key: 'reynisfjara', patterns: ['reynisfjara'] },
+    { key: 'dyrholaey', patterns: ['dyrholaey', 'dyrhólaey'] },
+    { key: 'lava-centre', patterns: ['lava centre'] }
+];
+
+const reviewSkipPatterns = [
+    'gas',
+    'orkan',
+    'n1 ',
+    'camping',
+    'campsite',
+    'campground',
+    'parking',
+    'go campers',
+    'aeropuerto',
+    'airport',
+    'vuelo',
+    'metro',
+    'netto',
+    'nettó',
+    'guesthouse'
+];
+
+function normalizeReviewText(value) {
+    return String(value)
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9þðæø\s]+/gi, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function findReviewKey(value) {
+    const text = normalizeReviewText(value);
+    if (reviewSkipPatterns.some((pattern) => text.includes(normalizeReviewText(pattern)))) {
+        return null;
+    }
+    const match = reviewMatchers.find(({ patterns }) => (
+        patterns.some((pattern) => text.includes(normalizeReviewText(pattern)))
+    ));
+    return match?.key || null;
+}
+
+function getStopReviewKey(stop) {
+    return stop.review || findReviewKey(`${stop.title || ''} ${stop.sub || ''}`);
+}
+
+function enhanceRoadbookReviews() {
+    document.querySelectorAll('.event').forEach((eventEl) => {
+        if (eventEl.querySelector('[data-review]')) return;
+        const textEl = eventEl.querySelector('p');
+        if (!textEl) return;
+        const reviewKey = findReviewKey(textEl.textContent);
+        if (!reviewKey) return;
+
+        const button = document.createElement('button');
+        button.className = 'event-inline-review';
+        button.type = 'button';
+        button.dataset.review = reviewKey;
+        button.textContent = 'Review →';
+        textEl.appendChild(button);
+        eventEl.classList.add('event-has-review');
+    });
+}
+
+const reviewImages = {
+    'hallgrimskirkja': 'img/hallgrimskirkja-1.jpg',
+    'sun-voyager': 'img/hallgrimskirkja-2.jpg',
+    'harpa': 'img/hallgrimskirkja-3.jpg',
+    'iceland-camping-equipment': 'https://commons.wikimedia.org/wiki/Special:Redirect/file/BSI_bus_terminal_(Reykjavik)_in_2020.02.jpg?width=1600',
+    'thingvellir': 'img/thingvellir-1.jpg',
+    'almannagja': 'img/thingvellir-2.jpg',
+    'geysir': 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/Strokkur%2C_%C3%81rea_geot%C3%A9rmica_de_Geysir%2C_Su%C3%B0urland%2C_Islandia%2C_2014-08-16%2C_DD_086.JPG/1920px-Strokkur%2C_%C3%81rea_geot%C3%A9rmica_de_Geysir%2C_Su%C3%B0urland%2C_Islandia%2C_2014-08-16%2C_DD_086.JPG',
+    'gullfoss': 'img/gullfoss.jpg',
+    'kerid': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Crater_volc%C3%A1nico_Keri%C3%B0%2C_Su%C3%B0urland%2C_Islandia%2C_2014-08-16%2C_DD_151.jpg/1920px-Crater_volc%C3%A1nico_Keri%C3%B0%2C_Su%C3%B0urland%2C_Islandia%2C_2014-08-16%2C_DD_151.jpg',
+    'reykjadalur': 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/73/Hot_spring%2C_Reykjadalur_Valley%2C_Iceland%2C_20230502_1415_4243.jpg/1920px-Hot_spring%2C_Reykjadalur_Valley%2C_Iceland%2C_20230502_1415_4243.jpg',
+    'seljalandsfoss': 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Seljalandsfoss_Waterfall%2C_Iceland%2C_20240720_1500_3093.jpg/1920px-Seljalandsfoss_Waterfall%2C_Iceland%2C_20240720_1500_3093.jpg',
+    'gljufrabui': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Glj%C3%BAfrab%C3%BAi-pjt1.jpg/1920px-Glj%C3%BAfrab%C3%BAi-pjt1.jpg',
+    'skogafoss': 'img/skogafoss-1.jpg',
+    'troll-skaftafell': 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/View_from_Skaftafell_National_Park_July_2014_-2.JPG/1920px-View_from_Skaftafell_National_Park_July_2014_-2.JPG',
+    'jokulsarlon': 'img/jokulsarlon-1.jpg',
+    'glacier-lagoon-boat': 'img/jokulsarlon-3.jpg',
+    'diamond-beach': 'img/diamond-beach-1.jpg',
+    'hoffell': 'img/vestrahorn-2.jpg',
+    'vestrahorn': 'img/vestrahorn-1.jpg',
+    'mirror-beach': 'img/vestrahorn-3.jpg',
+    'viking-village': 'img/vestrahorn-2.jpg',
+    'fjadrargljufur': 'img/fjadrargljufur-1.jpg',
+    'reynisfjara': 'img/reynisfjara-1.jpg',
+    'dyrholaey': 'img/reynisfjara-3.jpg',
+    'lava-centre': 'img/fjadrargljufur-3.jpg'
+};
+
+function renderReview(review, key) {
     const statsHtml = review.stats.map(([label, value]) => `
         <div><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>
     `).join('');
-    const blocksHtml = review.blocks.map((block) => `
-        <section>
-            <h3>${escapeHtml(block.label)}</h3>
-            <p>${escapeHtml(block.text)}</p>
-        </section>
-    `).join('');
-    const sourcesHtml = review.sources.map((source) => `
+    const sources = review.sources || [];
+    const sourcesHtml = sources.map((source) => `
         <a href="${escapeHtml(source.url)}" target="_blank" rel="noopener">${escapeHtml(source.label)} ↗</a>
     `).join('');
+    const sourcesBlock = sources.length
+        ? `<div class="review-sources"><span>Fuentes usadas</span>${sourcesHtml}</div>`
+        : '';
+
+    const image = reviewImages[key] || 'img/hero-aurora.jpg';
 
     reviewBody.innerHTML = `
-        <p class="review-eyebrow">${escapeHtml(review.eyebrow)}</p>
-        <h2 id="reviewTitle">${escapeHtml(review.title)}</h2>
-        <p class="review-verdict">${escapeHtml(review.verdict)}</p>
-        <div class="review-stats">${statsHtml}</div>
-        <div class="review-sections">${blocksHtml}</div>
-        <div class="review-sources"><span>Fuentes usadas</span>${sourcesHtml}</div>
+        <div class="review-visual">
+            <img src="${escapeHtml(image)}" alt="${escapeHtml(review.title)}" loading="eager">
+            <div class="review-visual-shade"></div>
+            <div class="review-heading">
+                <p class="review-eyebrow">${escapeHtml(review.eyebrow)}</p>
+                <h2 id="reviewTitle">${escapeHtml(review.title)}</h2>
+            </div>
+        </div>
+        <details class="review-more">
+            <summary>Información <span aria-hidden="true">＋</span></summary>
+            <p class="review-verdict">${escapeHtml(review.verdict)}</p>
+            <div class="review-stats">${statsHtml}</div>
+            <div class="review-essential">
+                <span>Jarvis recomienda</span>
+                <p>${escapeHtml(review.blocks[3]?.text || '')}</p>
+            </div>
+        </details>
     `;
 }
 
@@ -307,7 +699,7 @@ function openReview(key, event) {
     if (!review || !reviewOverlay || !reviewPanel || !reviewBody) return;
     lastReviewTrigger = event?.target?.closest('[data-review]') || document.activeElement;
     reviewPreservedBodyLock = document.body.style.overflow === 'hidden';
-    renderReview(review);
+    renderReview(review, key);
     reviewOverlay.classList.add('active');
     reviewOverlay.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
@@ -321,6 +713,8 @@ function closeReview() {
     if (!reviewPreservedBodyLock) document.body.style.overflow = '';
     if (lastReviewTrigger instanceof HTMLElement) lastReviewTrigger.focus();
 }
+
+enhanceRoadbookReviews();
 
 document.addEventListener('click', (event) => {
     const closeTrigger = event.target.closest('[data-review-close]');
@@ -384,6 +778,7 @@ const jarvisData = [
         stops: [
             { time: '06:25', icon: '🛬', title: 'Llegada a Keflavík', coords: [63.9850, -22.6056] },
             { time: '07:30', icon: '🚐', title: 'Recoger Go Camper', coords: [63.9920, -22.5500] },
+            { time: '09:00', icon: '🥾', title: 'Iceland Camping Equipment', sub: 'Recoger 2 pares de bastones y rain pants para ambos en la terminal BSÍ.', coords: [64.1377, -21.9344], review: 'iceland-camping-equipment' },
             { time: 'Descanso', icon: '😴', title: 'Grindavík Campsite', sub: 'Parada opcional para dormir unas horas después del vuelo.', coords: [63.8424, -22.4328] },
             { time: 'Ciudad', icon: '⛪', title: '⭐ Hallgrímskirkja', star: true, coords: [64.1420, -21.9266] },
             { time: 'Ciudad', icon: '🌊', title: 'Viajero del Sol', coords: [64.1475, -21.9220] },
@@ -391,7 +786,7 @@ const jarvisData = [
             { time: '⛽ Gas', icon: '⛽', title: 'Orkan Kleppsvegur', sub: 'Parada técnica antes del camping.', coords: [64.1467, -21.8730] },
             { time: 'Noche', icon: '🏕️', title: 'Reykjavík Eco Campsite', coords: [64.0830, -21.9070] }
         ],
-        tip: 'Orden refinado: Go Campers, descanso opcional en Grindavík, Hallgrímskirkja, Viajero del Sol, Harpa, Orkan Kleppsvegur y Reykjavík Eco Campsite.',
+        tip: 'Orden refinado: Go Campers, Iceland Camping Equipment en BSÍ, descanso opcional, Hallgrímskirkja, Viajero del Sol, Harpa, Orkan Kleppsvegur y Reykjavík Eco Campsite.',
         wow: 'Hallgrímskirkja, el Viajero del Sol y Harpa hacen una entrada limpia a Reykjavík sin quemar energía el primer día.'
     },
     {
@@ -534,7 +929,11 @@ function selectStopMarker(marker, s) {
 
 function jarvisMarkerIcon(idx, isActive) {
     const d = jarvisData[idx];
-    const cls = ['j-jmarker', isActive ? 'j-jmarker-active' : '', d.critical ? 'j-jmarker-crit' : ''].filter(Boolean).join(' ');
+    const cls = [
+        'j-jmarker',
+        isActive ? 'j-jmarker-active' : '',
+        isActive && d.critical ? 'j-jmarker-crit' : ''
+    ].filter(Boolean).join(' ');
     const size = isActive ? 34 : 26;
     return L.divIcon({
         className: '',
@@ -560,7 +959,8 @@ function renderJarvisDay(idx) {
         const entryContent = `<div class="j-entry-top"><span class="j-time">${s.time}</span><div class="j-entry-content"><div class="${titleClass}">${s.icon} ${s.title}</div>${subHtml}</div></div>`;
         if (!s.coords) return `<div class="${entryClass}">${entryContent}</div>`;
         const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${s.coords[0]},${s.coords[1]}`;
-        const reviewAction = s.review ? `<button class="j-review-action" type="button" data-review="${escapeHtml(s.review)}">Review</button>` : '';
+        const reviewKey = getStopReviewKey(s);
+        const reviewAction = reviewKey ? `<button class="j-review-action" type="button" data-review="${escapeHtml(reviewKey)}">Review</button>` : '';
         return `<div class="${entryClass}">
             <button class="j-entry-map" type="button"${coordsAttr} aria-label="Ver ${s.title.replace('⭐ ', '')} en el mapa">${entryContent}</button>
             <div class="j-entry-actions">${reviewAction}<a class="j-navigate" href="${directionsUrl}" target="_blank" rel="noopener">Navegar ↗</a></div>
@@ -714,7 +1114,8 @@ function drawDayMarkers(idx) {
         marker._baseCoords = s.coords;
         marker._stopIndex = d.stops.indexOf(s);
         const subHtml = s.sub ? `<small>${s.sub}</small>` : '';
-        const reviewHtml = s.review ? `<br><button class="j-popup-review" type="button" data-review="${escapeHtml(s.review)}">Ver review</button>` : '';
+        const reviewKey = getStopReviewKey(s);
+        const reviewHtml = reviewKey ? `<br><button class="j-popup-review" type="button" data-review="${escapeHtml(reviewKey)}">Ver review</button>` : '';
         marker.bindPopup(`<strong>${s.icon} ${s.title}</strong>${subHtml ? '<br>' + subHtml : ''}${reviewHtml}`);
         marker.on('click', () => { selectStopMarker(marker, s); setTimeout(() => marker.openPopup(), 600); });
         jarvisStopMarkers.push(marker);
@@ -843,12 +1244,13 @@ function setPageInert(inert) {
 function openJarvis(event) {
     if (!jarvisOverlay || !jarvisPanel) return;
     lastJarvisTrigger = event?.currentTarget || document.activeElement;
+    jarvisActiveDay = 0;
     jarvisOverlay.classList.add('active');
     jarvisOverlay.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
     setPageInert(true);
     buildJarvisUI();
-    switchJarvisDay(jarvisActiveDay);
+    switchJarvisDay(0);
     requestAnimationFrame(() => jarvisPanel.focus());
 }
 
