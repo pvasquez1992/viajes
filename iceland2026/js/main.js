@@ -779,14 +779,13 @@ const jarvisData = [
             { time: '06:25', icon: '🛬', title: 'Llegada a Keflavík', coords: [63.9850, -22.6056] },
             { time: '07:30', icon: '🚐', title: 'Recoger Go Camper', coords: [63.9920, -22.5500] },
             { time: '09:00', icon: '🥾', title: 'Iceland Camping Equipment', sub: 'Recoger 2 pares de bastones y rain pants para ambos en la terminal BSÍ.', coords: [64.1377, -21.9344], review: 'iceland-camping-equipment' },
-            { time: 'Descanso', icon: '😴', title: 'Grindavík Campsite', sub: 'Parada opcional para dormir unas horas después del vuelo.', coords: [63.8424, -22.4328] },
             { time: 'Ciudad', icon: '⛪', title: '⭐ Hallgrímskirkja', star: true, coords: [64.1420, -21.9266] },
             { time: 'Ciudad', icon: '🌊', title: 'Viajero del Sol', coords: [64.1475, -21.9220] },
             { time: 'Ciudad', icon: '🎵', title: 'Harpa', coords: [64.1503, -21.9328] },
             { time: '⛽ Gas', icon: '⛽', title: 'Orkan Kleppsvegur', sub: 'Parada técnica antes del camping.', coords: [64.1467, -21.8730] },
             { time: 'Noche', icon: '🏕️', title: 'Reykjavík Eco Campsite', coords: [64.0830, -21.9070] }
         ],
-        tip: 'Orden refinado: Go Campers, Iceland Camping Equipment en BSÍ, descanso opcional, Hallgrímskirkja, Viajero del Sol, Harpa, Orkan Kleppsvegur y Reykjavík Eco Campsite.',
+        tip: 'Orden refinado: Go Campers, Iceland Camping Equipment en BSÍ, Hallgrímskirkja, Viajero del Sol, Harpa, Orkan Kleppsvegur y Reykjavík Eco Campsite como única base del día.',
         wow: 'Hallgrímskirkja, el Viajero del Sol y Harpa hacen una entrada limpia a Reykjavík sin quemar energía el primer día.'
     },
     {
