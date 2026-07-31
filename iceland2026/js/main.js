@@ -246,6 +246,72 @@ function makeReview({ eyebrow, title, verdict, stats, feel, route, level, jarvis
 }
 
 const reviewData = {
+    'booking-icelandair': makeReview({
+        eyebrow: 'Reserva · Pagada · Ref. AMQM##',
+        title: 'Icelandair · vuelos',
+        verdict: 'Dos pasajeros confirmados en FI644 y FI645. La misma referencia protegida cubre ida y regreso.',
+        stats: [['Estado', 'Pagado'], ['Pasajeros', '2 adultos'], ['Total', 'USD 1,033.26'], ['Ref.', 'AMQM##']],
+        feel: '31 ago · FI644 · IAD 20:30 → KEF 06:25 (+1).',
+        route: '7 sept · FI645 · KEF 16:50 → IAD 19:20.',
+        level: 'Presentarse con documentos y margen suficiente para check-in y seguridad.',
+        jarvis: 'Referencia deliberadamente oculta. Consultar el PDF local si Icelandair solicita el código completo.',
+        sources: []
+    }),
+    'booking-camper': makeReview({
+        eyebrow: 'Reserva · Pagada · Ref. BHD1####',
+        title: 'Go Campers · Go SMART Automatic',
+        verdict: 'Camper para dos pasajeros con seguro Gold y Explorer Bundle. Recogida y devolución protegidas por horario.',
+        stats: [['Estado', 'Pagado'], ['Recoger', '1 sept · 07:30'], ['Devolver', '7 sept · 14:00'], ['Ref.', 'BHD1####']],
+        feel: 'Go SMART Automatic · 2 pasajeros · seguro Gold.',
+        route: 'Recoger cerca de KEF, fotografiar el vehículo y revisar equipo, daños, combustible y calefacción.',
+        level: 'La devolución oficial es a las 14:00; llegar antes con tanque lleno, camper limpia y equipaje fuera.',
+        jarvis: 'Explorer Bundle incluido. La referencia completa permanece únicamente en el PDF local.',
+        sources: []
+    }),
+    'booking-eco': makeReview({
+        eyebrow: 'Reserva · Pagada · Ref. 9051####',
+        title: 'Reykjavík Eco Campsite',
+        verdict: 'Una noche confirmada para dos personas en Área A, parcela de camper pequeña sin electricidad.',
+        stats: [['Estado', 'Pagado'], ['Noche', '1–2 sept'], ['Personas', '2'], ['Ref.', '9051####']],
+        feel: 'Small Campervan Pitch · Area A · vehículo de hasta 5 m.',
+        route: 'Check-in desde 13:00 y check-out antes de 11:00.',
+        level: 'El código de acceso llega por separado y no se publica en esta web.',
+        jarvis: 'Guardar el correo/PDF offline para mostrar el recibo si lo solicitan.',
+        sources: []
+    }),
+    'booking-troll': makeReview({
+        eyebrow: 'Reserva · Pagada · Ref. TRO-9906####',
+        title: 'Tröll · Skaftafell Glacier Hike',
+        verdict: 'Tour de glaciar pagado en su totalidad para dos participantes. Duración aproximada: tres horas.',
+        stats: [['Estado', 'Pagado'], ['Inicio', '4 sept · 09:30'], ['Personas', '2'], ['Ref.', 'TRO-9906####']],
+        feel: 'Skaftafell 3 Hours Easy Level Glacier Hike.',
+        route: 'Punto de encuentro: Tröll Expeditions Skaftafell, Hof 785. Llegar al check-in a las 09:10.',
+        level: 'Ropa impermeable, capas térmicas, gorro y guantes. Confirmar condiciones de carretera antes de salir.',
+        jarvis: 'No confundir el punto de Tröll con el centro de visitantes.',
+        sources: []
+    }),
+    'booking-zodiac': makeReview({
+        eyebrow: 'Reserva · Pagada · Ref. 25Z9########',
+        title: 'Zodiac · Jökulsárlón',
+        verdict: 'Dos entradas de adulto con pago confirmado para el recorrido Zodiac en la laguna glaciar.',
+        stats: [['Estado', 'Pagado'], ['Salida', '4 sept · 15:50'], ['Personas', '2'], ['Ref.', '25Z9########']],
+        feel: 'Importe del proveedor: ISK 33,200.',
+        route: 'Llegar al operador a las 15:20 para completar el check-in antes de la salida.',
+        level: 'El comprobante registra una transacción de USD 288.21 con conversión de moneda.',
+        jarvis: 'La tarjeta y la referencia completa no se muestran en el sitio.',
+        sources: []
+    }),
+    'booking-blue': makeReview({
+        eyebrow: 'Reserva · Pagada · Ref. WBL0#######',
+        title: 'Blue Lagoon · Comfort',
+        verdict: 'Dos entradas Comfort pagadas para el último día del viaje.',
+        stats: [['Estado', 'Pagado'], ['Entrada', '7 sept · 10:30'], ['Cantidad', '2'], ['Ref.', 'WBL0#######']],
+        feel: 'Comfort admission x2 · importe total ISK 29,980.',
+        route: 'Llegar a las 09:58 para estacionar y completar el check-in con tranquilidad.',
+        level: 'Salir a las 12:30 para combustible y devolución de la camper.',
+        jarvis: 'El recibo no sustituye las entradas; guardar también los tickets recibidos por correo.',
+        sources: []
+    }),
     'hallgrimskirkja': makeReview({
         eyebrow: 'Review · Día 1 · Reykjavík',
         title: 'Hallgrímskirkja',
@@ -1053,16 +1119,29 @@ function renderJarvisDay(idx) {
         const entryClass = ['j-entry', s.star ? 'star' : '', s.crit ? 'crit-stop' : ''].filter(Boolean).join(' ') + clickable;
         const titleClass = s.star ? 'j-entry-title star-title' : 'j-entry-title';
         const description = getWanderlogDescription(s);
-        const subHtml = description ? `<div class="j-entry-sub">${escapeHtml(description)}</div>` : '';
+        const subHtml = '';
         const tooltipAttr = description ? ` data-tooltip="${escapeHtml(description)}"` : '';
         const entryContent = `<div class="j-entry-top"><span class="j-time">${s.time}</span><div class="j-entry-content"><div class="${titleClass}">${s.icon} ${s.title}</div>${subHtml}</div></div>`;
-        if (!s.coords) return `<div class="${entryClass}">${entryContent}</div>`;
-        const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${s.coords[0]},${s.coords[1]}`;
+        const directionsUrl = s.coords ? `https://www.google.com/maps/dir/?api=1&destination=${s.coords[0]},${s.coords[1]}` : '';
         const reviewKey = getStopReviewKey(s);
         const reviewAction = reviewKey ? `<button class="j-review-action" type="button" data-review="${escapeHtml(reviewKey)}">Review</button>` : '';
+        const normalizedTitle = normalizeReviewText(s.title || '');
+        const bookingKey = normalizedTitle.includes('vuelo fi') ? 'booking-icelandair'
+            : (normalizedTitle === 'go campers' || normalizedTitle === 'go campers iceland') ? 'booking-camper'
+            : normalizedTitle === 'reykjavik eco campsite' ? 'booking-eco'
+            : (normalizedTitle.includes('troll expeditions') || normalizedTitle.includes('glacier hike')) ? 'booking-troll'
+            : (normalizedTitle.includes('glacier lagoon boat') || normalizedTitle.includes('check-in del bote')) ? 'booking-zodiac'
+            : (normalizedTitle === 'blue lagoon' || normalizedTitle === 'blue lagoon check-in') ? 'booking-blue'
+            : '';
+        const bookingAction = bookingKey ? `<button class="j-booking-action" type="button" data-review="${bookingKey}">Reserva</button>` : '';
+        const navigateAction = s.coords ? `<a class="j-navigate" href="${directionsUrl}" target="_blank" rel="noopener">Navegar ↗</a>` : '';
+        const actions = reviewAction || bookingAction || navigateAction
+            ? `<div class="j-entry-actions">${bookingAction}${reviewAction}${navigateAction}</div>`
+            : '';
+        if (!s.coords) return `<div class="${entryClass}">${entryContent}${actions}</div>`;
         return `<div class="${entryClass}">
             <button class="j-entry-map" type="button"${coordsAttr}${tooltipAttr} aria-label="Ver ${s.title.replace('⭐ ', '')} en el mapa">${entryContent}</button>
-            <div class="j-entry-actions">${reviewAction}<a class="j-navigate" href="${directionsUrl}" target="_blank" rel="noopener">Navegar ↗</a></div>
+            ${actions}
         </div>`;
     }).join('');
 

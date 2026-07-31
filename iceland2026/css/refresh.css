@@ -1945,6 +1945,7 @@ p{
 
 .j-navigate,
 .j-review-action,
+.j-booking-action,
 .j-popup-review{
     display:inline-flex;
     align-items:center;
@@ -1970,10 +1971,18 @@ p{
     color:#ffd29b;
 }
 
+.j-booking-action{
+    border-color:rgba(121,221,184,.4);
+    background:rgba(121,221,184,.12);
+    color:#a8efd3;
+}
+
 .j-navigate:hover,
 .j-navigate:focus-visible,
 .j-review-action:hover,
 .j-review-action:focus-visible,
+.j-booking-action:hover,
+.j-booking-action:focus-visible,
 .j-popup-review:hover,
 .j-popup-review:focus-visible{
     border-color:rgba(114,217,194,.48);
@@ -2021,6 +2030,20 @@ p{
     max-width:100%;
     text-overflow:ellipsis;
     white-space:nowrap;
+}
+
+/* La descripción completa queda en hover; la lista se mantiene como agenda compacta. */
+.j-entry{
+    padding-top:5px;
+    padding-bottom:5px;
+}
+
+.j-entry::before{
+    top:11px;
+}
+
+.j-entry-actions{
+    margin-top:3px;
 }
 
 .j-tab.j-tab-crit{
