@@ -1012,6 +1012,95 @@ p{
     scroll-margin-top:110px;
 }
 
+.booking-status{
+    margin-bottom: 18px;
+    padding: clamp(18px, 2vw, 26px);
+    border: 1px solid rgba(112, 218, 190, .24);
+    border-radius: 20px;
+    background:
+        radial-gradient(circle at 100% 0, rgba(112, 218, 190, .1), transparent 38%),
+        rgba(6, 23, 21, .72);
+}
+
+.booking-status-head{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.booking-status-head h2{
+    margin: 3px 0 0;
+    font-size: clamp(1.25rem, 2vw, 1.75rem);
+}
+
+.booking-ready{
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    flex: 0 0 auto;
+    padding: 8px 12px;
+    color: #bff5df;
+    border: 1px solid rgba(112, 218, 190, .32);
+    border-radius: 999px;
+    background: rgba(71, 183, 145, .12);
+    font-size: .75rem;
+    font-weight: 800;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+.booking-paid-grid{
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.booking-paid-grid > div{
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    padding: 11px 12px;
+    border: 1px solid rgba(164, 207, 196, .13);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, .025);
+}
+
+.booking-paid-grid strong,
+.booking-paid-grid small{
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.booking-paid-grid strong{ color: #e5f3ef; font-size: .86rem; }
+.booking-paid-grid small{ margin-top: 2px; color: #82a9a1; font-size: .7rem; }
+.booking-paid-grid b{ color: #79ddb8; font-size: .67rem; text-transform: uppercase; }
+.booking-icon{ font-size: 1rem; }
+
+.booking-route-costs{
+    margin: 13px 0 0;
+    color: #91aaa5;
+    font-size: .78rem;
+}
+
+.booking-route-costs strong{ color: #f1bd78; }
+
+@media (max-width: 900px){
+    .booking-paid-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 560px){
+    .booking-status-head{ align-items: flex-start; }
+    .booking-paid-grid{ grid-template-columns: 1fr; }
+    .booking-paid-grid > div{ padding: 10px; }
+    .booking-ready{ padding: 7px 9px; font-size: .65rem; }
+}
+
 .travel-panel{
     border:1px solid var(--line);
     border-radius:20px;
