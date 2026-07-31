@@ -1082,6 +1082,20 @@ p{
 .booking-paid-grid b{ color: #79ddb8; font-size: .67rem; text-transform: uppercase; }
 .booking-icon{ font-size: 1rem; }
 
+.booking-ref{
+    display: inline-block;
+    margin-top: 6px;
+    padding: 3px 6px;
+    color: #b8c9c5;
+    border: 1px solid rgba(184, 201, 197, .16);
+    border-radius: 5px;
+    background: rgba(0, 0, 0, .18);
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-size: .64rem;
+    font-style: normal;
+    letter-spacing: .045em;
+}
+
 .booking-route-costs{
     margin: 13px 0 0;
     color: #91aaa5;
