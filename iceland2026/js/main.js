@@ -922,8 +922,8 @@ const jarvisData = [
             { time: '15:20–15:50 🔒', icon: '🎟️', title: 'Check-in del bote', crit: true, coords: [64.0478, -16.1782] },
             { time: '15:50–17:00 🔒', icon: '🚤', title: '⭐ Glacier Lagoon Boat', star: true, crit: true, coords: [64.0481, -16.1794] },
             { time: '17:00–17:45', icon: '💎', title: '⭐ Diamond Beach', star: true, coords: [64.0393, -16.1869] },
-            { time: '17:45–18:40', icon: '🛣️', title: 'Regreso a Skaftafell' },
-            { time: '18:40–21:00', icon: '🏕️', title: 'Skaftafell Campground', coords: [64.0100, -16.9800] }
+            { time: '17:45–18:40', icon: '🛣️', title: 'Diamond Beach → Haukafell', sub: '52 min aprox.; acceso final parcialmente de grava.' },
+            { time: '18:40–21:00', icon: '🏕️', title: 'Haukafell Campground', sub: 'Cena, ducha y descanso en un camping remoto.', coords: [64.34972, -15.50245] }
         ],
         tip: 'El tanque debe quedar lleno desde el día anterior. N1 Kirkjubæjarklaustur es solo una gasolinera de emergencia; proteger el registro 08:50 y el bote 15:50.',
         wow: 'Jökulsárlón + bote + Diamond Beach es el centro emocional del viaje: hielo azul, laguna glaciar y arena negra en una sola tarde.'
@@ -931,8 +931,8 @@ const jarvisData = [
     {
         day: 5, name: 'Höfn + termales + Vestrahorn', date: '05-sept-2026',
         stops: [
-            { time: '07:30–08:00', icon: '🏕️', title: 'Skaftafell Campground', coords: [64.0100, -16.9800] },
-            { time: '08:00–09:58', icon: '🛣️', title: 'Skaftafell → Höfn' },
+            { time: '07:30–08:00', icon: '🏕️', title: 'Haukafell Campground', coords: [64.34972, -15.50245] },
+            { time: '08:00–09:58', icon: '🛣️', title: 'Haukafell → Höfn', sub: '45 min aprox.; margen antes de la apertura de servicios.' },
             { time: '09:58–10:15', icon: '⛽', title: 'N1 Höfn', coords: [64.2591, -15.2064] },
             { time: '10:15–10:45', icon: '🛒', title: 'Nettó', coords: [64.2525, -15.2126] },
             { time: '10:45–11:05', icon: '🛣️', title: 'Höfn → Hoffell' },
@@ -947,7 +947,7 @@ const jarvisData = [
             { time: '17:00–19:30', icon: '🌅', title: 'Camping / Vestrahorn' },
             { time: '20:30', icon: '🌙', title: 'Dormir' }
         ],
-        tip: 'Orden refinado: Skaftafell, N1 Höfn, Nettó, Hoffell Hot Tubs, Viking Cafe, Vestrahorn, Mirror Beach, Viking Village y Vestrahorn Camping.',
+        tip: 'Orden refinado: Haukafell, N1 Höfn, Nettó, Hoffell Hot Tubs, Viking Cafe, Vestrahorn, Mirror Beach, Viking Village y Vestrahorn Camping.',
         wow: 'Vestrahorn es la montaña dramática; Stokksnes es el espejo; el Viking Village Film Set es el detalle cinematográfico que faltaba.'
     },
     {
@@ -1022,7 +1022,7 @@ const wanderlogDescriptions = {
     'jokulsarlon': 'Ver los icebergs flotando en la laguna glaciar.',
     'glacier lagoon boat': 'Navegar entre icebergs en la laguna glaciar.',
     'diamond beach': 'Caminar por la playa negra y observar los fragmentos de hielo.',
-    'skaftafell campground': 'Cenar, ducharse y descansar después del día de glaciares.',
+    'haukafell campground': 'Camping remoto cerca de Fláajökull, con electricidad, baños y duchas.',
     'netto': 'Comprar comida, agua y suministros para los últimos días.',
     'hoffell hot tubs': 'Bañarse en las piscinas geotermales y relajarse.',
     'viking cafe': 'Comprar el acceso a Stokksnes y tomar café o comer algo.',
