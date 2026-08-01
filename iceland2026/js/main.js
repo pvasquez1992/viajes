@@ -1095,6 +1095,28 @@ function finishStopSelection(marker, s) {
     setTimeout(() => marker.openPopup(), reduceMotionQuery.matches ? 0 : 600);
 }
 
+function markSelectedJarvisEntry(stopIndex) {
+    const body = document.getElementById('jarvisBody');
+    body?.querySelectorAll('.j-entry').forEach((entry) => entry.classList.remove('is-selected'));
+    const button = body?.querySelector(`.j-entry-map[data-stop-index="${stopIndex}"]`);
+    const entry = button?.closest('.j-entry');
+    if (entry) {
+        entry.classList.add('is-selected');
+        entry.scrollIntoView({ block: 'nearest', behavior: reduceMotionQuery.matches ? 'auto' : 'smooth' });
+    }
+}
+
+function revealJarvisMapForTravel() {
+    if (window.innerWidth > 760) return;
+    const sidebar = document.getElementById('jarvisSidebar');
+    if (!sidebar || sidebar.classList.contains('j-hidden')) return;
+    sidebar.classList.add('j-hidden');
+    document.getElementById('jarvisTabs')?.classList.add('j-tabs-expanded');
+    const toggle = document.getElementById('jarvisSidebarToggle');
+    if (toggle) toggle.textContent = '▲';
+    setTimeout(() => jarvisMap?.invalidateSize(), 330);
+}
+
 async function animateStopTransition(from, to, marker, s) {
     if (jarvisTravelRequest) jarvisTravelRequest.abort();
     if (jarvisTravelFrame) cancelAnimationFrame(jarvisTravelFrame);
@@ -1116,8 +1138,9 @@ async function animateStopTransition(from, to, marker, s) {
             cumulative.push(cumulative[index - 1] + distanceKm(path[index - 1], path[index]));
         }
         const total = cumulative.at(-1) || 1;
+        jarvisMap.invalidateSize();
         jarvisMap.fitBounds(L.latLngBounds(path), {
-            padding: smallScreenQuery.matches ? [34, 34] : [80, 80],
+            padding: smallScreenQuery.matches ? [48, 48] : [80, 80],
             animate: true,
             duration: .35
         });
@@ -1165,7 +1188,11 @@ function selectStopMarker(marker, s) {
     }
     selectedStopMarker = marker;
     marker.setIcon(makePinIcon(s, true));
-    if (previousCoords) animateStopTransition(previousCoords, marker._baseCoords || s.coords, marker, s);
+    markSelectedJarvisEntry(marker._stopIndex);
+    if (previousCoords) {
+        revealJarvisMapForTravel();
+        animateStopTransition(previousCoords, marker._baseCoords || s.coords, marker, s);
+    }
     else finishStopSelection(marker, s);
 }
 

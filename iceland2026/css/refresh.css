@@ -2038,6 +2038,22 @@ p{
     padding-bottom:5px;
 }
 
+.j-entry.is-selected{
+    background:linear-gradient(90deg,rgba(242,167,93,.16),rgba(242,167,93,.035));
+    box-shadow:inset 3px 0 #f2a75d;
+}
+
+.j-entry.is-selected::before{
+    border-color:#ffd08a;
+    background:#f2a75d;
+    box-shadow:0 0 0 4px rgba(242,167,93,.16),0 0 15px rgba(242,167,93,.72);
+}
+
+.j-entry.is-selected .j-entry-title,
+.j-entry.is-selected .j-time{
+    color:#ffe0b5;
+}
+
 .j-entry::before{
     top:11px;
 }
