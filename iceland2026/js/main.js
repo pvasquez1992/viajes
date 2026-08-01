@@ -1051,6 +1051,8 @@ let jarvisMap = null;
 let jarvisMarkers = [];
 let jarvisStopMarkers = [];
 let jarvisDayRoute = null;
+let jarvisRouteRequest = null;
+const jarvisRoadRouteCache = new Map();
 let selectedStopMarker = null;
 let jarvisTipTimer = null;
 let lastJarvisTrigger = null;
@@ -1197,10 +1199,67 @@ function renderJarvisDay(idx) {
 }
 
 function clearDayMarkers() {
+    if (jarvisRouteRequest) {
+        jarvisRouteRequest.abort();
+        jarvisRouteRequest = null;
+    }
     jarvisStopMarkers.forEach((m) => m.remove());
     jarvisStopMarkers = [];
     if (jarvisDayRoute) { jarvisDayRoute.remove(); jarvisDayRoute = null; }
     selectedStopMarker = null;
+}
+
+function uniqueConsecutiveCoords(stops) {
+    return stops.reduce((coords, stop) => {
+        const previous = coords.at(-1);
+        if (!previous || coordKey(previous) !== coordKey(stop.coords)) coords.push(stop.coords);
+        return coords;
+    }, []);
+}
+
+function roadRouteLayer(coords) {
+    return L.layerGroup([
+        L.polyline(coords, {
+            color: '#071310', weight: 7, opacity: .72, lineCap: 'round', lineJoin: 'round'
+        }),
+        L.polyline(coords, {
+            color: '#f2a75d', weight: 4, opacity: .96, lineCap: 'round', lineJoin: 'round'
+        })
+    ]);
+}
+
+async function drawRoadRoute(idx, stops) {
+    const coords = uniqueConsecutiveCoords(stops);
+    if (coords.length < 2) return;
+
+    const cacheKey = coords.map(coordKey).join(';');
+    const fallback = L.polyline(coords, {
+        color: '#f2a75d', weight: 2, opacity: .38, dashArray: '4 7', lineJoin: 'round'
+    }).addTo(jarvisMap);
+    jarvisDayRoute = fallback;
+
+    try {
+        let roadCoords = jarvisRoadRouteCache.get(cacheKey);
+        if (!roadCoords) {
+            jarvisRouteRequest = new AbortController();
+            const waypoints = coords.map(([lat, lng]) => `${lng},${lat}`).join(';');
+            const endpoint = `https://router.project-osrm.org/route/v1/driving/${waypoints}?overview=full&geometries=geojson&steps=false`;
+            const response = await fetch(endpoint, { signal: jarvisRouteRequest.signal });
+            if (!response.ok) throw new Error(`Routing HTTP ${response.status}`);
+            const payload = await response.json();
+            const geometry = payload.routes?.[0]?.geometry?.coordinates;
+            if (!geometry?.length) throw new Error('Routing geometry unavailable');
+            roadCoords = geometry.map(([lng, lat]) => [lat, lng]);
+            jarvisRoadRouteCache.set(cacheKey, roadCoords);
+        }
+        if (idx !== jarvisActiveDay || !jarvisMap) return;
+        fallback.remove();
+        jarvisDayRoute = roadRouteLayer(roadCoords).addTo(jarvisMap);
+    } catch (error) {
+        if (error.name !== 'AbortError') console.warn('Jarvis road route unavailable; using fallback.', error);
+    } finally {
+        jarvisRouteRequest = null;
+    }
 }
 
 function distanceKm(a, b) {
@@ -1280,11 +1339,7 @@ function drawDayMarkers(idx) {
     const stopsWithCoords = d.stops.filter((s) => s.coords);
     const plottedStops = buildPlottedStops(stopsWithCoords);
 
-    if (stopsWithCoords.length > 1) {
-        jarvisDayRoute = L.polyline(stopsWithCoords.map((s) => s.coords), {
-            color: dayColor, weight: 2.5, opacity: .7, dashArray: '6 5', lineJoin: 'round'
-        }).addTo(jarvisMap);
-    }
+    if (stopsWithCoords.length > 1) drawRoadRoute(idx, stopsWithCoords);
 
     plottedStops.forEach(({ stop: s, coords }) => {
         const marker = L.marker(coords, { icon: makePinIcon(s, false) }).addTo(jarvisMap);
@@ -1393,8 +1448,6 @@ function buildJarvisUI() {
             attributionControl: true
         });
         addBaseMap(jarvisMap, 'street');
-        L.polyline(routeLine.slice(0, returnRouteStartIndex + 1), { color: '#0f766e', weight: 3, opacity: .82, lineJoin: 'round' }).addTo(jarvisMap);
-        L.polyline(routeLine.slice(returnRouteStartIndex), { color: '#475569', weight: 2, opacity: .5, dashArray: '6 8' }).addTo(jarvisMap);
         jarvisMarkers = jarvisData.map((d, i) => {
             const stop = routeStops.find((s) => s.day === d.day);
             if (!stop) {
