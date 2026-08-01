@@ -1052,6 +1052,9 @@ let jarvisMarkers = [];
 let jarvisStopMarkers = [];
 let jarvisDayRoute = null;
 let jarvisRouteRequest = null;
+let jarvisTravelRequest = null;
+let jarvisTravelMarker = null;
+let jarvisTravelFrame = null;
 const jarvisRoadRouteCache = new Map();
 let selectedStopMarker = null;
 let jarvisTipTimer = null;
@@ -1079,18 +1082,91 @@ function makePinIcon(s, selected) {
     });
 }
 
+function stopTransitionEndpoint(from, to) {
+    return `https://router.project-osrm.org/route/v1/driving/${from[1]},${from[0]};${to[1]},${to[0]}?overview=full&geometries=geojson&steps=false`;
+}
+
+function finishStopSelection(marker, s) {
+    const detailZoom = smallScreenQuery.matches ? 15 : 16;
+    jarvisMap.flyTo(marker.getLatLng(), detailZoom, {
+        animate: !reduceMotionQuery.matches,
+        duration: reduceMotionQuery.matches ? 0 : .55
+    });
+    setTimeout(() => marker.openPopup(), reduceMotionQuery.matches ? 0 : 600);
+}
+
+async function animateStopTransition(from, to, marker, s) {
+    if (jarvisTravelRequest) jarvisTravelRequest.abort();
+    if (jarvisTravelFrame) cancelAnimationFrame(jarvisTravelFrame);
+    if (jarvisTravelMarker) jarvisTravelMarker.remove();
+    if (reduceMotionQuery.matches || coordKey(from) === coordKey(to)) {
+        finishStopSelection(marker, s);
+        return;
+    }
+    try {
+        jarvisTravelRequest = new AbortController();
+        const response = await fetch(stopTransitionEndpoint(from, to), { signal: jarvisTravelRequest.signal });
+        if (!response.ok) throw new Error(`Routing HTTP ${response.status}`);
+        const payload = await response.json();
+        const geometry = payload.routes?.[0]?.geometry?.coordinates;
+        if (!geometry?.length) throw new Error('Transition geometry unavailable');
+        const path = geometry.map(([lng, lat]) => [lat, lng]);
+        const cumulative = [0];
+        for (let index = 1; index < path.length; index += 1) {
+            cumulative.push(cumulative[index - 1] + distanceKm(path[index - 1], path[index]));
+        }
+        const total = cumulative.at(-1) || 1;
+        jarvisMap.fitBounds(L.latLngBounds(path), {
+            padding: smallScreenQuery.matches ? [34, 34] : [80, 80],
+            animate: true,
+            duration: .35
+        });
+        const travelMarker = L.circleMarker(path[0], {
+            radius: 7, color: '#071310', weight: 4,
+            fillColor: '#ffd08a', fillOpacity: 1,
+            className: 'j-travel-marker'
+        }).addTo(jarvisMap).bringToFront();
+        jarvisTravelMarker = travelMarker;
+        const started = performance.now() + 280;
+        const duration = 2200;
+        const step = (now) => {
+            const progress = Math.max(0, Math.min(1, (now - started) / duration));
+            const eased = progress < .5 ? 2 * progress * progress : 1 - ((-2 * progress + 2) ** 2) / 2;
+            const targetDistance = eased * total;
+            let segment = 1;
+            while (segment < cumulative.length - 1 && cumulative[segment] < targetDistance) segment += 1;
+            const segmentStart = cumulative[segment - 1];
+            const ratio = (targetDistance - segmentStart) / (cumulative[segment] - segmentStart || 1);
+            travelMarker.setLatLng([
+                path[segment - 1][0] + (path[segment][0] - path[segment - 1][0]) * ratio,
+                path[segment - 1][1] + (path[segment][1] - path[segment - 1][1]) * ratio
+            ]);
+            if (progress < 1) jarvisTravelFrame = requestAnimationFrame(step);
+            else {
+                finishStopSelection(marker, s);
+                setTimeout(() => {
+                    travelMarker.remove();
+                    if (jarvisTravelMarker === travelMarker) jarvisTravelMarker = null;
+                }, 650);
+            }
+        };
+        jarvisTravelFrame = requestAnimationFrame(step);
+    } catch (error) {
+        if (error.name !== 'AbortError') finishStopSelection(marker, s);
+    } finally {
+        jarvisTravelRequest = null;
+    }
+}
+
 function selectStopMarker(marker, s) {
+    const previousCoords = selectedStopMarker?._baseCoords;
     if (selectedStopMarker && selectedStopMarker !== marker) {
         selectedStopMarker.setIcon(makePinIcon(selectedStopMarker._stopData, false));
     }
     selectedStopMarker = marker;
     marker.setIcon(makePinIcon(s, true));
-    const markerPoint = marker.getLatLng();
-    const detailZoom = smallScreenQuery.matches ? 15 : 16;
-    jarvisMap.flyTo(markerPoint, detailZoom, {
-        animate: !reduceMotionQuery.matches,
-        duration: reduceMotionQuery.matches ? 0 : 1
-    });
+    if (previousCoords) animateStopTransition(previousCoords, marker._baseCoords || s.coords, marker, s);
+    else finishStopSelection(marker, s);
 }
 
 function jarvisMarkerIcon(idx, isActive) {
@@ -1175,7 +1251,6 @@ function renderJarvisDay(idx) {
             const match = jarvisStopMarkers.find((m) => m._stopIndex === stopIndex);
             if (match) {
                 selectStopMarker(match, match._stopData);
-                setTimeout(() => match.openPopup(), 800);
             }
         });
     });
@@ -1203,6 +1278,12 @@ function clearDayMarkers() {
         jarvisRouteRequest.abort();
         jarvisRouteRequest = null;
     }
+    if (jarvisTravelRequest) jarvisTravelRequest.abort();
+    if (jarvisTravelFrame) cancelAnimationFrame(jarvisTravelFrame);
+    if (jarvisTravelMarker) jarvisTravelMarker.remove();
+    jarvisTravelRequest = null;
+    jarvisTravelFrame = null;
+    jarvisTravelMarker = null;
     jarvisStopMarkers.forEach((m) => m.remove());
     jarvisStopMarkers = [];
     if (jarvisDayRoute) { jarvisDayRoute.remove(); jarvisDayRoute = null; }
@@ -1351,7 +1432,7 @@ function drawDayMarkers(idx) {
         const reviewKey = getStopReviewKey(s);
         const reviewHtml = reviewKey ? `<br><button class="j-popup-review" type="button" data-review="${escapeHtml(reviewKey)}">Ver review</button>` : '';
         marker.bindPopup(`<strong>${s.icon} ${s.title}</strong>${subHtml ? '<br>' + subHtml : ''}${reviewHtml}`);
-        marker.on('click', () => { selectStopMarker(marker, s); setTimeout(() => marker.openPopup(), 600); });
+        marker.on('click', () => selectStopMarker(marker, s));
         jarvisStopMarkers.push(marker);
     });
 
