@@ -1,0 +1,590 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Todas las señales — DMV Virginia</title>
+  <style>
+    :root {
+      --blue: #0b4f82;
+      --blue-2: #176aa6;
+      --ink: #132238;
+      --muted: #5d6b7e;
+      --line: #d7e1ec;
+      --bg: #eef4f9;
+      --card: #ffffff;
+      --accent: #f3b61f;
+      --shadow: 0 10px 28px rgba(25, 56, 89, .10);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+      line-height: 1.5;
+    }
+
+    a { color: inherit; }
+
+    .wrap {
+      width: min(1220px, calc(100% - 28px));
+      margin: 0 auto;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--blue), var(--blue-2));
+      color: #fff;
+      padding: 30px 0 26px;
+      box-shadow: var(--shadow);
+    }
+
+    .header-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 22px;
+      flex-wrap: wrap;
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: clamp(1.8rem, 4vw, 2.75rem);
+      line-height: 1.12;
+    }
+
+    .subtitle {
+      margin: 0;
+      max-width: 760px;
+      color: rgba(255,255,255,.88);
+      font-size: 1.02rem;
+    }
+
+    .header-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .button,
+    button,
+    .file-label {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 44px;
+      padding: 10px 15px;
+      border: 1px solid transparent;
+      border-radius: 11px;
+      font: inherit;
+      font-weight: 750;
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+    }
+
+    .button:hover,
+    button:hover,
+    .file-label:hover { transform: translateY(-1px); }
+
+    .button-light {
+      background: #fff;
+      color: var(--blue);
+      box-shadow: 0 5px 16px rgba(0,0,0,.14);
+    }
+
+    .button-outline {
+      border-color: rgba(255,255,255,.58);
+      color: #fff;
+      background: rgba(255,255,255,.08);
+    }
+
+    .toolbar-shell {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      padding: 14px 0;
+      background: rgba(238,244,249,.94);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(142,164,186,.35);
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: minmax(240px, 1fr) minmax(190px, 260px) auto;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .field {
+      width: 100%;
+      min-height: 48px;
+      border: 1px solid #b9c9da;
+      border-radius: 12px;
+      padding: 10px 13px;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+      box-shadow: 0 2px 8px rgba(39,72,104,.05);
+    }
+
+    .field:focus {
+      outline: 3px solid rgba(23,106,166,.18);
+      border-color: var(--blue-2);
+    }
+
+    .count {
+      min-width: 136px;
+      text-align: center;
+      padding: 10px 13px;
+      border-radius: 12px;
+      background: #fff;
+      border: 1px solid var(--line);
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    main { padding: 24px 0 56px; }
+
+    .notice {
+      display: none;
+      margin-bottom: 18px;
+      padding: 16px;
+      border: 1px solid #e6c36d;
+      border-radius: 13px;
+      background: #fff8df;
+      color: #5b4715;
+    }
+
+    .notice.show { display: block; }
+
+    .file-label {
+      margin-top: 10px;
+      background: var(--blue);
+      color: #fff;
+    }
+
+    #fileInput { display: none; }
+
+    .category-block { margin: 0 0 34px; }
+
+    .category-heading {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 0 0 14px;
+      padding-bottom: 9px;
+      border-bottom: 2px solid #c8d7e7;
+      color: var(--blue);
+      font-size: 1.35rem;
+    }
+
+    .category-total {
+      display: inline-grid;
+      place-items: center;
+      min-width: 31px;
+      height: 31px;
+      padding: 0 9px;
+      border-radius: 999px;
+      background: var(--blue);
+      color: #fff;
+      font-size: .88rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 18px;
+    }
+
+    .card {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+      break-inside: avoid;
+    }
+
+    .image-box {
+      display: grid;
+      place-items: center;
+      min-height: 250px;
+      padding: 18px;
+      background:
+        linear-gradient(45deg, #f7fafc 25%, transparent 25%),
+        linear-gradient(-45deg, #f7fafc 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #f7fafc 75%),
+        linear-gradient(-45deg, transparent 75%, #f7fafc 75%),
+        #fff;
+      background-size: 24px 24px;
+      background-position: 0 0, 0 12px, 12px -12px, -12px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .image-box img {
+      display: block;
+      width: auto;
+      height: auto;
+      max-width: min(230px, 92%);
+      max-height: 220px;
+      object-fit: contain;
+      image-rendering: auto;
+      filter: drop-shadow(0 5px 7px rgba(0,0,0,.10));
+    }
+
+    .card-body { padding: 17px 18px 19px; }
+
+    .tag {
+      display: inline-block;
+      margin-bottom: 8px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: #e8f2fa;
+      color: var(--blue);
+      font-size: .78rem;
+      font-weight: 800;
+      letter-spacing: .01em;
+    }
+
+    .card h3 {
+      margin: 0 0 10px;
+      font-size: 1.19rem;
+      line-height: 1.25;
+    }
+
+    .detail {
+      margin: 0 0 9px;
+      color: #35465a;
+    }
+
+    .detail:last-child { margin-bottom: 0; }
+
+    .detail strong { color: var(--ink); }
+
+    .empty {
+      display: none;
+      padding: 42px 20px;
+      text-align: center;
+      border: 1px dashed #98aec4;
+      border-radius: 15px;
+      background: #fff;
+      color: var(--muted);
+    }
+
+    .empty.show { display: block; }
+
+    .loading {
+      padding: 48px 20px;
+      text-align: center;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    footer {
+      padding: 22px 0 32px;
+      color: var(--muted);
+      text-align: center;
+      font-size: .92rem;
+    }
+
+    @media (max-width: 760px) {
+      .toolbar {
+        grid-template-columns: 1fr;
+      }
+
+      .count { width: 100%; }
+
+      .grid { grid-template-columns: 1fr; }
+
+      .image-box { min-height: 235px; }
+
+      .image-box img {
+        max-width: min(245px, 94%);
+        max-height: 215px;
+      }
+    }
+
+    @media print {
+      body { background: #fff; }
+      header { color: #000; background: #fff; box-shadow: none; padding: 0 0 14px; }
+      .subtitle { color: #333; }
+      .header-actions, .toolbar-shell, .notice, footer { display: none !important; }
+      main { padding: 0; }
+      .wrap { width: 100%; }
+      .category-block { break-before: auto; }
+      .grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+      .card { box-shadow: none; border-color: #999; }
+      .image-box { min-height: 175px; padding: 8px; }
+      .image-box img { max-width: 150px; max-height: 150px; }
+      .card-body { padding: 10px; }
+      .card h3 { font-size: 1rem; }
+      .detail { font-size: .84rem; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap header-row">
+      <div>
+        <h1>Todas las señales</h1>
+        <p class="subtitle">Repaso visual del banco de señales incluido en tu simulador del DMV de Virginia, usando exactamente las mismas imágenes y explicaciones.</p>
+      </div>
+      <div class="header-actions">
+        <a class="button button-light" href="dmv.html">← Volver al examen</a>
+        <button class="button button-outline" type="button" id="printBtn">🖨️ Imprimir</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="toolbar-shell">
+    <div class="wrap toolbar">
+      <input class="field" id="searchInput" type="search" placeholder="Buscar: alto, peatones, HOV, ferrocarril…" autocomplete="off">
+      <select class="field" id="categorySelect" aria-label="Filtrar por categoría">
+        <option value="">Todas las categorías</option>
+      </select>
+      <div class="count" id="resultCount">Cargando…</div>
+    </div>
+  </div>
+
+  <main class="wrap">
+    <div class="notice" id="loadError" role="alert">
+      <strong>No pude leer automáticamente <code>dmv.html</code>.</strong><br>
+      Esto puede ocurrir si abriste esta página directamente desde una carpeta local. Selecciona tu archivo <code>dmv.html</code> para cargar las señales.
+      <br>
+      <label class="file-label" for="fileInput">Seleccionar dmv.html</label>
+      <input id="fileInput" type="file" accept=".html,text/html">
+    </div>
+
+    <div class="loading" id="loading">Cargando todas las señales del simulador…</div>
+    <div id="catalog"></div>
+    <div class="empty" id="emptyState">No encontré señales con ese filtro.</div>
+  </main>
+
+  <footer>
+    Esta página toma los datos directamente de <strong>dmv.html</strong>; por eso se mantiene sincronizada con el simulador.
+  </footer>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const state = { signs: [] };
+      const searchInput = document.getElementById('searchInput');
+      const categorySelect = document.getElementById('categorySelect');
+      const resultCount = document.getElementById('resultCount');
+      const catalog = document.getElementById('catalog');
+      const emptyState = document.getElementById('emptyState');
+      const loading = document.getElementById('loading');
+      const loadError = document.getElementById('loadError');
+      const fileInput = document.getElementById('fileInput');
+
+      document.getElementById('printBtn').addEventListener('click', () => window.print());
+      searchInput.addEventListener('input', render);
+      categorySelect.addEventListener('change', render);
+
+      fileInput.addEventListener('change', async event => {
+        const file = event.target.files && event.target.files[0];
+        if (!file) return;
+        try {
+          const source = await file.text();
+          loadFromSource(source);
+        } catch (error) {
+          showError('No se pudo leer el archivo seleccionado.');
+        }
+      });
+
+      function normalize(value) {
+        return String(value ?? '')
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .toLowerCase()
+          .trim();
+      }
+
+      function extractSigns(source) {
+        const marker = 'const C=';
+        const start = source.indexOf(marker);
+        const end = source.indexOf('const VARIANTS=', start + marker.length);
+
+        if (start < 0 || end < 0) {
+          throw new Error('No se encontró el banco de señales C.');
+        }
+
+        let literal = source.slice(start + marker.length, end).trim();
+        if (literal.endsWith(';')) literal = literal.slice(0, -1);
+
+        const signs = Function('"use strict"; return (' + literal + ');')();
+        if (!Array.isArray(signs) || !signs.length) {
+          throw new Error('El banco de señales está vacío.');
+        }
+        return signs;
+      }
+
+      function loadFromSource(source) {
+        try {
+          state.signs = extractSigns(source);
+          loading.hidden = true;
+          loadError.classList.remove('show');
+          buildCategoryOptions();
+          render();
+        } catch (error) {
+          console.error(error);
+          showError('El archivo no contiene el formato de señales esperado.');
+        }
+      }
+
+      function showError(message) {
+        loading.hidden = true;
+        loadError.classList.add('show');
+        const strong = loadError.querySelector('strong');
+        if (message && strong) strong.textContent = message;
+        resultCount.textContent = 'Sin cargar';
+      }
+
+      function buildCategoryOptions() {
+        const categories = [...new Set(state.signs.map(sign => sign.cat || 'Sin categoría'))]
+          .sort((a, b) => a.localeCompare(b, 'es'));
+
+        categorySelect.innerHTML = '<option value="">Todas las categorías</option>';
+        for (const category of categories) {
+          const option = document.createElement('option');
+          option.value = category;
+          option.textContent = category;
+          categorySelect.appendChild(option);
+        }
+      }
+
+      function getFilteredSigns() {
+        const query = normalize(searchInput.value);
+        const category = categorySelect.value;
+
+        return state.signs.filter(sign => {
+          if (category && (sign.cat || 'Sin categoría') !== category) return false;
+          if (!query) return true;
+
+          const haystack = normalize([
+            sign.title,
+            sign.meaning,
+            sign.action,
+            sign.cat,
+            sign.key,
+            sign.manualRef
+          ].join(' '));
+
+          return haystack.includes(query);
+        });
+      }
+
+      function makeCard(sign, index) {
+        const article = document.createElement('article');
+        article.className = 'card';
+
+        const imageBox = document.createElement('div');
+        imageBox.className = 'image-box';
+
+        const image = document.createElement('img');
+        image.src = sign.img;
+        image.alt = sign.title ? 'Señal: ' + sign.title : 'Señal de tránsito';
+        image.loading = index < 8 ? 'eager' : 'lazy';
+        image.decoding = 'async';
+        imageBox.appendChild(image);
+
+        const body = document.createElement('div');
+        body.className = 'card-body';
+
+        const tag = document.createElement('span');
+        tag.className = 'tag';
+        tag.textContent = sign.cat || 'Sin categoría';
+
+        const title = document.createElement('h3');
+        title.textContent = sign.title || 'Señal sin título';
+
+        body.append(tag, title);
+
+        if (sign.meaning) {
+          const meaning = document.createElement('p');
+          meaning.className = 'detail';
+          const label = document.createElement('strong');
+          label.textContent = 'Significa: ';
+          meaning.append(label, document.createTextNode(sign.meaning));
+          body.appendChild(meaning);
+        }
+
+        if (sign.action) {
+          const action = document.createElement('p');
+          action.className = 'detail';
+          const label = document.createElement('strong');
+          label.textContent = 'Qué hacer: ';
+          action.append(label, document.createTextNode(sign.action));
+          body.appendChild(action);
+        }
+
+        article.append(imageBox, body);
+        return article;
+      }
+
+      function render() {
+        if (!state.signs.length) return;
+
+        const filtered = getFilteredSigns();
+        catalog.replaceChildren();
+        emptyState.classList.toggle('show', filtered.length === 0);
+        resultCount.textContent = filtered.length + (filtered.length === 1 ? ' señal' : ' señales');
+
+        const groups = new Map();
+        for (const sign of filtered) {
+          const category = sign.cat || 'Sin categoría';
+          if (!groups.has(category)) groups.set(category, []);
+          groups.get(category).push(sign);
+        }
+
+        let globalIndex = 0;
+        for (const [category, signs] of groups) {
+          const section = document.createElement('section');
+          section.className = 'category-block';
+
+          const heading = document.createElement('h2');
+          heading.className = 'category-heading';
+          heading.append(document.createTextNode(category + ' '));
+
+          const total = document.createElement('span');
+          total.className = 'category-total';
+          total.textContent = signs.length;
+          heading.appendChild(total);
+
+          const grid = document.createElement('div');
+          grid.className = 'grid';
+
+          for (const sign of signs) {
+            grid.appendChild(makeCard(sign, globalIndex++));
+          }
+
+          section.append(heading, grid);
+          catalog.appendChild(section);
+        }
+      }
+
+      fetch('dmv.html', { cache: 'no-store' })
+        .then(response => {
+          if (!response.ok) throw new Error('HTTP ' + response.status);
+          return response.text();
+        })
+        .then(loadFromSource)
+        .catch(error => {
+          console.warn('Carga automática fallida:', error);
+          showError();
+        });
+    })();
+  </script>
+</body>
+</html>
