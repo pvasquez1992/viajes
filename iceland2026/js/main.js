@@ -1048,6 +1048,7 @@ function getWanderlogDescription(stop) {
 }
 
 let jarvisActiveDay = 0;
+let jarvisShowAllStops = false;
 let jarvisMap = null;
 let jarvisMarkers = [];
 let jarvisStopMarkers = [];
@@ -1213,13 +1214,84 @@ function jarvisMarkerIcon(idx, isActive) {
     });
 }
 
+
+const jarvisRoutineIcons = new Set(['🛣️', '😴', '🥪', '🍲', '🎒', '🌙', '🧹', '🌅']);
+
+function getJarvisBookingKey(stop) {
+    const title = normalizeReviewText(stop.title || '');
+    if (title.includes('vuelo fi')) return 'booking-icelandair';
+    if (title === 'go campers' || title === 'go campers iceland') return 'booking-camper';
+    if (title === 'reykjavik eco campsite') return 'booking-eco';
+    if (title.includes('troll expeditions') || title.includes('glacier hike')) return 'booking-troll';
+    if (title.includes('glacier lagoon boat') || title.includes('check in del bote')) return 'booking-zodiac';
+    if (title === 'blue lagoon' || title === 'blue lagoon check in') return 'booking-blue';
+    return '';
+}
+
+function isJarvisRoutineStop(stop) {
+    const title = normalizeReviewText(stop.title || '');
+    return jarvisRoutineIcons.has(stop.icon)
+        || /(traslado|conduccion|preparacion|descanso|dormir|almuerzo|cena|camping vestrahorn)/.test(title);
+}
+
+function isJarvisOperationalStop(stop) {
+    if (!stop.coords) return false;
+    const title = normalizeReviewText(stop.title || '');
+    return ['orkan', 'n1 ', 'gasolinera', 'camping', 'campsite', 'campground']
+        .some((pattern) => title.includes(pattern));
+}
+
+function getEssentialJarvisStops(stops) {
+    const firstActionableIndex = stops.findIndex((stop) => stop.coords && !isJarvisRoutineStop(stop));
+    const essential = [];
+    const keyPositions = new Map();
+
+    stops.forEach((stop, stopIndex) => {
+        const routine = isJarvisRoutineStop(stop);
+        if (routine && !stop.crit) return;
+
+        const reviewKey = routine ? null : getStopReviewKey(stop);
+        const bookingKey = getJarvisBookingKey(stop);
+        const keep = bookingKey || reviewKey || stop.star || stop.crit
+            || isJarvisOperationalStop(stop) || stopIndex === firstActionableIndex;
+        if (!keep) return;
+
+        const key = `${normalizeReviewText(stop.title || '')}|${stop.coords?.join(',') || ''}`;
+        const previousPosition = keyPositions.get(key);
+        if (previousPosition === undefined) {
+            keyPositions.set(key, essential.length);
+            essential.push({ stop, stopIndex });
+            return;
+        }
+
+        const previous = essential[previousPosition];
+        const previousIsFixed = previous.stop.crit || String(previous.stop.time || '').includes('🔒');
+        const currentIsFixed = stop.crit || String(stop.time || '').includes('🔒');
+        if (currentIsFixed && !previousIsFixed) essential[previousPosition] = { stop, stopIndex };
+    });
+
+    return essential;
+}
+
+function getVisibleJarvisStops(day) {
+    if (jarvisShowAllStops) {
+        return day.stops.map((stop, stopIndex) => ({ stop, stopIndex }));
+    }
+    return getEssentialJarvisStops(day.stops);
+}
+
 function renderJarvisDay(idx) {
     const d = jarvisData[idx];
     const body = document.getElementById('jarvisBody');
     body.scrollTop = 0;
     const dayLabel = d.label || `DÍA ${d.day}`;
+    const essentialStops = getEssentialJarvisStops(d.stops);
+    const visibleStops = jarvisShowAllStops
+        ? d.stops.map((stop, stopIndex) => ({ stop, stopIndex }))
+        : essentialStops;
+    const hiddenStopCount = d.stops.length - essentialStops.length;
 
-    const stopsHtml = d.stops.map((s, stopIndex) => {
+    const stopsHtml = visibleStops.map(({ stop: s, stopIndex }) => {
         const clickable = s.coords ? ' j-entry-clickable' : '';
         const coordsAttr = s.coords ? ` data-lat="${s.coords[0]}" data-lng="${s.coords[1]}" data-stop-index="${stopIndex}"` : '';
         const entryClass = ['j-entry', s.star ? 'star' : '', s.crit ? 'crit-stop' : ''].filter(Boolean).join(' ') + clickable;
@@ -1229,16 +1301,9 @@ function renderJarvisDay(idx) {
         const tooltipAttr = description ? ` data-tooltip="${escapeHtml(description)}"` : '';
         const entryContent = `<div class="j-entry-top"><span class="j-time">${s.time}</span><div class="j-entry-content"><div class="${titleClass}">${s.icon} ${s.title}</div>${subHtml}</div></div>`;
         const directionsUrl = s.coords ? `https://www.google.com/maps/dir/?api=1&destination=${s.coords[0]},${s.coords[1]}` : '';
-        const reviewKey = getStopReviewKey(s);
+        const reviewKey = isJarvisRoutineStop(s) ? null : getStopReviewKey(s);
         const reviewAction = reviewKey ? `<button class="j-review-action" type="button" data-review="${escapeHtml(reviewKey)}">Review</button>` : '';
-        const normalizedTitle = normalizeReviewText(s.title || '');
-        const bookingKey = normalizedTitle.includes('vuelo fi') ? 'booking-icelandair'
-            : (normalizedTitle === 'go campers' || normalizedTitle === 'go campers iceland') ? 'booking-camper'
-            : normalizedTitle === 'reykjavik eco campsite' ? 'booking-eco'
-            : (normalizedTitle.includes('troll expeditions') || normalizedTitle.includes('glacier hike')) ? 'booking-troll'
-            : (normalizedTitle.includes('glacier lagoon boat') || normalizedTitle.includes('check-in del bote')) ? 'booking-zodiac'
-            : (normalizedTitle === 'blue lagoon' || normalizedTitle === 'blue lagoon check-in') ? 'booking-blue'
-            : '';
+        const bookingKey = getJarvisBookingKey(s);
         const bookingAction = bookingKey ? `<button class="j-booking-action" type="button" data-review="${bookingKey}">Reserva</button>` : '';
         const navigateAction = s.coords ? `<a class="j-navigate" href="${directionsUrl}" target="_blank" rel="noopener">Navegar ↗</a>` : '';
         const actions = reviewAction || bookingAction || navigateAction
@@ -1262,6 +1327,10 @@ function renderJarvisDay(idx) {
   ${critLabel}
   <span class="j-day-date">${d.date}</span>
 </div>
+<div class="j-day-tools">
+  <span class="j-density-summary">${visibleStops.length} paradas ${jarvisShowAllStops ? 'totales' : 'clave'}</span>
+  ${hiddenStopCount ? `<button class="j-density-toggle" type="button" data-jarvis-density aria-pressed="${jarvisShowAllStops}">${jarvisShowAllStops ? 'Ver solo claves' : `Ver todo (+${hiddenStopCount})`}</button>` : ''}
+</div>
 <div class="j-timeline">${stopsHtml}</div>
 <div class="j-tip">
   <div class="j-tip-label">🧠 JARVIS</div>
@@ -1271,6 +1340,13 @@ function renderJarvisDay(idx) {
   <div class="j-wow-label">💥 SENSACIÓN WOW</div>
   <div class="j-wow-text">${d.wow}</div>
 </div>`;
+
+    body.querySelector('[data-jarvis-density]')?.addEventListener('click', () => {
+        jarvisShowAllStops = !jarvisShowAllStops;
+        clearDayMarkers();
+        if (jarvisMap) drawDayMarkers(idx);
+        renderJarvisDay(idx);
+    });
 
     body.querySelectorAll('.j-entry-map').forEach((el) => {
         el.addEventListener('click', () => {
@@ -1445,7 +1521,9 @@ function buildPlottedStops(stops) {
 function drawDayMarkers(idx) {
     const d = jarvisData[idx];
     const dayColor = '#ffb060';
-    const stopsWithCoords = d.stops.filter((s) => s.coords);
+    const stopsWithCoords = getVisibleJarvisStops(d)
+        .map(({ stop }) => stop)
+        .filter((stop) => stop.coords);
     const plottedStops = buildPlottedStops(stopsWithCoords);
 
     if (stopsWithCoords.length > 1) drawRoadRoute(idx, stopsWithCoords);
