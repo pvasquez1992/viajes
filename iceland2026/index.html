@@ -15,6 +15,62 @@
     crossorigin="">
 <link rel="stylesheet" href="css/styles.css">
 <link rel="stylesheet" href="css/refresh.css">
+<style>
+.trip-countdown{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    width:fit-content;
+    margin-top:22px;
+    padding:13px 16px;
+    border:1px solid rgba(185,238,224,.24);
+    border-radius:16px;
+    background:rgba(6,16,13,.56);
+    box-shadow:0 16px 38px rgba(0,0,0,.18);
+    backdrop-filter:blur(12px);
+}
+.trip-countdown-label{
+    color:#b9eee0;
+    font-size:10px;
+    font-weight:900;
+    letter-spacing:.13em;
+    text-transform:uppercase;
+}
+.trip-countdown-values{
+    display:flex;
+    gap:12px;
+}
+.trip-countdown-values span{
+    display:grid;
+    gap:1px;
+    min-width:48px;
+    color:#9fb5ad;
+    font-size:9px;
+    font-weight:800;
+    letter-spacing:.06em;
+    text-align:center;
+    text-transform:uppercase;
+}
+.trip-countdown-values strong{
+    color:#f3f6f2;
+    font-size:22px;
+    letter-spacing:-.04em;
+    line-height:1;
+}
+@media (max-width:640px){
+    .trip-countdown{
+        align-items:flex-start;
+        flex-direction:column;
+        gap:10px;
+        width:100%;
+        padding:12px 13px;
+    }
+    .trip-countdown-values{
+        width:100%;
+        justify-content:space-between;
+    }
+}
+</style>
 </head>
 <body>
 <a class="skip-link" href="#library">Saltar al itinerario</a>
@@ -47,6 +103,15 @@ Una expedición en camper del 31 de agosto al 7 de septiembre.
 <span><strong>8</strong> días</span>
 <span><strong>Camper</strong> roadtrip</span>
 <span><strong>15:50</strong> bote</span>
+</div>
+
+<div class="trip-countdown" id="tripCountdown" role="timer" aria-live="off" aria-label="Tiempo restante para salir de viaje">
+<span class="trip-countdown-label">Falta para salir</span>
+<div class="trip-countdown-values">
+<span><strong id="countdownDays">--</strong>días</span>
+<span><strong id="countdownHours">--</strong>horas</span>
+<span><strong id="countdownMinutes">--</strong>minutos</span>
+</div>
 </div>
 <div class="hero-actions">
 <a class="primary-action" href="#library">Ver ruta día a día <span aria-hidden="true">↓</span></a>
@@ -714,5 +779,33 @@ Va después de Orkan Vík y antes de Dyrhólaey.
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
     crossorigin=""></script>
 <script src="js/main.js"></script>
+<script>
+(() => {
+    const departure = new Date('2026-08-31T16:30:00-04:00').getTime();
+    const root = document.getElementById('tripCountdown');
+    const fields = {
+        days: document.getElementById('countdownDays'),
+        hours: document.getElementById('countdownHours'),
+        minutes: document.getElementById('countdownMinutes')
+    };
+    if (!root || Object.values(fields).some((field) => !field)) return;
+
+    function updateTripCountdown() {
+        const remaining = departure - Date.now();
+        if (remaining <= 0) {
+            root.innerHTML = '<span class="trip-countdown-label">¡La aventura comenzó!</span>';
+            root.setAttribute('aria-label', 'El viaje a Islandia ya comenzó');
+            return;
+        }
+        fields.days.textContent = Math.floor(remaining / 86400000);
+        fields.hours.textContent = String(Math.floor((remaining % 86400000) / 3600000)).padStart(2, '0');
+        fields.minutes.textContent = String(Math.floor((remaining % 3600000) / 60000)).padStart(2, '0');
+        root.setAttribute('aria-label', fields.days.textContent + ' días, ' + fields.hours.textContent + ' horas y ' + fields.minutes.textContent + ' minutos para salir de viaje');
+    }
+
+    updateTripCountdown();
+    setInterval(updateTripCountdown, 30000);
+})();
+</script>
 </body>
 </html>
