@@ -27,17 +27,38 @@ document.querySelectorAll('.timeline-day').forEach((day) => {
 });
 
 const scrollProgress = document.getElementById('scrollProgress');
+let scrollProgressFrame = 0;
+
 function updateScrollProgress() {
+    scrollProgressFrame = 0;
     if (!scrollProgress) return;
     const scrollable = document.documentElement.scrollHeight - window.innerHeight;
-    const progress = scrollable > 0 ? Math.min(100, Math.max(0, (window.scrollY / scrollable) * 100)) : 0;
-    scrollProgress.style.width = `${progress}%`;
+    const progress = scrollable > 0 ? Math.min(1, Math.max(0, window.scrollY / scrollable)) : 0;
+    scrollProgress.style.transform = `scaleX(${progress})`;
 }
-window.addEventListener('scroll', updateScrollProgress, { passive: true });
-window.addEventListener('resize', updateScrollProgress);
+
+function requestScrollProgressUpdate() {
+    if (scrollProgressFrame) return;
+    scrollProgressFrame = requestAnimationFrame(updateScrollProgress);
+}
+
+window.addEventListener('scroll', requestScrollProgressUpdate, { passive: true });
+window.addEventListener('resize', requestScrollProgressUpdate, { passive: true });
 updateScrollProgress();
 
 const dayLinks = [...document.querySelectorAll('[data-day-target]')];
+const daySwitcher = document.querySelector('.day-switcher');
+let activeDayTarget = '';
+
+function keepDayLinkVisible(link) {
+    if (!daySwitcher || daySwitcher.scrollWidth <= daySwitcher.clientWidth) return;
+    const targetLeft = link.offsetLeft - (daySwitcher.clientWidth - link.offsetWidth) / 2;
+    daySwitcher.scrollTo({
+        left: Math.max(0, targetLeft),
+        behavior: reduceMotionQuery.matches ? 'auto' : 'smooth'
+    });
+}
+
 dayLinks.forEach((link) => {
     link.addEventListener('click', (event) => {
         event.preventDefault();
@@ -51,12 +72,15 @@ if ('IntersectionObserver' in window && dayLinks.length) {
         const visible = entries
             .filter((entry) => entry.isIntersecting)
             .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-        if (!visible) return;
+        if (!visible || visible.target.id === activeDayTarget) return;
+        activeDayTarget = visible.target.id;
+        let activeLink = null;
         dayLinks.forEach((link) => {
-            const active = link.dataset.dayTarget === visible.target.id;
+            const active = link.dataset.dayTarget === activeDayTarget;
             link.classList.toggle('is-active', active);
-            if (active) link.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+            if (active) activeLink = link;
         });
+        if (activeLink) requestAnimationFrame(() => keepDayLinkVisible(activeLink));
     }, { rootMargin: '-24% 0px -62% 0px', threshold: [0, .2, .6] });
     document.querySelectorAll('.timeline-day').forEach((day) => dayObserver.observe(day));
 }
