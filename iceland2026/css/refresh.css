@@ -2024,6 +2024,46 @@ p{
     margin-left:104px;
 }
 
+.j-day-tools{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin:-8px 0 12px;
+    padding-bottom:12px;
+    border-bottom:1px solid rgba(114,217,194,.12);
+}
+
+.j-density-summary{
+    color:#79a8b8;
+    font-family:monospace;
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:.05em;
+    text-transform:uppercase;
+}
+
+.j-density-toggle{
+    min-height:28px;
+    padding:0 10px;
+    border:1px solid rgba(114,217,194,.28);
+    border-radius:999px;
+    background:rgba(114,217,194,.08);
+    color:var(--frost);
+    font:inherit;
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:.03em;
+    cursor:pointer;
+}
+
+.j-density-toggle:hover,
+.j-density-toggle:focus-visible{
+    border-color:rgba(114,217,194,.52);
+    background:rgba(114,217,194,.15);
+    outline:none;
+}
+
 .j-entry-sub{
     color:#75a2b3;
     overflow:hidden;
