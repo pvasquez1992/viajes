@@ -882,9 +882,12 @@ const jarvisData = [
             { time: '13:15–13:45 🔒', icon: '🏕️', title: 'Reykjavík Eco Campsite', sub: 'Check-in y preparar la cama.', coords: [64.1463, -21.8760] },
             { time: '13:45–17:00', icon: '😴', title: 'Descanso' },
             { time: '17:15–18:00', icon: '🛒', title: 'Supermercado' },
-            { time: '18:15–20:00', icon: '🏕️', title: 'Reykjavík Eco Campsite', sub: 'Cena, ducha y descanso.', coords: [64.1463, -21.8760] }
+            { time: '18:00–18:15', icon: '🛣️', title: 'Supermercado → Kaffivagninn', sub: 'Traslado al puerto viejo.' },
+            { time: '18:15–19:30', icon: '🐟', title: 'Kaffivagninn', sub: 'Cena islandesa junto al puerto; reservar mesa con anticipación.', coords: [64.1535869, -21.94757], star: true },
+            { time: '19:30–19:45', icon: '🛣️', title: 'Kaffivagninn → Reykjavík Eco Campsite', sub: 'Regreso al camping.' },
+            { time: '19:45–20:30', icon: '🏕️', title: 'Reykjavík Eco Campsite', sub: 'Ducha, organizar la camper y descanso temprano.', coords: [64.1463, -21.8760] }
         ],
-        tip: 'Día ligero. Después de recoger equipo y recorrer tres puntos urbanos, el bloque 13:45–17:00 queda protegido para dormir.',
+        tip: 'Día ligero. El bloque 13:45–17:00 queda protegido para dormir; después de comprar víveres, cena a las 18:15 en Kaffivagninn y regreso temprano al camping.',
         wow: 'Hallgrímskirkja, el Viajero del Sol y Harpa hacen una entrada limpia a Reykjavík sin quemar energía el primer día.'
     },
     {
