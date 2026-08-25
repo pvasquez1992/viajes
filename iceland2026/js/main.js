@@ -2,6 +2,77 @@ const smallScreenQuery = window.matchMedia('(max-width: 640px)');
 const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
 const isSmallScreen = smallScreenQuery.matches;
 
+const AURORA_NIGHTS = new Set([
+    '2026-09-04',
+    '2026-09-05',
+    '2026-09-06'
+]);
+const AURORA_THEME_START_MINUTES = 20 * 60 + 45;
+const AURORA_THEME_END_MINUTES = 6 * 60 + 30;
+const ICELAND_TIME_ZONE = 'Atlantic/Reykjavik';
+
+function getIcelandClock(date = new Date()) {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: ICELAND_TIME_ZONE,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hourCycle: 'h23'
+    }).formatToParts(date).reduce((clock, part) => {
+        if (part.type !== 'literal') clock[part.type] = part.value;
+        return clock;
+    }, {});
+
+    return {
+        dateKey: `${parts.year}-${parts.month}-${parts.day}`,
+        year: Number(parts.year),
+        month: Number(parts.month),
+        day: Number(parts.day),
+        minutes: Number(parts.hour) * 60 + Number(parts.minute)
+    };
+}
+
+function previousDateKey({ year, month, day }) {
+    return new Date(Date.UTC(year, month - 1, day) - 86400000)
+        .toISOString()
+        .slice(0, 10);
+}
+
+function updateAuroraTheme(now = new Date()) {
+    const clock = getIcelandClock(now);
+    let auroraNight = '';
+
+    if (clock.minutes >= AURORA_THEME_START_MINUTES) {
+        auroraNight = clock.dateKey;
+    } else if (clock.minutes < AURORA_THEME_END_MINUTES) {
+        auroraNight = previousDateKey(clock);
+    }
+
+    const isAuroraNight = AURORA_NIGHTS.has(auroraNight);
+    document.body.classList.toggle('aurora-night', isAuroraNight);
+
+    if (isAuroraNight) {
+        document.body.dataset.auroraDay = String(Number(auroraNight.slice(-2)));
+    } else {
+        delete document.body.dataset.auroraDay;
+    }
+
+    const label = document.querySelector('[data-aurora-label]');
+    if (label) {
+        label.textContent = isAuroraNight
+            ? `Noche candidata a aurora · ${Number(auroraNight.slice(-2))} sept`
+            : 'Roadbook 2026 · Costa Sur';
+    }
+
+    const themeColor = document.querySelector('meta[name="theme-color"]');
+    if (themeColor) themeColor.content = isAuroraNight ? '#030817' : '#07110f';
+}
+
+updateAuroraTheme();
+setInterval(updateAuroraTheme, 300000);
+
 function openDay(anchor) {
     const target = document.getElementById(anchor);
     if (!target) {
