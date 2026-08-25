@@ -905,12 +905,13 @@ const jarvisData = [
             { time: '14:00–14:40', icon: '🌋', title: 'Kerið', coords: [64.0416, -20.8859] },
             { time: '14:40–15:10', icon: '🛣️', title: 'Kerið → Reykjadalur' },
             { time: '15:10–18:30', icon: '♨️', title: '⭐ Reykjadalur', star: true, coords: [64.0169, -21.2110] },
-            { time: '18:30–18:50', icon: '🛣️', title: 'Reykjadalur → Selfoss' },
-            { time: '18:50–19:05', icon: '⛽', title: 'Orkan Selfoss', coords: [63.9331, -20.9971] },
-            { time: '19:10–19:50', icon: '🛒', title: 'Selfoss' },
-            { time: '20:00', icon: '🏕️', title: 'Camping Selfoss', coords: [63.9329, -20.9875] }
+            { time: '18:30–19:05', icon: '🛣️', title: 'Reykjadalur → Ingólfsskáli', sub: 'Traslado y margen para cambiarse después del hike.' },
+            { time: '19:15–20:30', icon: '⚔️', title: 'Ingólfsskáli Viking Restaurant', sub: 'Cena vikinga; reservación obligatoria.', coords: [63.98182, -21.09641], star: true },
+            { time: '20:30–20:45', icon: '🛣️', title: 'Ingólfsskáli → Selfoss', sub: 'Traslado al pueblo.' },
+            { time: '20:45–21:00', icon: '⛽', title: 'Orkan Selfoss', coords: [63.9331, -20.9971] },
+            { time: '21:05', icon: '🏕️', title: 'Camping Selfoss', coords: [63.9329, -20.9875] }
         ],
-        tip: 'Orden refinado: Þingvellir, Almannagjá, Geysir, Brú Horsefarm, Gullfoss, Kerið, Reykjadalur, Orkan Selfoss y Camping Selfoss.',
+        tip: 'Después de Reykjadalur, cambiarse y conducir a Ingólfsskáli para la cena de las 19:15. La reservación es obligatoria; después quedan Orkan Selfoss y el camping.',
         wow: 'Reykjadalur convierte el Golden Circle en algo más que paradas rápidas: termal, montaña y vapor saliendo del valle.'
     },
     {
