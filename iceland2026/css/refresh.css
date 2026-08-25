@@ -45,6 +45,94 @@ body::before{
     background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.28'/%3E%3C/svg%3E");
 }
 
+/* Automatic aurora theme: 4–6 September, 20:45–06:30 Iceland time. */
+body.aurora-night{
+    --bg:#030817;
+    --bg-deep:#01030a;
+    --surface:#081321;
+    --surface-2:#0c1c2d;
+    --surface-3:#11283a;
+    --line:rgba(177,224,255,.17);
+    --line-strong:rgba(177,224,255,.29);
+    --text:#f4fbff;
+    --muted:#9fb9ca;
+    --muted-strong:#cee4ef;
+    --frost:#a8ecff;
+    --frost-bright:#e1faff;
+    --aqua:#6ef0b5;
+    --ember:#c49aff;
+    background:
+        radial-gradient(ellipse at 18% 10%,rgba(79,255,180,.18),transparent 32rem),
+        radial-gradient(ellipse at 82% 28%,rgba(153,99,255,.17),transparent 36rem),
+        radial-gradient(circle at 50% 76%,rgba(49,115,177,.12),transparent 34rem),
+        linear-gradient(180deg,#030817 0%,#06101d 56%,#01030a 100%);
+}
+
+body.aurora-night::before{
+    opacity:.38;
+    background-image:
+        radial-gradient(circle,#dffaff 0 1px,transparent 1.4px),
+        radial-gradient(circle,#9ee8ff 0 1px,transparent 1.5px),
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.18'/%3E%3C/svg%3E");
+    background-position:0 0,42px 31px,0 0;
+    background-size:83px 83px,127px 127px,180px 180px;
+}
+
+body.aurora-night .site-header-inner{
+    border-color:rgba(154,226,255,.2);
+    background:rgba(3,8,23,.94);
+    box-shadow:0 18px 54px rgba(0,0,0,.38),0 0 40px rgba(81,246,177,.05);
+}
+
+body.aurora-night .hero{
+    background-image:
+        linear-gradient(90deg,rgba(2,7,22,.94) 0%,rgba(3,12,26,.66) 45%,rgba(3,10,24,.2) 78%),
+        linear-gradient(0deg,var(--bg) 0%,transparent 32%),
+        url("../img/hero-aurora.jpg");
+}
+
+body.aurora-night .hero::before{
+    background:
+        radial-gradient(ellipse at 72% 14%,rgba(91,255,176,.3),transparent 25rem),
+        radial-gradient(ellipse at 88% 34%,rgba(167,97,255,.22),transparent 28rem),
+        linear-gradient(180deg,rgba(7,25,45,.04) 36%,rgba(2,5,17,.62));
+}
+
+body.aurora-night .hero-eyebrow{
+    color:#baffdf;
+    text-shadow:0 0 20px rgba(93,255,178,.38);
+}
+
+body.aurora-night .hero-eyebrow>span:first-child{
+    background:#73ffc0;
+    box-shadow:0 0 16px rgba(91,255,176,.78);
+}
+
+body.aurora-night .trip-countdown,
+body.aurora-night .route-map,
+body.aurora-night .timeline-day,
+body.aurora-night .travel-panel,
+body.aurora-night .place-day{
+    border-color:rgba(161,222,255,.2);
+    box-shadow:0 22px 62px rgba(0,0,0,.28),0 0 36px rgba(85,246,180,.035);
+}
+
+body.aurora-night[data-aurora-day="4"] [data-day-target="day-4"],
+body.aurora-night[data-aurora-day="5"] [data-day-target="day-5"],
+body.aurora-night[data-aurora-day="6"] [data-day-target="day-6"]{
+    border-color:rgba(112,255,187,.48);
+    background:linear-gradient(135deg,rgba(79,241,172,.18),rgba(153,103,255,.13));
+    color:#eafff5;
+    box-shadow:0 0 24px rgba(82,246,177,.14);
+}
+
+@media (prefers-contrast:more){
+    body.aurora-night{
+        --line:rgba(202,239,255,.3);
+        --line-strong:rgba(202,239,255,.48);
+    }
+}
+
 ::selection{
     background:rgba(114,217,194,.3);
     color:#fff;
