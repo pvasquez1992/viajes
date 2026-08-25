@@ -606,6 +606,35 @@ const reviewData = {
         jarvis: 'Después de Reynisfjara, este es cierre panorámico. Si el clima está feo, hacerlo corto.',
         sources: [{ label: 'South Iceland · Dyrhólaey', url: 'https://www.south.is/en/place/dyrholaey' }]
     }),
+    'kaffivagninn-food': makeReview({
+        eyebrow: 'Qué pedir · Día 1 · Reykjavík',
+        title: 'Kaffivagninn · cena del puerto',
+        verdict: 'Pidan un Jói Chef Special de bacalao y un Fish & chips para compartir y probar las dos versiones del pescado islandés.',
+        stats: [['Pedido', '1 Jói + 1 fish & chips'], ['Jói Chef', '6.135 ISK'], ['Fish & chips', '5.650 ISK'], ['Comida para 2', '11.785 ISK']],
+        feel: 'El Jói Chef es bacalao empanizado con gratinado de hongos, bearnesa, papas y ensalada. El fish & chips es la opción clásica y más sencilla.',
+        route: 'Ordenar uno de cada uno y dividir ambos platos.',
+        level: 'Cena confirmada para las 18:15. Los precios no incluyen bebidas.',
+        jarvis: 'Uno de cada uno: el Jói Chef aporta el plato especial y el fish & chips permite comparar el clásico.',
+        sources: [
+            { label: 'Menú de cena Kaffivagninn 2026', url: 'https://kaffivagninn.is/wp-content/uploads/2026/03/kvold.pdf' },
+            { label: 'Kaffivagninn oficial', url: 'https://kaffivagninn.is/' },
+            { label: 'Imagen fish & chips · CC0', url: 'https://commons.wikimedia.org/wiki/File:A_plate_of_Fish_and_chips.JPG' }
+        ]
+    }),
+    'ingolfsskali-food': makeReview({
+        eyebrow: 'Qué pedir · Día 2 · Después de Reykjadalur',
+        title: 'Ingólfsskáli · cena vikinga',
+        verdict: 'Primera elección: Lamb Prime, lamb loin o lamb fillet, cocinado medium-well y no demasiado rosado. Es una referencia: hay que confirmar si el corte está disponible esa noche.',
+        stats: [['Primera opción', 'Lamb loin / fillet'], ['Cocción', 'Medium-well'], ['Evitar', 'Slow-cooked lamb shank'], ['Alternativa', 'Beef rib-eye · 8.490 ISK']],
+        feel: 'Buscan un corte de cordero estilo bistec: entero, tierno y luego rebanado; no pierna ni carne desmenuzada.',
+        route: 'Preguntar al ordenar: “Do you have lamb loin, lamb fillet or Lamb Prime? I would like it medium-well, please—not too pink inside.”',
+        level: 'La fotografía es una referencia visual compartida por Pedro y no garantiza que sea el plato servido por el restaurante.',
+        jarvis: 'Confirmar el corte antes de ordenar. Si no hay cordero estilo bistec, elegir el beef rib-eye; no sustituirlo automáticamente por lamb shank.',
+        sources: [
+            { label: 'Menú Ingólfsskáli 2026', url: 'https://ingolfsskali.is/wp-content/uploads/2026/05/Menu-2026.pdf' },
+            { label: 'Ingólfsskáli oficial', url: 'https://ingolfsskali.is/' }
+        ]
+    }),
     'lava-centre': makeReview({
         eyebrow: 'Review · Día 6 · Opcional cubierto',
         title: 'LAVA Centre',
@@ -635,6 +664,8 @@ function escapeHtml(value) {
 }
 
 const reviewMatchers = [
+    { key: 'kaffivagninn-food', patterns: ['kaffivagninn'] },
+    { key: 'ingolfsskali-food', patterns: ['ingolfsskali', 'ingólfsskáli'] },
     { key: 'hallgrimskirkja', patterns: ['hallgrimskirkja', 'hallgrímskirkja'] },
     { key: 'sun-voyager', patterns: ['viajero del sol', 'sun voyager'] },
     { key: 'harpa', patterns: ['harpa'] },
@@ -717,13 +748,15 @@ function enhanceRoadbookReviews() {
         button.className = 'event-inline-review';
         button.type = 'button';
         button.dataset.review = reviewKey;
-        button.textContent = 'Review →';
+        button.textContent = reviewKey.endsWith('-food') ? 'Qué pedir →' : 'Review →';
         textEl.appendChild(button);
         eventEl.classList.add('event-has-review');
     });
 }
 
 const reviewImages = {
+    'kaffivagninn-food': 'https://commons.wikimedia.org/wiki/Special:Redirect/file/A_plate_of_Fish_and_chips.JPG?width=1200',
+    'ingolfsskali-food': 'img/lamb-prime-reference.jpeg',
     'hallgrimskirkja': 'img/hallgrimskirkja-1.jpg',
     'sun-voyager': 'img/hallgrimskirkja-2.jpg',
     'harpa': 'img/hallgrimskirkja-3.jpg',
@@ -782,6 +815,7 @@ function renderReview(review, key) {
                 <span>Jarvis recomienda</span>
                 <p>${escapeHtml(review.blocks[3]?.text || '')}</p>
             </div>
+            ${sourcesBlock}
         </details>
     `;
 }
@@ -1330,7 +1364,8 @@ function renderJarvisDay(idx) {
         const entryContent = `<div class="j-entry-top"><span class="j-time">${s.time}</span><div class="j-entry-content"><div class="${titleClass}">${s.icon} ${s.title}</div>${subHtml}</div></div>`;
         const directionsUrl = s.coords ? `https://www.google.com/maps/dir/?api=1&destination=${s.coords[0]},${s.coords[1]}` : '';
         const reviewKey = isJarvisRoutineStop(s) ? null : getStopReviewKey(s);
-        const reviewAction = reviewKey ? `<button class="j-review-action" type="button" data-review="${escapeHtml(reviewKey)}">Review</button>` : '';
+        const reviewLabel = reviewKey?.endsWith('-food') ? 'Qué pedir' : 'Review';
+        const reviewAction = reviewKey ? `<button class="j-review-action" type="button" data-review="${escapeHtml(reviewKey)}">${reviewLabel}</button>` : '';
         const bookingKey = getJarvisBookingKey(s);
         const bookingAction = bookingKey ? `<button class="j-booking-action" type="button" data-review="${bookingKey}">Reserva</button>` : '';
         const navigateAction = s.coords ? `<a class="j-navigate" href="${directionsUrl}" target="_blank" rel="noopener">Navegar ↗</a>` : '';
@@ -1564,7 +1599,8 @@ function drawDayMarkers(idx) {
         const description = getWanderlogDescription(s);
         const subHtml = description ? `<small>${escapeHtml(description)}</small>` : '';
         const reviewKey = getStopReviewKey(s);
-        const reviewHtml = reviewKey ? `<br><button class="j-popup-review" type="button" data-review="${escapeHtml(reviewKey)}">Ver review</button>` : '';
+        const popupReviewLabel = reviewKey?.endsWith('-food') ? 'Ver qué pedir' : 'Ver review';
+        const reviewHtml = reviewKey ? `<br><button class="j-popup-review" type="button" data-review="${escapeHtml(reviewKey)}">${popupReviewLabel}</button>` : '';
         marker.bindPopup(`<strong>${s.icon} ${s.title}</strong>${subHtml ? '<br>' + subHtml : ''}${reviewHtml}`);
         marker.on('click', () => selectStopMarker(marker, s));
         jarvisStopMarkers.push(marker);
