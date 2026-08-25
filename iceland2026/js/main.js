@@ -7,8 +7,10 @@ const AURORA_NIGHTS = new Set([
     '2026-09-05',
     '2026-09-06'
 ]);
-const AURORA_THEME_START_MINUTES = 20 * 60 + 45;
-const AURORA_THEME_END_MINUTES = 6 * 60 + 30;
+const AURORA_CAMPAIGN_START = '2026-08-25';
+const AURORA_CAMPAIGN_END = '2026-09-07';
+const AURORA_DAY_START_MINUTES = 6 * 60 + 30;
+const AURORA_VIEWING_START_MINUTES = 20 * 60 + 45;
 const ICELAND_TIME_ZONE = 'Atlantic/Reykjavik';
 
 function getIcelandClock(date = new Date()) {
@@ -44,30 +46,47 @@ function updateAuroraTheme(now = new Date()) {
     const clock = getIcelandClock(now);
     let auroraNight = '';
 
-    if (clock.minutes >= AURORA_THEME_START_MINUTES) {
+    if (clock.minutes >= AURORA_DAY_START_MINUTES) {
         auroraNight = clock.dateKey;
-    } else if (clock.minutes < AURORA_THEME_END_MINUTES) {
+    } else {
         auroraNight = previousDateKey(clock);
     }
 
-    const isAuroraNight = AURORA_NIGHTS.has(auroraNight);
-    document.body.classList.toggle('aurora-night', isAuroraNight);
+    const isCandidateNight = AURORA_NIGHTS.has(auroraNight);
+    const isViewingTime = clock.minutes >= AURORA_VIEWING_START_MINUTES
+        || clock.minutes < AURORA_DAY_START_MINUTES;
+    const isAuroraCampaign = clock.dateKey >= AURORA_CAMPAIGN_START
+        && (clock.dateKey < AURORA_CAMPAIGN_END
+            || (clock.dateKey === AURORA_CAMPAIGN_END
+                && clock.minutes < AURORA_DAY_START_MINUTES));
+    document.body.classList.toggle('aurora-night', isAuroraCampaign);
 
-    if (isAuroraNight) {
+    if (isCandidateNight) {
         document.body.dataset.auroraDay = String(Number(auroraNight.slice(-2)));
+        document.body.dataset.auroraPhase = isViewingTime ? 'watch' : 'prepare';
+    } else if (isAuroraCampaign) {
+        delete document.body.dataset.auroraDay;
+        document.body.dataset.auroraPhase = 'forecast';
     } else {
         delete document.body.dataset.auroraDay;
+        delete document.body.dataset.auroraPhase;
     }
 
     const label = document.querySelector('[data-aurora-label]');
     if (label) {
-        label.textContent = isAuroraNight
-            ? `Noche candidata a aurora · ${Number(auroraNight.slice(-2))} sept`
-            : 'Roadbook 2026 · Costa Sur';
+        if (!isAuroraCampaign) {
+            label.textContent = 'Roadbook 2026 · Costa Sur';
+        } else if (!isCandidateNight) {
+            label.textContent = 'Aurora watch · noches objetivo 4, 5 y 6 sept';
+        } else if (isViewingTime) {
+            label.textContent = `Noche candidata a aurora · ${Number(auroraNight.slice(-2))} sept`;
+        } else {
+            label.textContent = `Hoy ${Number(auroraNight.slice(-2))} sept · prepárate para buscar auroras`;
+        }
     }
 
     const themeColor = document.querySelector('meta[name="theme-color"]');
-    if (themeColor) themeColor.content = isAuroraNight ? '#030817' : '#07110f';
+    if (themeColor) themeColor.content = isAuroraCampaign ? '#030817' : '#07110f';
 }
 
 updateAuroraTheme();
