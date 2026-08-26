@@ -86,26 +86,79 @@ body.aurora-night .site-header-inner{
 
 body.aurora-night .hero{
     background-image:
-        linear-gradient(90deg,rgba(2,7,22,.94) 0%,rgba(3,12,26,.66) 45%,rgba(3,10,24,.2) 78%),
+        linear-gradient(90deg,rgba(1,5,18,.96) 0%,rgba(3,12,31,.7) 48%,rgba(4,10,28,.18) 82%),
         linear-gradient(0deg,var(--bg) 0%,transparent 32%),
         url("../img/hero-aurora.jpg");
 }
 
 body.aurora-night .hero::before{
     background:
-        radial-gradient(ellipse at 72% 14%,rgba(91,255,176,.3),transparent 25rem),
-        radial-gradient(ellipse at 88% 34%,rgba(167,97,255,.22),transparent 28rem),
+        radial-gradient(ellipse at 70% 12%,rgba(91,255,176,.42),transparent 27rem),
+        radial-gradient(ellipse at 89% 35%,rgba(167,97,255,.32),transparent 30rem),
         linear-gradient(180deg,rgba(7,25,45,.04) 36%,rgba(2,5,17,.62));
 }
 
-body.aurora-night .hero-eyebrow{
-    color:#baffdf;
-    text-shadow:0 0 20px rgba(93,255,178,.38);
+body.aurora-night .hero::after{
+    content:"";
+    position:absolute;
+    top:-18%;
+    right:-12%;
+    z-index:-1;
+    width:72%;
+    height:62%;
+    pointer-events:none;
+    background:
+        linear-gradient(118deg,transparent 18%,rgba(91,255,176,.2) 42%,rgba(116,226,255,.08) 56%,transparent 76%),
+        linear-gradient(132deg,transparent 28%,rgba(176,111,255,.16) 52%,transparent 72%);
+    opacity:.9;
+    transform:rotate(-7deg);
 }
 
-body.aurora-night .hero-eyebrow>span:first-child{
+body.aurora-night .hero-eyebrow{
+    width:fit-content;
+    max-width:100%;
+    padding:9px 13px 9px 11px;
+    border:1px solid rgba(112,255,187,.36);
+    border-radius:999px;
+    background:linear-gradient(110deg,rgba(8,35,39,.9),rgba(23,17,55,.82));
+    color:#baffdf;
+    box-shadow:0 10px 34px rgba(0,0,0,.25),inset 0 0 24px rgba(91,255,176,.05);
+    text-shadow:none;
+}
+
+body.aurora-night .hero-eyebrow-mark{
     background:#73ffc0;
     box-shadow:0 0 16px rgba(91,255,176,.78);
+}
+
+body.aurora-night .hero-eyebrow-copy{
+    color:#c9ffe5;
+}
+
+body.aurora-night .hero h1 span{
+    color:#f5fbff;
+    text-shadow:0 0 42px rgba(96,225,255,.16);
+}
+
+body.aurora-night .hero h1 em{
+    color:#dceeff;
+}
+
+body.aurora-night .hero-facts span,
+body.aurora-night .trip-countdown{
+    border-color:rgba(153,220,255,.25);
+    background:rgba(3,13,32,.78);
+}
+
+body.aurora-night .trip-countdown-label{
+    color:#7dffc4;
+}
+
+body.aurora-night .primary-action{
+    border-color:#91ffd0;
+    background:linear-gradient(135deg,#7dffc4,#a8ecff);
+    color:#031414;
+    box-shadow:0 12px 34px rgba(83,238,180,.16);
 }
 
 body.aurora-night .trip-countdown,
@@ -115,6 +168,21 @@ body.aurora-night .travel-panel,
 body.aurora-night .place-day{
     border-color:rgba(161,222,255,.2);
     box-shadow:0 22px 62px rgba(0,0,0,.28),0 0 36px rgba(85,246,180,.035);
+}
+
+body.aurora-night .summary-pill,
+body.aurora-night .day-switcher,
+body.aurora-night .timeline-day,
+body.aurora-night .travel-panel,
+body.aurora-night .place-day{
+    background-color:rgba(6,17,34,.88);
+}
+
+body.aurora-night .day-switcher a:hover,
+body.aurora-night .day-switcher a.is-active{
+    border-color:rgba(107,255,188,.36);
+    background:linear-gradient(135deg,rgba(78,238,169,.17),rgba(151,101,255,.12));
+    color:#eafff6;
 }
 
 body.aurora-night[data-aurora-day="4"] [data-day-target="day-4"],
@@ -314,7 +382,9 @@ summary:focus-visible,
 .hero-eyebrow{
     display:flex;
     align-items:center;
+    flex-wrap:nowrap;
     gap:10px;
+    max-width:100%;
     margin:0 0 22px;
     color:var(--frost);
     font-size:12px !important;
@@ -324,11 +394,22 @@ summary:focus-visible,
     text-transform:uppercase;
 }
 
-.hero-eyebrow span{
+.hero-eyebrow-mark{
+    flex:0 0 32px;
     width:32px;
     height:1px;
     background:var(--frost);
     box-shadow:0 0 12px rgba(185,238,224,.7);
+}
+
+.hero-eyebrow-copy{
+    display:block;
+    width:auto;
+    min-width:0;
+    height:auto;
+    background:none;
+    box-shadow:none;
+    white-space:nowrap;
 }
 
 .hero h1{
@@ -2399,6 +2480,11 @@ p{
     .hero-eyebrow{
         margin-bottom:18px;
         font-size:10px !important;
+    }
+
+    .hero-eyebrow-copy{
+        line-height:1.45;
+        white-space:normal;
     }
 
     .hero h1{
