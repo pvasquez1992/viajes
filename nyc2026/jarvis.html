@@ -53,7 +53,7 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 <script>
 const days=[
- {tab:'JUEVES 26',kicker:'DÍA 1 · THANKSGIVING',title:'Parade + Katz’s + Roosevelt Island',summary:'Llegar, soltar mochilas, vivir la edición 100 del desfile y cerrar el día viendo Manhattan desde Roosevelt Island.',facts:['Mochilas fuera','Parade ~09:45','Roosevelt al anochecer'],stops:[
+ {tab:'JUEVES 26',kicker:'DÍA 1 · THANKSGIVING',title:'Parade + Katz’s + Roosevelt Island',summary:'Llegar, soltar mochilas, vivir la edición 100 del desfile y cerrar el día viendo Manhattan desde Roosevelt Island.',facts:['Mochilas fuera','Parade ~09:45','🕷️ Spider-Man 2002','Roosevelt al anochecer'],stops:[
   {time:'04:30',icon:'🚗',title:'1201 → Union Station',sub:'Uber programado. Tramo Washington, no se muestra en el mapa de NYC.',map:false,meta:['Washington']},
   {time:'05:20',icon:'🚆',title:'Amtrak a NYC',sub:'Llegada programada a Moynihan 08:45.',map:false,meta:['Train 160']},
   {time:'08:45',icon:'🗽',title:'Moynihan Train Hall',sub:'Llegada a Manhattan.',lat:40.7506,lng:-73.9935,meta:['Llegada']},
@@ -63,7 +63,10 @@ const days=[
   {time:'~14:00',icon:'🏨',title:'Pod 51',sub:'Regreso. Check-in oficial desde 15:00 + descanso.',lat:40.7553,lng:-73.9709,meta:['Descanso']},
   {time:'~16:45',icon:'🚶',title:'Manhattan Tramway Plaza',sub:'Caminar desde Pod 51 hacia E 59th St & 2nd Ave.',lat:40.7614,lng:-73.9646,meta:['Tram']},
   {time:'~17:00',icon:'🚡',title:'Roosevelt Island Tram',sub:'Cruzar el East River al anochecer.',lat:40.7614,lng:-73.9646,hot:true,meta:['OMNY']},
-  {time:'17:10–19:00',icon:'🌃',title:'Roosevelt Island',sub:'Waterfront + skyline. Mantener el paseo en unos 2–3 km.',lat:40.7605,lng:-73.9509,hot:true,meta:['Skyline','2–3 km']},
+  {time:'Durante cruce',icon:'🕷️',title:'Spider-Man flag · Queensboro Bridge',sub:'Mira hacia el Queensboro Bridge: esta zona es el escenario de la decisión entre Mary Jane y el tram con niños en Spider-Man (2002).',lat:40.7580,lng:-73.9560,hot:true,meta:['Spider-Man 2002','Queensboro']},
+  {time:'~17:15',icon:'🌃',title:'Roosevelt Island waterfront',sub:'Caminar hacia el sur con Manhattan iluminado; mantener un ritmo tranquilo.',lat:40.7568,lng:-73.9568,meta:['Skyline','Cornell Tech']},
+  {time:'~17:40',icon:'🕸️',title:'Smallpox Hospital Ruins',sub:'Spider-Man flag: la pelea final está ambientada aquí. La secuencia se hizo en estudio/VFX; ver las ruinas desde el exterior.',lat:40.75159,lng:-73.95956,hot:true,meta:['Spider-Man 2002','Exterior']},
+  {time:'17:50–19:00',icon:'🌃',title:'Continuar Roosevelt Island',sub:'Waterfront + skyline. Objetivo total del paseo: unos 2–3 km.',lat:40.7549,lng:-73.9565,meta:['2–3 km','Suave']},
   {time:'~20:00',icon:'🚡',title:'Regreso a Manhattan',sub:'Tram de regreso; plan B: metro F.',lat:40.7605,lng:-73.9509,meta:['Tram / F']}
  ]},
  {tab:'VIERNES 27',kicker:'DÍA 2 · BLACK FRIDAY',title:'10K + Central Park + Macy’s',summary:'Mañana deportiva, paseo corto juntos, compras en Herald Square y regreso a Washington con margen.',facts:['10K Pedro','Central Park juntos','Train 18:45'],stops:[
