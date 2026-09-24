@@ -10,6 +10,15 @@ const trips = [
         featured: true
     },
     {
+        title: 'NYC Thanksgiving 2026',
+        href: 'nyc2026/',
+        start: '2026-11-26',
+        end: '2026-11-27',
+        phase: 'planned',
+        description: 'Macy’s Parade 100, Katz’s, Roosevelt Island de noche, 10K y Central Park.',
+        tags: ['26-27 nov', 'Thanksgiving', 'NYC']
+    },
+    {
         title: 'Suiza 2025',
         href: 'suiza2025/',
         start: '2025-06-01',
