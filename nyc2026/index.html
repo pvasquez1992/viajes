@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google" content="notranslate">
+<meta http-equiv="Content-Language" content="es">
+<title>NYC Thanksgiving 2026 · Gooligoog</title>
+<link rel="icon" href="../logo.png" type="image/png">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+<style>
+:root{--bg:#070b12;--panel:#0f1724;--panel2:#121d2d;--line:#25344a;--accent:#7dd3fc;--accent2:#fbbf24;--muted:#b7c5d8;--text:#f8fafc;--green:#86efac}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:radial-gradient(circle at 20% 0,#10243d 0,transparent 34%),var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}.site-header{position:sticky;top:0;z-index:30;padding:10px 16px}.site-header-inner{width:min(1180px,100%);margin:auto;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:11px 16px;border:1px solid rgba(255,255,255,.1);border-radius:18px;background:rgba(7,11,18,.82);backdrop-filter:blur(12px)}.brand{display:flex;align-items:center;gap:10px;color:white;text-decoration:none;font-weight:900}.brand img{width:34px;height:34px}.site-header nav{display:flex;gap:8px;flex-wrap:wrap}.site-header nav a{color:#dbeafe;text-decoration:none;font-weight:800;font-size:14px;padding:8px 10px;border-radius:999px}.site-header nav a:hover{background:rgba(125,211,252,.12)}.hero{padding:46px 24px 32px}.hero-inner{width:min(1100px,100%);margin:auto;display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,470px);gap:28px;align-items:center}.eyebrow{color:var(--accent2);font-weight:900;text-transform:uppercase;letter-spacing:.08em;font-size:13px}.hero h1{font-size:clamp(44px,7vw,72px);line-height:.98;margin:8px 0 18px}.hero p{font-size:clamp(18px,2vw,22px);line-height:1.55;color:#d9e7f7;margin:0}.hero-note{margin-top:20px;display:flex;gap:10px;flex-wrap:wrap}.chip{padding:9px 12px;border-radius:999px;background:rgba(125,211,252,.1);border:1px solid rgba(125,211,252,.22);color:#dff6ff;font-weight:800;font-size:14px}.map-card{padding:16px;border:1px solid rgba(125,211,252,.28);border-radius:22px;background:rgba(15,23,36,.82);box-shadow:0 24px 60px rgba(0,0,0,.35)}#routeMap{height:390px;border-radius:15px;overflow:hidden;background:#08111d}.map-title{display:flex;justify-content:space-between;gap:10px;align-items:center;margin:0 0 10px;color:#dcecff}.map-title strong{font-size:18px}.map-title span{font-size:13px;color:var(--accent)}.container{width:min(1120px,92%);margin:auto}.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:24px 0 32px}.summary-card{padding:17px;border:1px solid var(--line);border-radius:17px;background:var(--panel)}.summary-card strong{display:block;color:var(--accent);font-size:17px;margin-bottom:6px}.summary-card span{color:#d9e7f7;line-height:1.4}.section{margin:36px 0}.section h2{font-size:clamp(30px,4vw,42px);margin-bottom:10px}.section-intro{color:var(--muted);font-size:17px;line-height:1.6}.timeline{display:grid;gap:18px}.day{border:1px solid var(--line);border-radius:22px;background:linear-gradient(135deg,rgba(125,211,252,.06),transparent 38%),var(--panel);overflow:hidden}.day-head{padding:22px;border-bottom:1px solid var(--line)}.day-head h3{margin:0 0 7px;font-size:27px}.day-head p{margin:0;color:var(--muted)}.events{display:grid;gap:0}.event{display:grid;grid-template-columns:105px 1fr;gap:16px;padding:15px 22px;border-bottom:1px solid rgba(255,255,255,.065)}.event:last-child{border-bottom:0}.time{color:var(--accent2);font-weight:900}.event p{margin:0;line-height:1.5}.event small{display:block;margin-top:4px;color:var(--muted);font-size:14px}.important{border-left:4px solid var(--accent2)}.easy{border-left:4px solid var(--green)}.notes{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin:24px 0 48px}.note{padding:19px;border:1px solid var(--line);border-radius:18px;background:var(--panel2)}.note h3{margin:0 0 8px;color:var(--accent)}.note p{margin:0;color:#d8e5f5;line-height:1.55}.footer{width:min(1120px,92%);margin:40px auto 0;padding:26px 0 36px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:16px;color:var(--muted)}.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#0f1724;color:white}.leaflet-container{font-family:Arial,Helvetica,sans-serif}.leaflet-control-attribution{font-size:10px!important;background:rgba(7,11,18,.75)!important;color:#dbeafe!important}.leaflet-control-attribution a{color:#7dd3fc!important}
+@media(max-width:800px){.hero-inner{grid-template-columns:1fr}.summary{grid-template-columns:1fr 1fr}.notes{grid-template-columns:1fr}.event{grid-template-columns:78px 1fr}.site-header nav a:nth-child(2){display:none}}
+@media(max-width:520px){.summary{grid-template-columns:1fr}.hero{padding-left:18px;padding-right:18px}.hero h1{font-size:44px}.event{grid-template-columns:1fr;gap:4px}.time{font-size:14px}#routeMap{height:330px}.footer{flex-direction:column}}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="brand" href="../"><img src="../logo.png" alt=""><span>Gooligoog</span></a>
+    <nav aria-label="Navegación principal"><a href="../">Viajes</a><a href="#roadbook">Roadbook</a><a href="#notes">Notas</a></nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="eyebrow">Thanksgiving · 26–27 noviembre 2026</div>
+      <h1>NEW YORK CITY</h1>
+      <p>Dos días intensos en la Gran Manzana: edición 100 del Macy’s Thanksgiving Day Parade, pastrami en Katz’s, Roosevelt Island de noche y Central Park el viernes.</p>
+      <div class="hero-note">
+        <span class="chip">🎈 Macy’s Parade 100</span>
+        <span class="chip">🥪 Katz’s</span>
+        <span class="chip">🚡 Roosevelt Island Tram</span>
+        <span class="chip">🏃 10K Central Park</span>
+      </div>
+    </div>
+    <div class="map-card">
+      <div class="map-title"><strong>Ruta NYC</strong><span>OpenStreetMap</span></div>
+      <div id="routeMap" aria-label="Mapa del viaje NYC Thanksgiving 2026"></div>
+    </div>
+  </div>
+</section>
+
+<main class="container" id="roadbook">
+  <section class="summary">
+    <div class="summary-card"><strong>2 días / 1 noche</strong><span>26–27 nov 2026 · Thanksgiving + Black Friday</span></div>
+    <div class="summary-card"><strong>Base</strong><span>Pod 51 · 230 E 51st St · Midtown East</span></div>
+    <div class="summary-card"><strong>Transporte</strong><span>Amtrak DC ↔ Moynihan + MTA + Roosevelt Island Tram</span></div>
+    <div class="summary-card"><strong>Clave logística</strong><span>Dejar mochilas temprano en el secure luggage room de Pod 51</span></div>
+  </section>
+
+  <section class="section">
+    <h2>Roadbook</h2>
+    <p class="section-intro">Plan optimizado para caminar ligeros, cuidar las rodillas de Marielos y separar las dos caminatas importantes: Roosevelt Island el jueves y Central Park juntos el viernes.</p>
+
+    <div class="timeline">
+      <article class="day">
+        <div class="day-head"><h3>🦃 Jueves 26 · Thanksgiving</h3><p>Washington DC → Macy’s Parade → Katz’s → Pod 51 → Roosevelt Island</p></div>
+        <div class="events">
+          <div class="event"><span class="time">04:30</span><p>🚗 Uber desde 1201 S Eads St → Union Station</p></div>
+          <div class="event"><span class="time">05:20</span><p>🚆 Amtrak Washington → New York <small>Llegada programada a Moynihan Train Hall: 08:45</small></p></div>
+          <div class="event easy"><span class="time">08:45</span><p>🗽 Llegada a Moynihan / Penn Station</p></div>
+          <div class="event important"><span class="time">~09:10</span><p>🎒 Pod 51 — dejar mochilas <small>El hotel confirmó secure luggage room antes del check-in, sin necesidad de cargar equipaje durante el día.</small></p></div>
+          <div class="event important"><span class="time">~09:45</span><p>🎈 Macy’s Thanksgiving Day Parade — punto base: 6th Ave & W 45th St <small>Objetivo: quedarse aproximadamente hasta 11:15–11:30 para ver una parte sustancial del desfile.</small></p></div>
+          <div class="event"><span class="time">~12:15</span><p>🥪 Katz’s Delicatessen <small>Pastrami on rye como comida grande del día.</small></p></div>
+          <div class="event"><span class="time">~14:00</span><p>🏨 Regreso a Pod 51 <small>Check-in oficial desde las 15:00. Descanso, ducha y cambio de ropa.</small></p></div>
+          <div class="event"><span class="time">15:00–16:30</span><p>😴 Descanso real en el hotel</p></div>
+          <div class="event"><span class="time">~16:45</span><p>🚶 Pod 51 → Manhattan Tramway Plaza <small>E 59th St & 2nd Ave; trayecto corto desde el hotel.</small></p></div>
+          <div class="event important"><span class="time">~17:00</span><p>🚡 Roosevelt Island Tram <small>Tram de ida como parte de la experiencia, cruzando el East River al anochecer.</small></p></div>
+          <div class="event easy"><span class="time">17:10–19:00</span><p>🌃 Roosevelt Island — paseo nocturno tranquilo <small>Waterfront + Manhattan iluminado + Cornell Tech / zona sur. Objetivo: 2–3 km, no completar todo el perímetro.</small></p></div>
+          <div class="event"><span class="time">~19:00</span><p>🍽️ Cena ligera en la isla o al regresar a Manhattan <small>Actividad flexible según hambre y energía.</small></p></div>
+          <div class="event"><span class="time">~20:00</span><p>🚡 Tram de regreso a Manhattan <small>Plan B: metro F desde Roosevelt Island si conviene.</small></p></div>
+          <div class="event"><span class="time">Noche</span><p>🛏️ Pod 51 · descanso</p></div>
+        </div>
+      </article>
+
+      <article class="day">
+        <div class="day-head"><h3>🌳 Viernes 27 · Central Park + Black Friday</h3><p>10K Pedro → paseo juntos → Macy’s Herald Square → regreso a DC</p></div>
+        <div class="events">
+          <div class="event"><span class="time">~06:30</span><p>🏃 Pedro sale solo hacia Central Park</p></div>
+          <div class="event important"><span class="time">06:45–08:00</span><p>🏃 10K en Central Park <small>Entrenamiento personal; Marielos descansa en el hotel.</small></p></div>
+          <div class="event"><span class="time">~08:15</span><p>🏨 Regreso a Pod 51 <small>Ducha + desayuno.</small></p></div>
+          <div class="event easy"><span class="time">~09:30–11:00</span><p>❤️ Central Park con Marielos <small>Caminata tranquila de aproximadamente 2–4 km. Sin intentar recorrer todo el parque.</small></p></div>
+          <div class="event"><span class="time">~11:15</span><p>🏨 Regreso al hotel</p></div>
+          <div class="event"><span class="time">~12:00</span><p>🧳 Check-out <small>La reserva permite check-out hasta las 13:00.</small></p></div>
+          <div class="event important"><span class="time">~12:30–14:00</span><p>🛍️ Macy’s Herald Square — Black Friday <small>Compras + buscar recuerdo de la edición 100 del desfile.</small></p></div>
+          <div class="event"><span class="time">14:00–16:00</span><p>🍽️ Almuerzo + paseo ligero por Midtown</p></div>
+          <div class="event"><span class="time">~16:30</span><p>🎒 Recoger equipaje en Pod 51</p></div>
+          <div class="event"><span class="time">~17:15</span><p>🚆 Llegar a Moynihan Train Hall <small>Margen cómodo antes del tren.</small></p></div>
+          <div class="event important"><span class="time">18:45</span><p>🚆 Amtrak New York → Washington</p></div>
+          <div class="event"><span class="time">22:07</span><p>🏛️ Llegada a Union Station</p></div>
+          <div class="event"><span class="time">~22:30</span><p>🚗 Uber → 1201 S Eads St · fin del viaje</p></div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="section" id="notes">
+    <h2>Notas clave</h2>
+    <div class="notes">
+      <div class="note"><h3>🎒 Equipaje</h3><p>Pod 51 confirmó que puede guardar las mochilas antes del check-in en un cuarto seguro. Pasaporte, billetera y objetos de alto valor van siempre con ustedes.</p></div>
+      <div class="note"><h3>🎈 Desfile</h3><p>Punto operativo: 6th Ave & W 45th St. La esquina exacta puede ajustarse cuando Macy’s/NYPD publique las zonas definitivas de observación para 2026.</p></div>
+      <div class="note"><h3>🦵 Ritmo</h3><p>El jueves no incluye Central Park. Roosevelt Island será la caminata recreativa principal de ese día para no acumular demasiada distancia en las rodillas de Marielos.</p></div>
+      <div class="note"><h3>🛍️ Compras</h3><p>Macy’s queda para el viernes. Apple/Nintendo son opcionales y no forman parte del itinerario base.</p></div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer"><strong>Gooligoog · NYC Thanksgiving 2026</strong><span>Del sueño al mapa. Del mapa a la memoria.</span></footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script>
+const map=L.map('routeMap',{scrollWheelZoom:false}).setView([40.754,-73.976],12.3);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
+const stops=[
+  [40.7506,-73.9935,'Moynihan Train Hall','Llegada / salida NYC'],
+  [40.7553,-73.9709,'Pod 51','Hotel + secure luggage room'],
+  [40.7562,-73.9817,'6th Ave & W 45th St','Punto base Macy’s Parade'],
+  [40.7223,-73.9874,"Katz's Delicatessen",'Pastrami'],
+  [40.7614,-73.9646,'Manhattan Tramway Plaza','Tram a Roosevelt Island'],
+  [40.7605,-73.9509,'Roosevelt Island','Paseo nocturno'],
+  [40.7829,-73.9654,'Central Park','10K + caminata juntos'],
+  [40.7508,-73.9895,"Macy's Herald Square",'Black Friday']
+];
+stops.forEach(([lat,lng,name,desc])=>L.marker([lat,lng]).addTo(map).bindPopup(`<strong>${name}</strong><br>${desc}`));
+const bounds=L.latLngBounds(stops.map(s=>[s[0],s[1]]));map.fitBounds(bounds,{padding:[28,28]});
+</script>
+</body>
+</html>
