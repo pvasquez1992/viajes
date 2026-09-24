@@ -2,6 +2,96 @@ const smallScreenQuery = window.matchMedia('(max-width: 640px)');
 const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
 const isSmallScreen = smallScreenQuery.matches;
 
+const AURORA_NIGHTS = new Set([
+    '2026-09-04',
+    '2026-09-05',
+    '2026-09-06'
+]);
+const AURORA_CAMPAIGN_START = '2026-08-25';
+const AURORA_CAMPAIGN_END = '2026-09-07';
+const AURORA_DAY_START_MINUTES = 6 * 60 + 30;
+const AURORA_VIEWING_START_MINUTES = 20 * 60 + 45;
+const ICELAND_TIME_ZONE = 'Atlantic/Reykjavik';
+
+function getIcelandClock(date = new Date()) {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: ICELAND_TIME_ZONE,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hourCycle: 'h23'
+    }).formatToParts(date).reduce((clock, part) => {
+        if (part.type !== 'literal') clock[part.type] = part.value;
+        return clock;
+    }, {});
+
+    return {
+        dateKey: `${parts.year}-${parts.month}-${parts.day}`,
+        year: Number(parts.year),
+        month: Number(parts.month),
+        day: Number(parts.day),
+        minutes: Number(parts.hour) * 60 + Number(parts.minute)
+    };
+}
+
+function previousDateKey({ year, month, day }) {
+    return new Date(Date.UTC(year, month - 1, day) - 86400000)
+        .toISOString()
+        .slice(0, 10);
+}
+
+function updateAuroraTheme(now = new Date()) {
+    const clock = getIcelandClock(now);
+    let auroraNight = '';
+
+    if (clock.minutes >= AURORA_DAY_START_MINUTES) {
+        auroraNight = clock.dateKey;
+    } else {
+        auroraNight = previousDateKey(clock);
+    }
+
+    const isCandidateNight = AURORA_NIGHTS.has(auroraNight);
+    const isViewingTime = clock.minutes >= AURORA_VIEWING_START_MINUTES
+        || clock.minutes < AURORA_DAY_START_MINUTES;
+    const isAuroraCampaign = clock.dateKey >= AURORA_CAMPAIGN_START
+        && (clock.dateKey < AURORA_CAMPAIGN_END
+            || (clock.dateKey === AURORA_CAMPAIGN_END
+                && clock.minutes < AURORA_DAY_START_MINUTES));
+    document.body.classList.toggle('aurora-night', isAuroraCampaign);
+
+    if (isCandidateNight) {
+        document.body.dataset.auroraDay = String(Number(auroraNight.slice(-2)));
+        document.body.dataset.auroraPhase = isViewingTime ? 'watch' : 'prepare';
+    } else if (isAuroraCampaign) {
+        delete document.body.dataset.auroraDay;
+        document.body.dataset.auroraPhase = 'forecast';
+    } else {
+        delete document.body.dataset.auroraDay;
+        delete document.body.dataset.auroraPhase;
+    }
+
+    const label = document.querySelector('[data-aurora-label]');
+    if (label) {
+        if (!isAuroraCampaign) {
+            label.textContent = 'Roadbook 2026 · Costa Sur';
+        } else if (!isCandidateNight) {
+            label.textContent = 'Aurora watch · noches objetivo 4, 5 y 6 sept';
+        } else if (isViewingTime) {
+            label.textContent = `Noche candidata a aurora · ${Number(auroraNight.slice(-2))} sept`;
+        } else {
+            label.textContent = `Hoy ${Number(auroraNight.slice(-2))} sept · prepárate para buscar auroras`;
+        }
+    }
+
+    const themeColor = document.querySelector('meta[name="theme-color"]');
+    if (themeColor) themeColor.content = isAuroraCampaign ? '#030817' : '#07110f';
+}
+
+updateAuroraTheme();
+setInterval(updateAuroraTheme, 300000);
+
 function openDay(anchor) {
     const target = document.getElementById(anchor);
     if (!target) {
@@ -27,17 +117,38 @@ document.querySelectorAll('.timeline-day').forEach((day) => {
 });
 
 const scrollProgress = document.getElementById('scrollProgress');
+let scrollProgressFrame = 0;
+
 function updateScrollProgress() {
+    scrollProgressFrame = 0;
     if (!scrollProgress) return;
     const scrollable = document.documentElement.scrollHeight - window.innerHeight;
-    const progress = scrollable > 0 ? Math.min(100, Math.max(0, (window.scrollY / scrollable) * 100)) : 0;
-    scrollProgress.style.width = `${progress}%`;
+    const progress = scrollable > 0 ? Math.min(1, Math.max(0, window.scrollY / scrollable)) : 0;
+    scrollProgress.style.transform = `scaleX(${progress})`;
 }
-window.addEventListener('scroll', updateScrollProgress, { passive: true });
-window.addEventListener('resize', updateScrollProgress);
+
+function requestScrollProgressUpdate() {
+    if (scrollProgressFrame) return;
+    scrollProgressFrame = requestAnimationFrame(updateScrollProgress);
+}
+
+window.addEventListener('scroll', requestScrollProgressUpdate, { passive: true });
+window.addEventListener('resize', requestScrollProgressUpdate, { passive: true });
 updateScrollProgress();
 
 const dayLinks = [...document.querySelectorAll('[data-day-target]')];
+const daySwitcher = document.querySelector('.day-switcher');
+let activeDayTarget = '';
+
+function keepDayLinkVisible(link) {
+    if (!daySwitcher || daySwitcher.scrollWidth <= daySwitcher.clientWidth) return;
+    const targetLeft = link.offsetLeft - (daySwitcher.clientWidth - link.offsetWidth) / 2;
+    daySwitcher.scrollTo({
+        left: Math.max(0, targetLeft),
+        behavior: reduceMotionQuery.matches ? 'auto' : 'smooth'
+    });
+}
+
 dayLinks.forEach((link) => {
     link.addEventListener('click', (event) => {
         event.preventDefault();
@@ -51,12 +162,15 @@ if ('IntersectionObserver' in window && dayLinks.length) {
         const visible = entries
             .filter((entry) => entry.isIntersecting)
             .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-        if (!visible) return;
+        if (!visible || visible.target.id === activeDayTarget) return;
+        activeDayTarget = visible.target.id;
+        let activeLink = null;
         dayLinks.forEach((link) => {
-            const active = link.dataset.dayTarget === visible.target.id;
+            const active = link.dataset.dayTarget === activeDayTarget;
             link.classList.toggle('is-active', active);
-            if (active) link.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+            if (active) activeLink = link;
         });
+        if (activeLink) requestAnimationFrame(() => keepDayLinkVisible(activeLink));
     }, { rootMargin: '-24% 0px -62% 0px', threshold: [0, .2, .6] });
     document.querySelectorAll('.timeline-day').forEach((day) => dayObserver.observe(day));
 }
@@ -112,22 +226,22 @@ if ('IntersectionObserver' in window) {
 }
 
 const routeStops = [
-    { day: 1, name: 'Llegada + Reykjavík', coords: [64.0830, -21.9070], anchor: 'day-1' },
+    { day: 1, name: 'Llegada + Reykjavík', coords: [64.1463, -21.8760], anchor: 'day-1' },
     { day: 2, name: 'Golden Circle + Reykjadalur', coords: [64.0416, -20.8859], anchor: 'day-2' },
     { day: 3, name: 'Costa Sur + Skógar', coords: [63.5322, -19.5114], anchor: 'day-3' },
-    { day: 4, name: 'Tröll S1 + Jökulsárlón + bote 15:50', coords: [64.0481, -16.1794], anchor: 'day-4', critical: true },
+    { day: 4, name: 'Tröll Skaftafell 3 h + Jökulsárlón + bote 15:50', coords: [64.0481, -16.1794], anchor: 'day-4', critical: true },
     { day: 5, name: 'Höfn + termales + Vestrahorn', coords: [64.2440, -14.9650], anchor: 'day-5' },
-    { day: 6, name: 'Fjaðrárgljúfur + Vík + Dyrhólaey', coords: [63.7715, -18.1718], anchor: 'day-6' },
-    { day: 7, name: 'Devolución + FI645', coords: [63.9850, -22.6056], anchor: 'day-7' }
+    { day: 6, name: 'Fjaðrárgljúfur + Vík + Dyrhólaey', coords: [63.7726, -18.1737], anchor: 'day-6' },
+    { day: 7, name: 'Blue Lagoon + devolución + FI645', coords: [63.8792, -22.4443], anchor: 'day-7' }
 ];
 const routeLine = [
     [63.9850, -22.6056],
-    [63.8424, -22.4328],
+    [64.1377, -21.9344],
     [64.1420, -21.9266],
     [64.1475, -21.9220],
     [64.1503, -21.9328],
-    [64.1467, -21.8730],
-    [64.0830, -21.9070],
+    [64.1458, -21.8585],
+    [64.1463, -21.8760],
     [64.2559, -21.1295],
     [64.2610, -21.1210],
     [64.3138, -20.3008],
@@ -136,32 +250,34 @@ const routeLine = [
     [64.0416, -20.8859],
     [64.0169, -21.2110],
     [63.9331, -20.9971],
-    [63.9280, -21.0060],
-    [63.7529, -20.2243],
+    [63.9329, -20.9875],
+    [63.7498, -20.2345],
     [63.6156, -19.9896],
     [63.6210, -19.9848],
     [63.5322, -19.5114],
     [63.5269, -19.5060],
     [63.5277, -19.5120],
-    [63.7897, -18.0630],
-    [64.0167, -16.9667],
+    [63.7939, -18.0399],
+    [63.9104, -16.7283],
     [64.0481, -16.1794],
     [64.0393, -16.1869],
-    [64.0100, -16.9800],
-    [64.2520, -15.2080],
-    [64.3970, -15.3420],
-    [64.2520, -15.2080],
+    [64.34972, -15.50245],
+    [64.2591, -15.2064],
+    [64.3928, -15.3444],
+    [64.2525, -15.2126],
     [64.2490, -14.9720],
     [64.2440, -14.9650],
     [64.2468, -14.9600],
     [64.2478, -14.9580],
-    [64.2480, -14.9820],
-    [63.7897, -18.0630],
-    [63.7715, -18.1718],
-    [63.4186, -19.0060],
-    [63.4062, -19.0442],
-    [63.4031, -19.1288],
-    [63.7529, -20.2243],
+    [64.2551, -14.9940],
+    [63.7939, -18.0399],
+    [63.7726, -18.1737],
+    [63.4175, -18.9937],
+    [63.4044, -19.0588],
+    [63.3988, -19.1266],
+    [63.7498, -20.2386],
+    [64.1377, -21.9344],
+    [63.8792, -22.4443],
     [63.9980, -22.5630],
     [63.9920, -22.5500],
     [63.9850, -22.6056]
@@ -194,15 +310,15 @@ if (window.L && routeMapElement) {
         doubleClickZoom: !smallScreenQuery.matches,
         tap: true
     });
-    addBaseMap(map);
+    addBaseMap(map, 'street');
     L.polyline(routeLine.slice(0, returnRouteStartIndex + 1), {
-        color: '#72d9c2',
+        color: '#0f766e',
         weight: 4,
         opacity: .92,
         lineJoin: 'round'
     }).addTo(map);
     L.polyline(routeLine.slice(returnRouteStartIndex), {
-        color: '#c4d4ce',
+        color: '#475569',
         weight: 2,
         opacity: .55,
         dashArray: '7 8'
@@ -227,15 +343,649 @@ if (window.L && routeMapElement) {
     routeMapElement.innerHTML = '<p>El mapa no está disponible sin conexión. El itinerario completo sigue visible debajo.</p>';
 }
 
+function makeReview({ eyebrow, title, verdict, stats, feel, route, level, jarvis, sources = [] }) {
+    return {
+        eyebrow,
+        title,
+        verdict,
+        stats,
+        blocks: [
+            { label: 'Cómo se siente', text: feel },
+            { label: 'Qué se hace', text: route },
+            { label: 'Nivel realista', text: level },
+            { label: 'Equipo mental Jarvis', text: jarvis }
+        ],
+        sources
+    };
+}
+
+const reviewData = {
+    'booking-icelandair': makeReview({
+        eyebrow: 'Reserva · Pagada · Ref. AMQM##',
+        title: 'Icelandair · vuelos',
+        verdict: 'Dos pasajeros confirmados en FI644 y FI645. La misma referencia protegida cubre ida y regreso.',
+        stats: [['Estado', 'Pagado'], ['Pasajeros', '2 adultos'], ['Ref.', 'AMQM##']],
+        feel: '31 ago · FI644 · IAD 20:30 → KEF 06:25 (+1).',
+        route: '7 sept · FI645 · KEF 16:50 → IAD 19:20.',
+        level: 'Presentarse con documentos y margen suficiente para check-in y seguridad.',
+        jarvis: 'Referencia deliberadamente oculta. Consultar el PDF local si Icelandair solicita el código completo.',
+        sources: []
+    }),
+    'booking-camper': makeReview({
+        eyebrow: 'Reserva · Pagada · Ref. BHD1####',
+        title: 'Go Campers · Go SMART Automatic',
+        verdict: 'Camper para dos pasajeros con seguro Gold y Explorer Bundle. Recogida y devolución protegidas por horario.',
+        stats: [['Estado', 'Pagado'], ['Recoger', '1 sept · 07:30'], ['Devolver', '7 sept · 14:00'], ['Ref.', 'BHD1####']],
+        feel: 'Go SMART Automatic · 2 pasajeros · seguro Gold.',
+        route: 'Recoger cerca de KEF, fotografiar el vehículo y revisar equipo, daños, combustible y calefacción.',
+        level: 'La devolución oficial es a las 14:00; llegar antes con tanque lleno, camper limpia y equipaje fuera.',
+        jarvis: 'Explorer Bundle incluido. La referencia completa permanece únicamente en el PDF local.',
+        sources: []
+    }),
+    'booking-eco': makeReview({
+        eyebrow: 'Reserva · Pagada · Ref. 9051####',
+        title: 'Reykjavík Eco Campsite',
+        verdict: 'Una noche confirmada para dos personas en Área A, parcela de camper pequeña sin electricidad.',
+        stats: [['Estado', 'Pagado'], ['Noche', '1–2 sept'], ['Personas', '2'], ['Ref.', '9051####']],
+        feel: 'Small Campervan Pitch · Area A · vehículo de hasta 5 m.',
+        route: 'Check-in desde 13:00 y check-out antes de 11:00.',
+        level: 'El código de acceso llega por separado y no se publica en esta web.',
+        jarvis: 'Guardar el correo/PDF offline para mostrar el recibo si lo solicitan.',
+        sources: []
+    }),
+    'booking-troll': makeReview({
+        eyebrow: 'Reserva · Pagada · Ref. TRO-9906####',
+        title: 'Tröll · Skaftafell Glacier Hike',
+        verdict: 'Tour de glaciar pagado en su totalidad para dos participantes. Duración aproximada: tres horas.',
+        stats: [['Estado', 'Pagado'], ['Inicio', '4 sept · 09:30'], ['Personas', '2'], ['Ref.', 'TRO-9906####']],
+        feel: 'Skaftafell 3 Hours Easy Level Glacier Hike.',
+        route: 'Punto de encuentro: Tröll Expeditions Skaftafell, Hof 785. Llegar al check-in a las 09:10.',
+        level: 'Ropa impermeable, capas térmicas, gorro y guantes. Confirmar condiciones de carretera antes de salir.',
+        jarvis: 'No confundir el punto de Tröll con el centro de visitantes.',
+        sources: []
+    }),
+    'booking-zodiac': makeReview({
+        eyebrow: 'Reserva · Pagada · Ref. 25Z9########',
+        title: 'Zodiac · Jökulsárlón',
+        verdict: 'Dos entradas de adulto con pago confirmado para el recorrido Zodiac en la laguna glaciar.',
+        stats: [['Estado', 'Pagado'], ['Salida', '4 sept · 15:50'], ['Personas', '2'], ['Ref.', '25Z9########']],
+        feel: 'Reserva confirmada para dos adultos.',
+        route: 'Llegar al operador a las 15:20 para completar el check-in antes de la salida.',
+        level: 'Guardar el comprobante y la referencia offline.',
+        jarvis: 'La tarjeta y la referencia completa no se muestran en el sitio.',
+        sources: []
+    }),
+    'booking-blue': makeReview({
+        eyebrow: 'Reserva · Pagada · Ref. WBL0#######',
+        title: 'Blue Lagoon · Comfort',
+        verdict: 'Dos entradas Comfort pagadas para el último día del viaje.',
+        stats: [['Estado', 'Pagado'], ['Entrada', '7 sept · 10:30'], ['Cantidad', '2'], ['Ref.', 'WBL0#######']],
+        feel: 'Comfort admission x2.',
+        route: 'Llegar a las 09:58 para estacionar y completar el check-in con tranquilidad.',
+        level: 'Salir a las 12:30 para combustible y devolución de la camper.',
+        jarvis: 'El recibo no sustituye las entradas; guardar también los tickets recibidos por correo.',
+        sources: []
+    }),
+    'hallgrimskirkja': makeReview({
+        eyebrow: 'Review · Día 1 · Reykjavík',
+        title: 'Hallgrímskirkja',
+        verdict: 'La entrada ceremonial a Reykjavík: arquitectura rara, limpia, casi volcánica. Vale por el golpe visual y por orientarte mentalmente en la ciudad.',
+        stats: [['Tipo', 'Ciudad'], ['Tiempo', '30–60 min'], ['Esfuerzo', 'Bajo'], ['Extra', 'Torre opcional']],
+        feel: 'Se siente como llegar a una capital pequeña pero con carácter propio: concreto claro, líneas de basalto y una plaza abierta para respirar después del vuelo.',
+        route: 'Entrar a la iglesia es rápido; la torre es el plus si quieren ver Reykjavík desde arriba y ubicar mar, montañas y techos de colores.',
+        level: 'Muy fácil. Lo único que decide el plan es energía post-vuelo y clima para la vista desde la torre.',
+        jarvis: 'Si están cansados, hagan exterior + interior y sigan. La torre es premio, no obligación.',
+        sources: [{ label: 'Hallgrímskirkja oficial', url: 'https://www.hallgrimskirkja.is/en' }]
+    }),
+    'sun-voyager': makeReview({
+        eyebrow: 'Review · Día 1 · Costa urbana',
+        title: 'Viajero del Sol',
+        verdict: 'Una parada corta pero poética: escultura frente al mar, viento, horizonte y esa primera foto que dice “ya estamos en Islandia”.',
+        stats: [['Tipo', 'Foto / paseo'], ['Tiempo', '10–20 min'], ['Esfuerzo', 'Bajo'], ['Mejor', 'Luz lateral']],
+        feel: 'No es una caminata grande; es un gesto. Atlántico Norte, metal brillante y montañas al fondo si el día ayuda.',
+        route: 'Llegar, caminar el borde marítimo, foto rápida y continuar hacia Harpa o el camping.',
+        level: 'Muy fácil, pero puede sentirse frío por el viento junto al agua.',
+        jarvis: 'Perfecto si necesitan “despertar” sin gastar piernas. No lo conviertan en parada larga.',
+        sources: [{ label: 'Visit Reykjavík', url: 'https://visitreykjavik.is/service/sun-voyager' }]
+    }),
+    'harpa': makeReview({
+        eyebrow: 'Review · Día 1 · Arquitectura',
+        title: 'Harpa',
+        verdict: 'Cristal, geometría y reflejos. Es una pausa urbana elegante antes de entrar de lleno al paisaje salvaje.',
+        stats: [['Tipo', 'Arquitectura'], ['Tiempo', '20–40 min'], ['Esfuerzo', 'Bajo'], ['Costo', 'Áreas públicas']],
+        feel: 'El edificio se siente como una cueva de vidrio: luz fría, patrones, mar cerca y mucha textura para fotos.',
+        route: 'Recorrer áreas públicas, mirar el lobby, fachada y vistas hacia el puerto.',
+        level: 'Fácil y bajo riesgo; ideal para un día de llegada.',
+        jarvis: 'Úsenlo como parada de transición: bonito, cubierto y sin exigir energía.',
+        sources: [{ label: 'Harpa oficial', url: 'https://www.harpa.is/en' }]
+    }),
+    'iceland-camping-equipment': makeReview({
+        eyebrow: 'Día 1 · Equipo · BSÍ Reykjavík',
+        title: 'Iceland Camping Equipment',
+        verdict: 'Primera parada de equipo: recoger bastones y rain pants para los dos antes de comenzar la ruta.',
+        stats: [['Para', '2 personas'], ['Recoger', '09:35'], ['Lugar', 'Terminal BSÍ'], ['Devolver', '09:00 · día 7']],
+        feel: 'Parada práctica y corta dentro de la terminal BSÍ.',
+        route: 'Recoger dos pares de bastones ajustables y rain pants reservados para ambos.',
+        level: 'Fácil; estacionar, comprobar tallas y revisar el equipo antes de salir.',
+        jarvis: 'Reservar antes del viaje. Confirmen dos pares de bastones, las dos tallas de rain pants y el método de devolución.',
+        sources: [
+            { label: 'Sitio oficial', url: 'https://www.iceland-camping-equipment.com/' },
+            { label: 'Hiking & trekking gear', url: 'https://www.iceland-camping-equipment.com/collections/iceland-hiking-trekking-gear' }
+        ]
+    }),
+    'thingvellir': makeReview({
+        eyebrow: 'Review · Día 2 · Golden Circle',
+        title: 'Þingvellir',
+        verdict: 'Aquí el viaje cambia de ciudad a geología: caminar entre placas tectónicas le da peso real al mapa.',
+        stats: [['Tipo', 'Parque nacional'], ['Tiempo', '60–90 min'], ['Esfuerzo', 'Bajo–medio'], ['Clave', 'Miradores']],
+        feel: 'Amplio, histórico y mineral. No es solo “ver una vista”: es caminar dentro de una fractura del planeta.',
+        route: 'Combinar miradores con Almannagjá; caminar lo suficiente para sentir la falla sin comerse todo el día.',
+        level: 'Fácil si se quedan en senderos principales. Puede alargarse por fotos y desvíos.',
+        jarvis: 'Mantenerlo compacto: el Día 2 todavía tiene Geysir, Gullfoss, Kerið y Reykjadalur.',
+        sources: [{ label: 'Þingvellir oficial', url: 'https://www.thingvellir.is/en/' }]
+    }),
+    'almannagja': makeReview({
+        eyebrow: 'Review · Día 2 · Falla tectónica',
+        title: 'Almannagjá',
+        verdict: 'La parte más caminable y narrativa de Þingvellir: paredes de roca, sendero claro y sensación de grieta continental.',
+        stats: [['Tipo', 'Sendero corto'], ['Tiempo', '20–45 min'], ['Esfuerzo', 'Bajo'], ['Terreno', 'Marcado']],
+        feel: 'Es un pasillo de roca; sobrio, fotogénico y muy “Islandia sin filtro”.',
+        route: 'Caminar por la garganta y conectar con miradores cercanos si el clima acompaña.',
+        level: 'Fácil. El reto real es no quedarse demasiado si el calendario va apretado.',
+        jarvis: 'Hagan la caminata como núcleo de Þingvellir y sigan; el día tiene demasiadas piezas buenas.',
+        sources: [{ label: 'Þingvellir oficial', url: 'https://www.thingvellir.is/en/' }]
+    }),
+    'geysir': makeReview({
+        eyebrow: 'Review · Día 2 · Geotermia',
+        title: 'Geysir / Strokkur',
+        verdict: 'La parada de “espera y explosión”: vapor, olor mineral y Strokkur disparando agua cada pocos minutos.',
+        stats: [['Tipo', 'Geotérmico'], ['Tiempo', '30–45 min'], ['Esfuerzo', 'Bajo'], ['Ritmo', 'Ciclos cortos']],
+        feel: 'Es turística, sí, pero tiene teatro natural: todo el mundo mirando un charco hasta que el suelo decide respirar.',
+        route: 'Caminar el área geotérmica, esperar 1–2 erupciones de Strokkur y continuar.',
+        level: 'Muy fácil; mantenerse en senderos y respetar áreas calientes.',
+        jarvis: 'No esperen la “erupción perfecta” diez veces. Una buena y seguimos.',
+        sources: [{ label: 'Visit Iceland · Geysir', url: 'https://www.visiticeland.com/article/geysir-geothermal-area/' }]
+    }),
+    'gullfoss': makeReview({
+        eyebrow: 'Review · Día 2 · Cascada',
+        title: 'Gullfoss',
+        verdict: 'Una cascada grande de verdad: dos niveles, niebla, ruido y una escala que empieza a preparar el ojo para la Costa Sur.',
+        stats: [['Tipo', 'Cascada'], ['Tiempo', '35–60 min'], ['Esfuerzo', 'Bajo–medio'], ['Clave', 'Miradores']],
+        feel: 'Poderosa, amplia, con sensación de cañón abierto. En días de sol puede regalar arcoíris.',
+        route: 'Mirador superior + sendero hacia la zona baja si está abierto y seguro.',
+        level: 'Fácil, aunque el spray y el viento pueden hacerla más intensa.',
+        jarvis: 'Impermeable a mano. Fotos rápidas si el viento está agresivo.',
+        sources: [{ label: 'Visit Iceland · Gullfoss', url: 'https://www.visiticeland.com/article/gullfoss-waterfall/' }]
+    }),
+    'kerid': makeReview({
+        eyebrow: 'Review · Día 2 · Cráter',
+        title: 'Kerið',
+        verdict: 'Un cierre visual compacto del Golden Circle: cráter rojo, lago azul y una caminata corta que no rompe el día.',
+        stats: [['Tipo', 'Cráter'], ['Tiempo', '25–45 min'], ['Esfuerzo', 'Bajo'], ['Ruta', 'Borde + lago']],
+        feel: 'Color y forma. Después de cascadas y geotermia, Kerið se siente más gráfico, casi como una postal de geología.',
+        route: 'Caminar el borde; bajar al lago solo si hay energía y buen clima.',
+        level: 'Fácil. Ojo con viento en el borde.',
+        jarvis: 'Si Reykjadalur sigue en pie, Kerið debe ser eficiente: una vuelta corta y listo.',
+        sources: [{ label: 'Guide to Iceland · Kerið', url: 'https://guidetoiceland.is/travel-iceland/drive/kerid' }]
+    }),
+    'reykjadalur': makeReview({
+        eyebrow: 'Review · Día 2 · Hiking termal',
+        title: 'Reykjadalur',
+        verdict: 'Esta sí cuenta como experiencia grande: subir por un valle humeante y terminar metido en un río caliente. Cansa, pero paga.',
+        stats: [['Tipo', 'Hike + baño'], ['Distancia', '3.5 km ida aprox.'], ['Tiempo', '2.5–4 h'], ['Esfuerzo', 'Medio']],
+        feel: 'Vapor, montaña, barro si llueve y recompensa termal. Es de esas paradas que convierten el día en memoria, no solo checklist.',
+        route: 'Desde Hveragerði se sube por sendero marcado hacia el río termal; bañarse y volver por el mismo camino.',
+        level: 'Moderado por desnivel, clima y duración. No técnico, pero no es “bajar del carro y ya”.',
+        jarvis: 'Llevar traje de baño accesible, toalla rápida y bolsa para ropa mojada. Si llegan tarde, recorten antes otra parada.',
+        sources: [{ label: 'Arctic Adventures · Reykjadalur', url: 'https://adventures.is/iceland/attractions/reykjadalur/' }]
+    }),
+    'seljalandsfoss': makeReview({
+        eyebrow: 'Review · Día 3 · Cascada',
+        title: 'Seljalandsfoss',
+        verdict: 'La cascada de caminar detrás. Muy fotogénica, muy húmeda, muy fácil de subestimar hasta que sales empapado.',
+        stats: [['Tipo', 'Cascada'], ['Tiempo', '30–45 min'], ['Esfuerzo', 'Bajo'], ['Riesgo', 'Resbaloso']],
+        feel: 'El wow está en pasar detrás de la cortina de agua: ruido, spray y pared verde alrededor.',
+        route: 'Ver desde el frente y, si el sendero está seguro, hacer el circuito detrás de la caída.',
+        level: 'Fácil pero mojado. Piedras resbalosas y viento pueden cambiarlo todo.',
+        jarvis: 'Ponchos/impermeable antes de acercarse. Cámara protegida.',
+        sources: [{ label: 'South Iceland · Seljalandsfoss', url: 'https://www.south.is/en/place/seljalandsfoss-waterfall' }]
+    }),
+    'gljufrabui': makeReview({
+        eyebrow: 'Review · Día 3 · Cascada escondida',
+        title: 'Gljúfrabúi',
+        verdict: 'Pequeña, escondida y teatral: entrar al cañóncito la hace sentirse más secreta que Seljalandsfoss.',
+        stats: [['Tipo', 'Cascada corta'], ['Tiempo', '20–35 min'], ['Esfuerzo', 'Bajo'], ['Clave', 'Zapatos mojables']],
+        feel: 'Es más aventura de bolsillo: roca, agua, entrada estrecha y una cascada escondida al final.',
+        route: 'Caminar desde Seljalandsfoss y entrar solo si el paso por agua/rocas está razonable.',
+        level: 'Fácil, pero los pies pueden mojarse y las rocas resbalan.',
+        jarvis: 'No gastar demasiado tiempo: vale mucho, pero Skógafoss espera.',
+        sources: [{ label: 'South Iceland · Gljúfrabúi', url: 'https://www.south.is/en/place/gljufrabui' }]
+    }),
+    'skogafoss': makeReview({
+        eyebrow: 'Review · Día 3 · Cascada grande',
+        title: 'Skógafoss',
+        verdict: 'Uno de los golpes visuales fuertes del viaje: una pared de agua de 60 m, niebla, arcoíris posible y escaleras si quieren mirar desde arriba.',
+        stats: [['Tipo', 'Cascada'], ['Caída', '60 m'], ['Tiempo', '30–60 min'], ['Extra', 'Escaleras arriba']],
+        feel: 'Desde abajo se siente brutal y simple: agua cayendo como una sábana gigante. Desde arriba cambia a paisaje de río y acantilado.',
+        route: 'Base de la cascada primero; subir escaleras solo si piernas/clima lo justifican.',
+        level: 'Base muy fácil. Escaleras: cardio corto y posiblemente resbaloso con lluvia.',
+        jarvis: 'El día siguiente es crítico; disfruten Skógafoss, pero no quemen piernas absurdamente.',
+        sources: [{ label: 'South Iceland · Skógafoss', url: 'https://www.south.is/en/place/skogafoss-waterfall' }]
+    }),
+    'troll-skaftafell': makeReview({
+        eyebrow: 'Review · Día 4 · Glaciar guiado',
+        title: 'Tröll Skaftafell · 3 h',
+        verdict: 'No lo leería como una “caminata larga”, sino como una mini expedición sobre hielo: crampones, guía, grietas, morrena, viento frío y esa sensación rara de estar pisando un ser vivo que se mueve lento.',
+        stats: [['Reserva', '3 h'], ['Wikiloc ref.', '3 mi / +512 ft'], ['Track', '3 h 30 min'], ['Dificultad', 'Fácil']],
+        feel: 'La parte memorable no es la distancia: es el cambio de textura. Sales de la carretera, te equipan y de pronto estás sobre hielo con piolet y crampones.',
+        route: 'El Wikiloc que pasaste registra una experiencia con Tröll: bus corto al parking del glaciar, inicio a nivel de laguna, subida progresiva, crampones y recorrido entre grietas/moulins.',
+        level: 'Fácil–moderado si van descansados y con botas correctas. El cansancio del Día 4 viene más por salida temprana + manejo + bote 15:50.',
+        jarvis: 'Salir con el tanque lleno. N1 Kirkjubæjarklaustur queda solo para emergencia. Capas, guantes, gorro, agua pequeña y cero jeans.',
+        sources: [
+            { label: 'Tröll · tour oficial 3 h', url: 'https://troll.is/tour/skaftafell-3-hour-glacier-hike/' },
+            { label: 'Wikiloc · Iceland 05 Skaftafell Glacier Travelling', url: 'https://www.wikiloc.com/snowshoeing-trails/iceland-05-skaftafell-glacier-travelling-148975965' }
+        ]
+    }),
+    'jokulsarlon': makeReview({
+        eyebrow: 'Review · Día 4 · Laguna glaciar',
+        title: 'Jökulsárlón',
+        verdict: 'El centro emocional del viaje: icebergs flotando, silencio frío y una escala azul que no se parece a las cascadas ni a las playas.',
+        stats: [['Tipo', 'Laguna'], ['Tiempo', '45–90 min'], ['Esfuerzo', 'Bajo'], ['Clave', 'No correr']],
+        feel: 'Se siente lento y enorme. Es una parada para bajar revoluciones después del glaciar y antes del bote.',
+        route: 'Miradores junto a la laguna, comida rápida si toca, fotos y conexión con el parking/punto del bote.',
+        level: 'Muy fácil; lo importante es proteger tiempo para el tour de las 15:50.',
+        jarvis: 'Llegar con margen. Jökulsárlón no se disfruta mirando el reloj cada 12 segundos.',
+        sources: [{ label: 'Visit Iceland · Jökulsárlón', url: 'https://www.visiticeland.com/article/jokulsarlon-glacier-lagoon/' }]
+    }),
+    'glacier-lagoon-boat': makeReview({
+        eyebrow: 'Review · Día 4 · Bote 15:50',
+        title: 'Glacier Lagoon Trip',
+        verdict: 'La versión inmersiva de Jökulsárlón: ya no miras los icebergs desde fuera, te metes entre ellos.',
+        stats: [['Tipo', 'Bote'], ['Hora', '15:50'], ['Esfuerzo', 'Bajo'], ['Riesgo', 'Puntualidad']],
+        feel: 'Frío, azul y cinematográfico. El bote convierte la laguna en algo cercano, no solo panorámico.',
+        route: 'Parking, check-in, equipo si aplica, salida al agua y regreso con margen para Diamond Beach.',
+        level: 'Fácil físicamente. Logísticamente sensible: si se atrasa el glaciar, este bloque sufre.',
+        jarvis: 'Este horario manda. Todo el Día 4 debe proteger el 15:50.',
+        sources: [{ label: 'Jökulsárlón oficial', url: 'https://icelagoon.is/' }]
+    }),
+    'diamond-beach': makeReview({
+        eyebrow: 'Review · Día 4 · Playa negra',
+        title: 'Diamond Beach',
+        verdict: 'Hielo transparente sobre arena negra: simple, absurdo y precioso. Es el epílogo perfecto después de la laguna.',
+        stats: [['Tipo', 'Playa / fotos'], ['Tiempo', '25–45 min'], ['Esfuerzo', 'Bajo'], ['Clave', 'Oleaje']],
+        feel: 'La playa parece una mesa de obsidiana con cristales gigantes. Cada bloque de hielo cambia con la luz.',
+        route: 'Caminar por la zona segura, buscar bloques interesantes, mantener distancia del agua.',
+        level: 'Fácil, pero nunca confiarse con el mar islandés.',
+        jarvis: 'Ideal después del bote. Si están fundidos, hagan una visita corta y memorable.',
+        sources: [{ label: 'Visit Iceland · Diamond Beach', url: 'https://www.visiticeland.com/article/diamond-beach/' }]
+    }),
+    'hoffell': makeReview({
+        eyebrow: 'Review · Día 5 · Termales',
+        title: 'Hoffell Hot Tubs',
+        verdict: 'La pausa de recuperación: agua caliente, montañas y el cuerpo diciendo “gracias” después del día glaciar.',
+        stats: [['Tipo', 'Baño termal'], ['Tiempo', '60–90 min'], ['Esfuerzo', 'Bajo'], ['Función', 'Recuperar']],
+        feel: 'Menos turístico que una laguna grande; más íntimo, práctico y perfecto para resetear piernas.',
+        route: 'Llegar, pagar si aplica, baño, ducha/orden y seguir hacia Vestrahorn.',
+        level: 'Fácil. El valor está en bajar el ritmo.',
+        jarvis: 'No lo saltes si el cuerpo viene cargado. Este baño compra energía para Vestrahorn.',
+        sources: [{ label: 'Hoffell Hot Tubs', url: 'https://www.hoffell.com/hot-tubs/' }]
+    }),
+    'vestrahorn': makeReview({
+        eyebrow: 'Review · Día 5 · Montaña',
+        title: 'Vestrahorn',
+        verdict: 'La montaña dramática del viaje: negra, afilada, cinematográfica. Si hay reflejos, puede ser top 3 del roadbook.',
+        stats: [['Tipo', 'Miradores'], ['Tiempo', '60–120 min'], ['Esfuerzo', 'Bajo'], ['Mejor', 'Luz baja']],
+        feel: 'Dunas, mar, montaña oscura y sensación de estar en una película cara.',
+        route: 'Comprar acceso en Viking Cafe, recorrer puntos de Stokksnes, buscar composiciones con dunas/reflejos.',
+        level: 'Fácil; depende más de clima, viento y visibilidad que de piernas.',
+        jarvis: 'Si el cielo abre, no tengan prisa. Este es lugar de paciencia fotográfica.',
+        sources: [{ label: 'Viking Cafe / Stokksnes', url: 'https://www.vikingcafe.is/' }]
+    }),
+    'mirror-beach': makeReview({
+        eyebrow: 'Review · Día 5 · Stokksnes',
+        title: 'Mirror Beach',
+        verdict: 'La búsqueda del reflejo: Vestrahorn duplicado en arena mojada. Si marea/luz ayudan, magia silenciosa.',
+        stats: [['Tipo', 'Foto / playa'], ['Tiempo', '30–60 min'], ['Esfuerzo', 'Bajo'], ['Clave', 'Marea / luz']],
+        feel: 'Minimalista: agua fina, arena oscura, montaña enorme. Muy de caminar lento mirando el suelo.',
+        route: 'Explorar la playa de Stokksnes y moverse hasta encontrar charcos/reflejos limpios.',
+        level: 'Fácil, con viento posible.',
+        jarvis: 'No forzar si el clima está cerrado. Vestrahorn también funciona con nubes dramáticas.',
+        sources: [{ label: 'Viking Cafe / Stokksnes', url: 'https://www.vikingcafe.is/' }]
+    }),
+    'viking-village': makeReview({
+        eyebrow: 'Review · Día 5 · Film set',
+        title: 'Viking Village',
+        verdict: 'No es naturaleza pura, es textura cinematográfica: un set vikingo abandonado que suma una capa rara al día de Vestrahorn.',
+        stats: [['Tipo', 'Set / paseo'], ['Tiempo', '25–45 min'], ['Esfuerzo', 'Bajo'], ['Acceso', 'Viking Cafe']],
+        feel: 'Madera, pasto, montañas y una vibra de “esto parece real pero no del todo”.',
+        route: 'Entrar con el acceso de Stokksnes y recorrer el set sin convertirlo en actividad larga.',
+        level: 'Muy fácil.',
+        jarvis: 'Buen complemento, no plato principal. El plato principal sigue siendo Vestrahorn.',
+        sources: [{ label: 'Viking Cafe / Stokksnes', url: 'https://www.vikingcafe.is/' }]
+    }),
+    'fjadrargljufur': makeReview({
+        eyebrow: 'Review · Día 6 · Cañón',
+        title: 'Fjaðrárgljúfur',
+        verdict: 'Un cañón serpenteante, verde y extraño. Es corto, potente y perfecto para romper el regreso largo.',
+        stats: [['Tipo', 'Miradores'], ['Longitud', '2 km aprox.'], ['Tiempo', '45–75 min'], ['Esfuerzo', 'Bajo–medio']],
+        feel: 'Paredes altas, río abajo y curvas suaves. Parece diseñado por alguien con buen gusto excesivo.',
+        route: 'Caminar por los miradores autorizados, sin salirse a zonas cerradas o frágiles.',
+        level: 'Moderado suave por pendiente y clima; técnicamente sencillo.',
+        jarvis: 'Va antes de Vík: llegar, caminar miradores, fotos y seguir. No improvisar senderos.',
+        sources: [{ label: 'South Iceland · Fjaðrárgljúfur', url: 'https://www.south.is/en/place/fjadrargljufur-canyon' }]
+    }),
+    'reynisfjara': makeReview({
+        eyebrow: 'Review · Día 6 · Playa negra',
+        title: 'Reynisfjara',
+        verdict: 'Bellísima y seria. Arena negra, columnas basálticas y Reynisdrangar; pero aquí el mar no es decoración, es peligro real.',
+        stats: [['Tipo', 'Playa / basalto'], ['Tiempo', '30–50 min'], ['Esfuerzo', 'Bajo'], ['Clave', 'Lejos del agua']],
+        feel: 'Oscura, ruidosa, poderosa. Una de las playas más memorables del viaje si se respeta.',
+        route: 'Columnas basálticas, vistas de la playa y fotos desde distancia segura del oleaje.',
+        level: 'Fácil físicamente; alta atención por sneaker waves.',
+        jarvis: 'Nunca dar la espalda al mar. Si hay alerta o mal oleaje, se mira desde lejos y ya.',
+        sources: [{ label: 'Visit Iceland · seguridad Reynisfjara', url: 'https://www.visiticeland.com/article/reynisfjara-black-sand-beach-is-dangerous/' }]
+    }),
+    'dyrholaey': makeReview({
+        eyebrow: 'Review · Día 6 · Acantilados',
+        title: 'Dyrhólaey',
+        verdict: 'El mirador que ordena la Costa Sur: arco natural, acantilados, mar negro y vista larga hacia Reynisfjara.',
+        stats: [['Tipo', 'Mirador'], ['Tiempo', '30–60 min'], ['Esfuerzo', 'Bajo'], ['Clave', 'Viento']],
+        feel: 'Más aéreo que Reynisfjara. Aquí la costa se entiende desde arriba.',
+        route: 'Subir a miradores habilitados, fotos del arco y vistas hacia playas negras.',
+        level: 'Fácil, pero viento fuerte puede hacerlo incómodo.',
+        jarvis: 'Después de Reynisfjara, este es cierre panorámico. Si el clima está feo, hacerlo corto.',
+        sources: [{ label: 'South Iceland · Dyrhólaey', url: 'https://www.south.is/en/place/dyrholaey' }]
+    }),
+    'kaffivagninn-food': makeReview({
+        eyebrow: 'Qué pedir · Día 1 · Reykjavík',
+        title: 'Kaffivagninn · cena del puerto',
+        verdict: 'Pidan un Jói Chef Special de bacalao y un Fish & chips para compartir y probar las dos versiones del pescado islandés.',
+        stats: [['Pedido', '1 Jói + 1 fish & chips'], ['Jói Chef', '6.135 ISK'], ['Fish & chips', '5.650 ISK'], ['Comida para 2', '11.785 ISK']],
+        feel: 'El Jói Chef es bacalao empanizado con gratinado de hongos, bearnesa, papas y ensalada. El fish & chips es la opción clásica y más sencilla.',
+        route: 'Ordenar uno de cada uno y dividir ambos platos.',
+        level: 'Cena confirmada para las 18:15. Los precios no incluyen bebidas.',
+        jarvis: 'Uno de cada uno: el Jói Chef aporta el plato especial y el fish & chips permite comparar el clásico.',
+        sources: [
+            { label: 'Menú de cena Kaffivagninn 2026', url: 'https://kaffivagninn.is/wp-content/uploads/2026/03/kvold.pdf' },
+            { label: 'Kaffivagninn oficial', url: 'https://kaffivagninn.is/' },
+            { label: 'Imagen fish & chips · CC0', url: 'https://commons.wikimedia.org/wiki/File:A_plate_of_Fish_and_chips.JPG' }
+        ]
+    }),
+    'ingolfsskali-food': makeReview({
+        eyebrow: 'Qué pedir · Día 2 · Después de Reykjadalur',
+        title: 'Ingólfsskáli · cena vikinga',
+        verdict: 'Primera elección: Lamb Prime, lamb loin o lamb fillet, cocinado medium-well y no demasiado rosado. Es una referencia: hay que confirmar si el corte está disponible esa noche.',
+        stats: [['Primera opción', 'Lamb loin / fillet'], ['Cocción', 'Medium-well'], ['Evitar', 'Slow-cooked lamb shank'], ['Alternativa', 'Beef rib-eye · 8.490 ISK']],
+        feel: 'Buscan un corte de cordero estilo bistec: entero, tierno y luego rebanado; no pierna ni carne desmenuzada.',
+        route: 'Preguntar al ordenar: “Do you have lamb loin, lamb fillet or Lamb Prime? I would like it medium-well, please—not too pink inside.”',
+        level: 'La fotografía es una referencia visual compartida por Pedro y no garantiza que sea el plato servido por el restaurante.',
+        jarvis: 'Confirmar el corte antes de ordenar. Si no hay cordero estilo bistec, elegir el beef rib-eye; no sustituirlo automáticamente por lamb shank.',
+        sources: [
+            { label: 'Menú Ingólfsskáli 2026', url: 'https://ingolfsskali.is/wp-content/uploads/2026/05/Menu-2026.pdf' },
+            { label: 'Ingólfsskáli oficial', url: 'https://ingolfsskali.is/' }
+        ]
+    }),
+    'lava-centre': makeReview({
+        eyebrow: 'Review · Día 6 · Opcional cubierto',
+        title: 'LAVA Centre',
+        verdict: 'Plan B inteligente: si el cuerpo o el clima fallan, volcanes bajo techo y contexto para todo lo que viste afuera.',
+        stats: [['Tipo', 'Museo'], ['Tiempo', '45–90 min'], ['Esfuerzo', 'Bajo'], ['Uso', 'Opcional']],
+        feel: 'Interactivo, cómodo y educativo. Cambia lava/montañas de “paisaje bonito” a sistema vivo.',
+        route: 'Entrar solo si queda energía o si el clima castiga demasiado las paradas exteriores.',
+        level: 'Muy fácil.',
+        jarvis: 'No es obligación. Es carta comodín para cerrar el día con cabeza y sin mojarse más.',
+        sources: [{ label: 'LAVA Centre oficial', url: 'https://lavacentre.is/' }]
+    })
+};
+
+const reviewOverlay = document.getElementById('reviewOverlay');
+const reviewPanel = reviewOverlay?.querySelector('.review-panel');
+const reviewBody = document.getElementById('reviewBody');
+let lastReviewTrigger = null;
+let reviewPreservedBodyLock = false;
+
+function escapeHtml(value) {
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+const reviewMatchers = [
+    { key: 'kaffivagninn-food', patterns: ['kaffivagninn'] },
+    { key: 'ingolfsskali-food', patterns: ['ingolfsskali', 'ingólfsskáli'] },
+    { key: 'hallgrimskirkja', patterns: ['hallgrimskirkja', 'hallgrímskirkja'] },
+    { key: 'sun-voyager', patterns: ['viajero del sol', 'sun voyager'] },
+    { key: 'harpa', patterns: ['harpa'] },
+    { key: 'iceland-camping-equipment', patterns: ['iceland camping equipment'] },
+    { key: 'thingvellir', patterns: ['thingvellir', 'þingvellir'] },
+    { key: 'almannagja', patterns: ['almannagja', 'almannagjá'] },
+    { key: 'geysir', patterns: ['geysir', 'strokkur'] },
+    { key: 'gullfoss', patterns: ['gullfoss'] },
+    { key: 'kerid', patterns: ['kerid', 'kerið'] },
+    { key: 'reykjadalur', patterns: ['reykjadalur', 'thermal river', 'rio termal', 'río termal'] },
+    { key: 'seljalandsfoss', patterns: ['seljalandsfoss'] },
+    { key: 'gljufrabui', patterns: ['gljufrabui', 'gljúfrabúi'] },
+    { key: 'skogafoss', patterns: ['skogafoss', 'skógafoss'] },
+    { key: 'troll-skaftafell', patterns: ['troll expeditions skaftafell', 'tröll expeditions skaftafell', 'troll skaftafell', 'tröll skaftafell'] },
+    { key: 'glacier-lagoon-boat', patterns: ['glacier lagoon trip boat'] },
+    { key: 'jokulsarlon', patterns: ['jokulsarlon', 'jökulsárlón'] },
+    { key: 'diamond-beach', patterns: ['diamond beach'] },
+    { key: 'hoffell', patterns: ['hoffell hot tubs'] },
+    { key: 'viking-village', patterns: ['viking village film set'] },
+    { key: 'mirror-beach', patterns: ['stokksnes mirror beach', 'mirror beach'] },
+    { key: 'vestrahorn', patterns: ['vestrahorn'] },
+    { key: 'fjadrargljufur', patterns: ['fjadrargljufur', 'fjaðrárgljúfur'] },
+    { key: 'reynisfjara', patterns: ['reynisfjara'] },
+    { key: 'dyrholaey', patterns: ['dyrholaey', 'dyrhólaey'] },
+    { key: 'lava-centre', patterns: ['lava centre'] }
+];
+
+const reviewSkipPatterns = [
+    'gas',
+    'orkan',
+    'n1 ',
+    'camping',
+    'campsite',
+    'campground',
+    'parking',
+    'go campers',
+    'aeropuerto',
+    'airport',
+    'vuelo',
+    'metro',
+    'netto',
+    'nettó',
+    'guesthouse'
+];
+
+function normalizeReviewText(value) {
+    return String(value)
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9þðæø\s]+/gi, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function findReviewKey(value) {
+    const text = normalizeReviewText(value);
+    if (reviewSkipPatterns.some((pattern) => text.includes(normalizeReviewText(pattern)))) {
+        return null;
+    }
+    const match = reviewMatchers.find(({ patterns }) => (
+        patterns.some((pattern) => text.includes(normalizeReviewText(pattern)))
+    ));
+    return match?.key || null;
+}
+
+function getStopReviewKey(stop) {
+    return stop.review || findReviewKey(`${stop.title || ''} ${stop.sub || ''}`);
+}
+
+function enhanceRoadbookReviews() {
+    document.querySelectorAll('.event').forEach((eventEl) => {
+        if (eventEl.querySelector('[data-review]')) return;
+        const textEl = eventEl.querySelector('p');
+        if (!textEl) return;
+        const reviewKey = findReviewKey(textEl.textContent);
+        if (!reviewKey) return;
+
+        const button = document.createElement('button');
+        button.className = 'event-inline-review';
+        button.type = 'button';
+        button.dataset.review = reviewKey;
+        button.textContent = reviewKey.endsWith('-food') ? 'Qué pedir →' : 'Review →';
+        textEl.appendChild(button);
+        eventEl.classList.add('event-has-review');
+    });
+}
+
+const reviewImages = {
+    'kaffivagninn-food': 'https://commons.wikimedia.org/wiki/Special:Redirect/file/A_plate_of_Fish_and_chips.JPG?width=1200',
+    'ingolfsskali-food': 'img/lamb-prime-reference.jpeg',
+    'hallgrimskirkja': 'img/hallgrimskirkja-1.jpg',
+    'sun-voyager': 'img/hallgrimskirkja-2.jpg',
+    'harpa': 'img/hallgrimskirkja-3.jpg',
+    'iceland-camping-equipment': 'https://commons.wikimedia.org/wiki/Special:Redirect/file/BSI_bus_terminal_(Reykjavik)_in_2020.02.jpg?width=1600',
+    'thingvellir': 'img/thingvellir-1.jpg',
+    'almannagja': 'img/thingvellir-2.jpg',
+    'geysir': 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/Strokkur%2C_%C3%81rea_geot%C3%A9rmica_de_Geysir%2C_Su%C3%B0urland%2C_Islandia%2C_2014-08-16%2C_DD_086.JPG/1920px-Strokkur%2C_%C3%81rea_geot%C3%A9rmica_de_Geysir%2C_Su%C3%B0urland%2C_Islandia%2C_2014-08-16%2C_DD_086.JPG',
+    'gullfoss': 'img/gullfoss.jpg',
+    'kerid': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Crater_volc%C3%A1nico_Keri%C3%B0%2C_Su%C3%B0urland%2C_Islandia%2C_2014-08-16%2C_DD_151.jpg/1920px-Crater_volc%C3%A1nico_Keri%C3%B0%2C_Su%C3%B0urland%2C_Islandia%2C_2014-08-16%2C_DD_151.jpg',
+    'reykjadalur': 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/73/Hot_spring%2C_Reykjadalur_Valley%2C_Iceland%2C_20230502_1415_4243.jpg/1920px-Hot_spring%2C_Reykjadalur_Valley%2C_Iceland%2C_20230502_1415_4243.jpg',
+    'seljalandsfoss': 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Seljalandsfoss_Waterfall%2C_Iceland%2C_20240720_1500_3093.jpg/1920px-Seljalandsfoss_Waterfall%2C_Iceland%2C_20240720_1500_3093.jpg',
+    'gljufrabui': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Glj%C3%BAfrab%C3%BAi-pjt1.jpg/1920px-Glj%C3%BAfrab%C3%BAi-pjt1.jpg',
+    'skogafoss': 'img/skogafoss-1.jpg',
+    'troll-skaftafell': 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/View_from_Skaftafell_National_Park_July_2014_-2.JPG/1920px-View_from_Skaftafell_National_Park_July_2014_-2.JPG',
+    'jokulsarlon': 'img/jokulsarlon-1.jpg',
+    'glacier-lagoon-boat': 'img/jokulsarlon-3.jpg',
+    'diamond-beach': 'img/diamond-beach-1.jpg',
+    'hoffell': 'img/vestrahorn-2.jpg',
+    'vestrahorn': 'img/vestrahorn-1.jpg',
+    'mirror-beach': 'img/vestrahorn-3.jpg',
+    'viking-village': 'img/vestrahorn-2.jpg',
+    'fjadrargljufur': 'img/fjadrargljufur-1.jpg',
+    'reynisfjara': 'img/reynisfjara-1.jpg',
+    'dyrholaey': 'img/reynisfjara-3.jpg',
+    'lava-centre': 'img/fjadrargljufur-3.jpg'
+};
+
+function renderReview(review, key) {
+    const statsHtml = review.stats.map(([label, value]) => `
+        <div><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>
+    `).join('');
+    const sources = review.sources || [];
+    const sourcesHtml = sources.map((source) => `
+        <a href="${escapeHtml(source.url)}" target="_blank" rel="noopener">${escapeHtml(source.label)} ↗</a>
+    `).join('');
+    const sourcesBlock = sources.length
+        ? `<div class="review-sources"><span>Fuentes usadas</span>${sourcesHtml}</div>`
+        : '';
+
+    const image = reviewImages[key] || 'img/hero-aurora.jpg';
+
+    reviewBody.innerHTML = `
+        <div class="review-visual">
+            <img src="${escapeHtml(image)}" alt="${escapeHtml(review.title)}" loading="eager">
+            <div class="review-visual-shade"></div>
+            <div class="review-heading">
+                <p class="review-eyebrow">${escapeHtml(review.eyebrow)}</p>
+                <h2 id="reviewTitle">${escapeHtml(review.title)}</h2>
+            </div>
+        </div>
+        <details class="review-more">
+            <summary>Información <span aria-hidden="true">＋</span></summary>
+            <p class="review-verdict">${escapeHtml(review.verdict)}</p>
+            <div class="review-stats">${statsHtml}</div>
+            <div class="review-essential">
+                <span>Jarvis recomienda</span>
+                <p>${escapeHtml(review.blocks[3]?.text || '')}</p>
+            </div>
+            ${sourcesBlock}
+        </details>
+    `;
+}
+
+function openReview(key, event) {
+    const review = reviewData[key];
+    if (!review || !reviewOverlay || !reviewPanel || !reviewBody) return;
+    lastReviewTrigger = event?.target?.closest('[data-review]') || document.activeElement;
+    reviewPreservedBodyLock = document.body.style.overflow === 'hidden';
+    renderReview(review, key);
+    reviewOverlay.classList.add('active');
+    reviewOverlay.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    requestAnimationFrame(() => reviewPanel.focus());
+}
+
+function closeReview() {
+    if (!reviewOverlay) return;
+    reviewOverlay.classList.remove('active');
+    reviewOverlay.setAttribute('aria-hidden', 'true');
+    if (!reviewPreservedBodyLock) document.body.style.overflow = '';
+    if (lastReviewTrigger instanceof HTMLElement) lastReviewTrigger.focus();
+}
+
+enhanceRoadbookReviews();
+
+document.addEventListener('click', (event) => {
+    const closeTrigger = event.target.closest('[data-review-close]');
+    if (closeTrigger) {
+        event.preventDefault();
+        closeReview();
+        return;
+    }
+
+    const reviewTrigger = event.target.closest('[data-review]');
+    if (!reviewTrigger) return;
+    event.preventDefault();
+    event.stopPropagation();
+    openReview(reviewTrigger.dataset.review, event);
+});
+
+document.addEventListener('keydown', (event) => {
+    if (!reviewOverlay?.classList.contains('active')) return;
+    if (event.key === 'Escape') {
+        event.preventDefault();
+        event.stopPropagation();
+        closeReview();
+        return;
+    }
+    if (event.key !== 'Tab' || !reviewPanel) return;
+
+    const focusable = [...reviewPanel.querySelectorAll(
+        'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    )];
+    if (!focusable.length) {
+        event.preventDefault();
+        reviewPanel.focus();
+        return;
+    }
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+    }
+}, true);
+
 // ===== JARVIS MODE =====
 const jarvisData = [
     {
         day: 0, label: 'SALIDA', tab: 'SALIDA', name: 'Washington → Islandia', date: '31-ago-2026',
         stops: [
-            { time: 'Inicio', icon: '🏠', title: '1201 S Eads St' },
-            { time: 'Metro', icon: '🚇', title: 'Pentagon City Metro Station' },
-            { time: 'IAD', icon: '✈️', title: 'Aeropuerto Washington-Dulles' },
-            { time: '20:30', icon: '🛫', title: 'Icelandair FI644', sub: 'Noche en el avión rumbo a Keflavík.' }
+            { time: '16:30', icon: '🏠', title: '1201 S Eads St', sub: 'Salir con equipaje y documentos.' },
+            { time: '16:40–18:00', icon: '🚇', title: 'Pentagon City → IAD', sub: 'Traslado al aeropuerto.' },
+            { time: '18:00–20:00', icon: '✈️', title: 'Washington Dulles', sub: 'Check-in, seguridad y comida.' },
+            { time: '20:30 🔒', icon: '🛫', title: 'Vuelo FI644 IAD → KEF', sub: 'Vuelo nocturno; intentar dormir.' },
+            { time: '06:25 +1 🔒', icon: '🛬', title: 'Llegada a Keflavík' }
         ],
         tip: 'Día de transición. Lleva batería, abrigo ligero y lo necesario para dormir algo en el vuelo.',
         wow: 'El viaje empieza antes de Islandia: salir de noche desde Washington y amanecer en Keflavík ya cambia el chip completo.'
@@ -243,125 +993,232 @@ const jarvisData = [
     {
         day: 1, name: 'Llegada + Reykjavík', date: '01-sept-2026',
         stops: [
-            { time: '06:25', icon: '🛬', title: 'Llegada a Keflavík', coords: [63.9850, -22.6056] },
-            { time: '07:30', icon: '🚐', title: 'Recoger Go Camper', coords: [63.9920, -22.5500] },
-            { time: 'Descanso', icon: '😴', title: 'Grindavík Campsite', sub: 'Parada opcional para dormir unas horas después del vuelo.', coords: [63.8424, -22.4328] },
-            { time: 'Ciudad', icon: '⛪', title: '⭐ Hallgrímskirkja', star: true, coords: [64.1420, -21.9266] },
-            { time: 'Ciudad', icon: '🌊', title: 'Viajero del Sol', coords: [64.1475, -21.9220] },
-            { time: 'Ciudad', icon: '🎵', title: 'Harpa', coords: [64.1503, -21.9328] },
-            { time: '⛽ Gas', icon: '⛽', title: 'Orkan Kleppsvegur', sub: 'Parada técnica antes del camping.', coords: [64.1467, -21.8730] },
-            { time: 'Noche', icon: '🏕️', title: 'Reykjavík Eco Campsite', coords: [64.0830, -21.9070] }
+            { time: '06:25–07:15', icon: '🛬', title: 'Aeropuerto KEF', sub: 'Migración, equipaje y shuttle.', coords: [63.9850, -22.6056] },
+            { time: '07:15–07:30', icon: '🚐', title: 'Shuttle Go Campers', coords: [63.9920, -22.5500] },
+            { time: '07:30–08:45 🔒', icon: '🔑', title: 'Go Campers Iceland', sub: 'Recoger e inspeccionar la camper.', coords: [63.9920, -22.5500] },
+            { time: '08:45–09:35', icon: '🛣️', title: 'Conducción a Reykjavík' },
+            { time: '09:35–10:00', icon: '🥾', title: 'Iceland Camping Equipment', sub: 'Recoger bastones y rain pants para ambos.', coords: [64.1377, -21.9344], review: 'iceland-camping-equipment' },
+            { time: '10:00–10:15 ◇', icon: '⛽', title: 'Orkan Reykjavík', coords: [64.1458, -21.8585] },
+            { time: '10:25–11:20', icon: '⛪', title: '⭐ Hallgrímskirkja', star: true, coords: [64.1420, -21.9266] },
+            { time: '11:30–12:00', icon: '🌭', title: 'Bæjarins Beztu Pylsur', coords: [64.1506, -21.9388] },
+            { time: '12:05–12:40', icon: '🎵', title: 'Harpa', coords: [64.1503, -21.9328] },
+            { time: '12:40–13:00 ◇', icon: '🌊', title: 'Viajero del Sol', coords: [64.1475, -21.9220] },
+            { time: '13:15–13:45 🔒', icon: '🏕️', title: 'Reykjavík Eco Campsite', sub: 'Check-in y preparar la cama.', coords: [64.1463, -21.8760] },
+            { time: '13:45–17:00', icon: '😴', title: 'Descanso' },
+            { time: '17:15–18:00', icon: '🛒', title: 'Supermercado' },
+            { time: '18:00–18:15', icon: '🛣️', title: 'Supermercado → Kaffivagninn', sub: 'Traslado al puerto viejo.' },
+            { time: '18:15–19:30', icon: '🐟', title: 'Kaffivagninn', sub: 'Cena islandesa junto al puerto; reservar mesa con anticipación.', coords: [64.1535869, -21.94757], star: true },
+            { time: '19:30–19:45', icon: '🛣️', title: 'Kaffivagninn → Reykjavík Eco Campsite', sub: 'Regreso al camping.' },
+            { time: '19:45–20:30', icon: '🏕️', title: 'Reykjavík Eco Campsite', sub: 'Ducha, organizar la camper y descanso temprano.', coords: [64.1463, -21.8760] }
         ],
-        tip: 'Orden refinado: Go Campers, descanso opcional en Grindavík, Hallgrímskirkja, Viajero del Sol, Harpa, Orkan Kleppsvegur y Reykjavík Eco Campsite.',
+        tip: 'Día ligero. El bloque 13:45–17:00 queda protegido para dormir; después de comprar víveres, cena a las 18:15 en Kaffivagninn y regreso temprano al camping.',
         wow: 'Hallgrímskirkja, el Viajero del Sol y Harpa hacen una entrada limpia a Reykjavík sin quemar energía el primer día.'
     },
     {
         day: 2, name: 'Golden Circle + Reykjadalur', date: '02-sept-2026',
         stops: [
-            { time: 'Salida', icon: '🏕️', title: 'Reykjavík Eco Campsite', coords: [64.0830, -21.9070] },
-            { time: 'Ruta', icon: '🌋', title: '⭐ Þingvellir', star: true, coords: [64.2559, -21.1295] },
-            { time: 'Ruta', icon: '🪨', title: 'Almannagjá', sub: 'Caminar por la falla tectónica dentro de Þingvellir.', coords: [64.2610, -21.1210] },
-            { time: 'Ruta', icon: '💦', title: 'Geysir / Strokkur', sub: 'Strokkur suele erupcionar cada pocos minutos.', coords: [64.3138, -20.3008] },
-            { time: 'Parada', icon: '🐴', title: 'Brú Horsefarm', sub: 'Caballos islandeses; compras opcionales.', coords: [64.1760, -20.4850] },
-            { time: 'Ruta', icon: '💧', title: 'Gullfoss Waterfall', coords: [64.3271, -20.1199] },
-            { time: 'Ruta', icon: '🌋', title: 'Kerið', sub: 'Caminar el borde; bajar al lago es opcional.', coords: [64.0416, -20.8859] },
-            { time: 'Termal', icon: '♨️', title: '⭐ Reykjadalur Hot Spring Thermal River', sub: 'Hiking, baño termal, descanso y regreso caminando.', star: true, coords: [64.0169, -21.2110] },
-            { time: '⛽ Gas', icon: '⛽', title: 'Orkan Suðurlandsvegur, Selfoss', coords: [63.9331, -20.9971] },
-            { time: 'Noche', icon: '🏕️', title: 'Camping Selfoss', coords: [63.9280, -21.0060] }
+            { time: '06:30–07:00', icon: '🏕️', title: 'Reykjavík Eco Campsite', coords: [64.1463, -21.8760] },
+            { time: '07:00–07:50', icon: '🛣️', title: 'Reykjavík → Þingvellir' },
+            { time: '07:50–09:20', icon: '🌋', title: '⭐ Þingvellir + Almannagjá', star: true, coords: [64.2559, -21.1295] },
+            { time: '09:20–10:20', icon: '🛣️', title: 'Þingvellir → Geysir' },
+            { time: '10:20–11:05', icon: '💦', title: 'Geysir / Strokkur', coords: [64.3138, -20.3008] },
+            { time: '11:10–11:35', icon: '🐴', title: 'Brú Horsefarm', coords: [64.1760, -20.4850] },
+            { time: '11:45–12:35', icon: '💧', title: 'Gullfoss', coords: [64.3271, -20.1199] },
+            { time: '12:35–13:10', icon: '🥪', title: 'Almuerzo' },
+            { time: '13:10–14:00', icon: '🛣️', title: 'Gullfoss → Kerið' },
+            { time: '14:00–14:40', icon: '🌋', title: 'Kerið', coords: [64.0416, -20.8859] },
+            { time: '14:40–15:10', icon: '🛣️', title: 'Kerið → Reykjadalur' },
+            { time: '15:10–18:30', icon: '♨️', title: '⭐ Reykjadalur', star: true, coords: [64.0169, -21.2110] },
+            { time: '18:30–19:05', icon: '🛣️', title: 'Reykjadalur → Ingólfsskáli', sub: 'Traslado y margen para cambiarse después del hike.' },
+            { time: '19:15–20:30', icon: '⚔️', title: 'Ingólfsskáli Viking Restaurant', sub: 'Cena vikinga; reservación obligatoria.', coords: [63.98182, -21.09641], star: true },
+            { time: '20:30–20:45', icon: '🛣️', title: 'Ingólfsskáli → Selfoss', sub: 'Traslado al pueblo.' },
+            { time: '20:45–21:00', icon: '⛽', title: 'Orkan Selfoss', coords: [63.9331, -20.9971] },
+            { time: '21:05', icon: '🏕️', title: 'Camping Selfoss', coords: [63.9329, -20.9875] }
         ],
-        tip: 'Orden refinado: Þingvellir, Almannagjá, Geysir, Brú Horsefarm, Gullfoss, Kerið, Reykjadalur, Orkan Selfoss y Camping Selfoss.',
+        tip: 'Después de Reykjadalur, cambiarse y conducir a Ingólfsskáli para la cena de las 19:15. La reservación es obligatoria; después quedan Orkan Selfoss y el camping.',
         wow: 'Reykjadalur convierte el Golden Circle en algo más que paradas rápidas: termal, montaña y vapor saliendo del valle.'
     },
     {
         day: 3, name: 'Costa Sur + Skógar', date: '03-sept-2026',
         stops: [
-            { time: 'Salida', icon: '🏕️', title: 'Camping Selfoss', coords: [63.9280, -21.0060] },
-            { time: '⛽ Gas', icon: '⛽', title: 'N1 Hvolsvöllur', sub: 'Repostar, baños, café o snacks antes de continuar.', coords: [63.7529, -20.2243] },
-            { time: 'Ruta', icon: '💧', title: 'Seljalandsfoss', coords: [63.6156, -19.9896] },
-            { time: 'Ruta', icon: '💧', title: 'Gljúfrabúi', sub: 'Cascada escondida junto a Seljalandsfoss.', coords: [63.6210, -19.9848] },
-            { time: 'Ruta', icon: '🌊', title: '⭐ Skógafoss', star: true, coords: [63.5322, -19.5114] },
-            { time: 'Pausa', icon: '☕', title: 'Skógar', sub: 'Almuerzo, café, baños o descanso.', coords: [63.5269, -19.5060] },
-            { time: 'Noche', icon: '🏕️', title: 'Skógar Campsite', sub: 'Instalarse temprano y preparar el equipo del glaciar.', coords: [63.5277, -19.5120] }
+            { time: '07:30–08:15', icon: '🏕️', title: 'Camping Selfoss', coords: [63.9329, -20.9875] },
+            { time: '08:15–09:00', icon: '🛣️', title: 'Selfoss → Hvolsvöllur' },
+            { time: '09:00–09:15', icon: '⛽', title: 'N1 Hvolsvöllur', coords: [63.7498, -20.2345] },
+            { time: '09:15–09:35', icon: '🛣️', title: 'N1 → Seljalandsfoss' },
+            { time: '09:35–10:25', icon: '💧', title: 'Seljalandsfoss', coords: [63.6156, -19.9896] },
+            { time: '10:25–11:00', icon: '💧', title: 'Gljúfrabúi', coords: [63.6210, -19.9848] },
+            { time: '11:00–11:30', icon: '🛣️', title: 'Traslado a Skógafoss' },
+            { time: '11:30–12:30', icon: '🌊', title: '⭐ Skógafoss', star: true, coords: [63.5322, -19.5114] },
+            { time: '12:30–13:15', icon: '🥪', title: 'Skógar', coords: [63.5269, -19.5060] },
+            { time: '13:15–15:00', icon: '🏛️', title: 'Skógar Museum', coords: [63.5258, -19.4932] },
+            { time: '15:10', icon: '🏕️', title: 'Skógar Campsite', coords: [63.5277, -19.5120] },
+            { time: '15:10–18:00', icon: '😴', title: 'Descanso' },
+            { time: '18:00–19:00', icon: '🍲', title: 'Cena' },
+            { time: '19:00–20:00', icon: '🎒', title: 'Preparación del glaciar' },
+            { time: '20:30', icon: '🌙', title: 'Dormir' }
         ],
         tip: 'Orden refinado: Camping Selfoss, N1 Hvolsvöllur, Seljalandsfoss, Gljúfrabúi, Skógafoss, Skógar y Skógar Campsite.',
         wow: 'Seljalandsfoss, Gljúfrabúi y Skógafoss en el mismo día: este es el primer bloque grande de cascadas.'
     },
     {
-        day: 4, name: 'Tröll S1 + Jökulsárlón + bote', date: '04-sept-2026',
+        day: 4, name: 'Tröll Skaftafell + Jökulsárlón + bote', date: '04-sept-2026',
         critical: true,
         stops: [
-            { time: 'Salida', icon: '🏕️', title: 'Skógar Campsite', coords: [63.5277, -19.5120] },
-            { time: '⛽ Rápido', icon: '⛽', title: 'N1 Kirkjubæjarklaustur', sub: 'Repostar breve y continuar; actividad con horario fijo.', coords: [63.7897, -18.0630] },
-            { time: '09:30', icon: '🥾', title: '⭐ Tröll Expeditions Skaftafell', sub: 'Hiking guiado Skaftafellsjökull S1, aprox. 9:30 a 12:30.', star: true, crit: true, coords: [64.0167, -16.9667] },
-            { time: 'Almuerzo', icon: '🧊', title: 'Jökulsárlón', sub: 'Laguna, icebergs y comida antes del bote.', coords: [64.0481, -16.1794] },
-            { time: 'Después', icon: '🅿️', title: 'Jökulsárlón Glacier Lagoon Parking', coords: [64.0478, -16.1782] },
-            { time: '15:50', icon: '🚤', title: '⭐ Glacier Lagoon Trip Boat', sub: 'Paseo en bote reservado.', star: true, crit: true, coords: [64.0481, -16.1794] },
-            { time: 'Después', icon: '💎', title: '⭐ Diamond Beach', star: true, coords: [64.0393, -16.1869] },
-            { time: 'Noche', icon: '🏕️', title: 'Skaftafell Campground', sub: 'Regresar, cenar, ducharse y descansar.', coords: [64.0100, -16.9800] }
+            { time: '05:45–06:10', icon: '🏕️', title: 'Skógar Campsite', coords: [63.5277, -19.5120] },
+            { time: '06:10–08:50', icon: '🛣️', title: 'Skógar → Skaftafell', sub: 'N1 Kirkjubæjarklaustur solo en emergencia.' },
+            { time: '08:50–09:30 🔒', icon: '🥾', title: '⭐ Tröll Expeditions Skaftafell', sub: 'Registro, equipo e instrucciones.', star: true, crit: true, coords: [63.9104, -16.7283], review: 'troll-skaftafell' },
+            { time: '09:30–12:30 🔒', icon: '🧊', title: 'Glacier Hike', sub: 'Caminata guiada sobre Vatnajökull.', crit: true, coords: [63.9104, -16.7283], review: 'troll-skaftafell' },
+            { time: '12:30–13:05', icon: '🛣️', title: 'Skaftafell → Jökulsárlón' },
+            { time: '13:05–14:00', icon: '🥪', title: 'Jökulsárlón', coords: [64.0481, -16.1794] },
+            { time: '14:00–15:20', icon: '🧊', title: 'Laguna glaciar', coords: [64.0481, -16.1794] },
+            { time: '15:20–15:50 🔒', icon: '🎟️', title: 'Check-in del bote', crit: true, coords: [64.0478, -16.1782] },
+            { time: '15:50–17:00 🔒', icon: '🚤', title: '⭐ Glacier Lagoon Boat', star: true, crit: true, coords: [64.0481, -16.1794] },
+            { time: '17:00–17:45', icon: '💎', title: '⭐ Diamond Beach', star: true, coords: [64.0393, -16.1869] },
+            { time: '17:45–18:40', icon: '🛣️', title: 'Diamond Beach → Haukafell', sub: '52 min aprox.; acceso final parcialmente de grava.' },
+            { time: '18:40–21:00', icon: '🏕️', title: 'Haukafell Campground', sub: 'Cena, ducha y descanso en un camping remoto.', coords: [64.34972, -15.50245] }
         ],
-        tip: 'La parada en N1 Kirkjubæjarklaustur debe ser rápida: Tröll S1 va de 9:30 a 12:30 y el bote de Jökulsárlón está reservado para las 15:50.',
+        tip: 'El tanque debe quedar lleno desde el día anterior. N1 Kirkjubæjarklaustur es solo una gasolinera de emergencia; proteger el registro 08:50 y el bote 15:50.',
         wow: 'Jökulsárlón + bote + Diamond Beach es el centro emocional del viaje: hielo azul, laguna glaciar y arena negra en una sola tarde.'
     },
     {
         day: 5, name: 'Höfn + termales + Vestrahorn', date: '05-sept-2026',
         stops: [
-            { time: 'Salida', icon: '🏕️', title: 'Skaftafell Campground', coords: [64.0100, -16.9800] },
-            { time: '⛽ Höfn', icon: '⛽', title: 'N1 Höfn', sub: 'Repostar, baños y revisar aire de llantas si hace falta.', coords: [64.2520, -15.2080] },
-            { time: 'Compras', icon: '🛒', title: 'Nettó', sub: 'Comida, agua, snacks y provisiones.', coords: [64.2530, -15.2090] },
-            { time: 'Termal', icon: '♨️', title: 'Hoffell Hot Tubs', sub: 'Baño termal con vistas a las montañas.', coords: [64.3970, -15.3420] },
-            { time: 'Acceso', icon: '☕', title: 'Viking Cafe & Guesthouse', sub: 'Comprar acceso a Stokksnes; café o comida opcional.', coords: [64.2490, -14.9720] },
-            { time: 'Ruta', icon: '⛰️', title: '⭐ Vestrahorn', star: true, coords: [64.2440, -14.9650] },
-            { time: 'Ruta', icon: '🪞', title: 'Stokksnes Mirror Beach', coords: [64.2468, -14.9600] },
-            { time: 'Ruta', icon: '🎬', title: '⭐ Viking Village Film Set', star: true, coords: [64.2478, -14.9580] },
-            { time: 'Noche', icon: '🏕️', title: 'Vestrahorn Camping', coords: [64.2480, -14.9820] }
+            { time: '07:30–08:00', icon: '🏕️', title: 'Haukafell Campground', coords: [64.34972, -15.50245] },
+            { time: '08:00–08:50', icon: '🛣️', title: 'Haukafell → Höfn', sub: 'Traslado de aproximadamente 45–50 minutos.' },
+        { time: '08:50–09:58', icon: '☕', title: 'Höfn', sub: 'Margen para descansar y esperar la apertura de servicios.', coords: [64.2591, -15.2064] },
+            { time: '09:58–10:15', icon: '⛽', title: 'N1 Höfn', coords: [64.2591, -15.2064] },
+            { time: '10:15–10:45', icon: '🛒', title: 'Nettó', coords: [64.2525, -15.2126] },
+            { time: '10:45–11:05', icon: '🛣️', title: 'Höfn → Hoffell' },
+            { time: '11:05–12:30', icon: '♨️', title: 'Hoffell Hot Tubs', coords: [64.3928, -15.3444] },
+            { time: '12:30–13:00', icon: '🥪', title: 'Almuerzo' },
+            { time: '13:00–13:30', icon: '🛣️', title: 'Hoffell → Viking Café' },
+            { time: '13:30–14:00', icon: '☕', title: 'Viking Café', coords: [64.2490, -14.9720] },
+            { time: '14:00–15:00', icon: '⛰️', title: '⭐ Vestrahorn', star: true, coords: [64.2440, -14.9650] },
+            { time: '15:00–16:00', icon: '🪞', title: 'Mirror Beach', coords: [64.2468, -14.9600] },
+            { time: '16:00–16:40', icon: '🎬', title: '⭐ Viking Village', star: true, coords: [64.2478, -14.9580] },
+            { time: '16:45', icon: '🏕️', title: 'Vestrahorn Camping', coords: [64.2551, -14.9940] },
+            { time: '17:00–19:30', icon: '🌅', title: 'Camping / Vestrahorn' },
+            { time: '20:30', icon: '🌙', title: 'Dormir' }
         ],
-        tip: 'Orden refinado: Skaftafell, N1 Höfn, Nettó, Hoffell Hot Tubs, Viking Cafe, Vestrahorn, Mirror Beach, Viking Village y Vestrahorn Camping.',
+        tip: 'Orden refinado: Haukafell, N1 Höfn, Nettó, Hoffell Hot Tubs, Viking Cafe, Vestrahorn, Mirror Beach, Viking Village y Vestrahorn Camping.',
         wow: 'Vestrahorn es la montaña dramática; Stokksnes es el espejo; el Viking Village Film Set es el detalle cinematográfico que faltaba.'
     },
     {
         day: 6, name: 'Fjaðrárgljúfur + Vík + Dyrhólaey', date: '06-sept-2026',
         stops: [
-            { time: 'Salida', icon: '🏕️', title: 'Vestrahorn Camping', coords: [64.2480, -14.9820] },
-            { time: 'Ruta', icon: '☕', title: 'Kirkjubæjarklaustur', coords: [63.7897, -18.0630] },
-            { time: 'Cañón', icon: '🏞️', title: '⭐ Fjaðrárgljúfur', star: true, coords: [63.7715, -18.1718] },
-            { time: '⛽ Vík', icon: '⛽', title: 'Orkan Vík', sub: 'Repostar antes de Reynisfjara y Dyrhólaey.', coords: [63.4186, -19.0060] },
-            { time: 'Ruta', icon: '🏖️', title: '⭐ Reynisfjara Beach', star: true, coords: [63.4062, -19.0442] },
-            { time: 'Ruta', icon: '🪨', title: 'Dyrhólaey', coords: [63.4031, -19.1288] },
-            { time: 'Opcional', icon: '🌋', title: 'LAVA Centre', sub: 'Museo interactivo sobre volcanes si queda energía.', coords: [63.7532, -20.2241] },
-            { time: 'Noche', icon: '🏕️', title: 'Hvolsvöllur Camp Site', sub: 'Última noche: cenar, ducharse, ordenar y limpiar la camper.', coords: [63.7529, -20.2243] }
+            { time: '06:30–07:15', icon: '🏕️', title: 'Vestrahorn Camping', coords: [64.2551, -14.9940] },
+            { time: '07:15–10:15', icon: '🛣️', title: 'Vestrahorn → Kirkjubæjarklaustur' },
+            { time: '10:15–10:40', icon: '☕', title: 'Skaftárskáli · Kirkjubæjarklaustur', coords: [63.7939, -18.0399] },
+            { time: '10:40–11:05 ◇', icon: '💧', title: 'Stjórnarfoss', coords: [63.7994, -18.0620] },
+            { time: '11:15–12:30', icon: '🏞️', title: '⭐ Fjaðrárgljúfur', star: true, coords: [63.7726, -18.1737] },
+            { time: '12:30–13:30', icon: '🛣️', title: 'Traslado a Vík' },
+            { time: '13:30–14:30', icon: '⛪', title: 'Vík', coords: [63.4194, -19.0097] },
+            { time: '14:30–14:45', icon: '⛽', title: 'Orkan Vík', coords: [63.4175, -18.9937] },
+            { time: '15:00–15:50', icon: '🏖️', title: '⭐ Reynisfjara', star: true, coords: [63.4044, -19.0588] },
+            { time: '16:10–17:00', icon: '🪨', title: 'Dyrhólaey', coords: [63.3988, -19.1266] },
+            { time: '17:00–18:10', icon: '🛣️', title: 'Dyrhólaey → Hvolsvöllur' },
+            { time: '18:10–19:00', icon: '🏕️', title: 'Hvolsvöllur Camp Site', coords: [63.7498, -20.2386] },
+            { time: '19:00–20:30', icon: '🧹', title: 'Preparación final' },
+            { time: '21:00', icon: '🌙', title: 'Dormir' }
         ],
-        tip: 'Día largo. El nuevo orden mete Fjaðrárgljúfur antes de Vík; luego Orkan Vík, Reynisfjara, Dyrhólaey, LAVA Centre opcional y Hvolsvöllur.',
+        tip: 'Día largo. Si hay retraso, Stjórnarfoss es lo primero que se elimina; mantener Fjaðrárgljúfur, Reynisfjara y Dyrhólaey.',
         wow: 'El regreso por la Costa Sur repite paisajes con otra luz: Fjaðrárgljúfur, Reynisfjara y Dyrhólaey hacen un cierre fuerte.'
     },
     {
-        day: 7, name: 'Regreso a Washington', date: '07-sept-2026',
+        day: 7, name: 'Blue Lagoon + regreso', date: '07-sept-2026',
         stops: [
-            { time: 'Salida', icon: '🏕️', title: 'Hvolsvöllur Camp Site', coords: [63.7529, -20.2243] },
-            { time: '⛽ Final', icon: '⛽', title: 'Orkan Fitjar, Reykjanesbær', sub: 'Llenar completamente el tanque y guardar el recibo.', coords: [63.9980, -22.5630] },
-            { time: '12:00', icon: '🔑', title: 'Go Campers Iceland', sub: 'Entregar la camper y completar inspección final.', coords: [63.9920, -22.5500] },
-            { time: 'KEF', icon: '🛂', title: 'Aeropuerto Internacional de Keflavík', sub: 'Check-in, seguridad y comida antes del vuelo.', coords: [63.9850, -22.6056] },
-            { time: '16:50', icon: '🛫', title: 'Icelandair FI645', sub: 'Salida de Keflavík hacia Washington.' },
-            { time: '19:20', icon: '🛬', title: 'Llegada a Washington' }
+            { time: '06:45–07:10', icon: '🏕️', title: 'Hvolsvöllur Camp Site', coords: [63.7498, -20.2386] },
+            { time: '07:10–08:48', icon: '🛣️', title: 'Hvolsvöllur → Reykjavík BSÍ' },
+            { time: '08:48–09:00', icon: '🅿️', title: 'BSÍ', coords: [64.1377, -21.9344] },
+            { time: '09:00–09:10 🔒', icon: '🥾', title: 'Iceland Camping Equipment', sub: 'Devolver bastones y rain pants.', coords: [64.1377, -21.9344], review: 'iceland-camping-equipment' },
+            { time: '09:10–09:58', icon: '🛣️', title: 'BSÍ → Blue Lagoon' },
+            { time: '09:58–10:30', icon: '🎟️', title: 'Blue Lagoon check-in', coords: [63.8792, -22.4443] },
+            { time: '10:30–12:30 🔒', icon: '♨️', title: 'Blue Lagoon', coords: [63.8792, -22.4443] },
+            { time: '12:30–12:55', icon: '🛣️', title: 'Blue Lagoon → Reykjanesbær' },
+            { time: '12:55–13:10', icon: '⛽', title: 'Gasolinera', sub: 'Llenar tanque y guardar recibo.', coords: [63.9980, -22.5630] },
+            { time: '13:10–13:25', icon: '🛣️', title: 'Gasolinera → Go Campers' },
+            { time: '13:25–14:00', icon: '🧳', title: 'Go Campers', sub: 'Sacar equipaje y revisión previa.', coords: [63.9920, -22.5500] },
+            { time: '14:00–14:30 🔒', icon: '🔑', title: 'Go Campers', sub: 'Entrega e inspección oficial.', coords: [63.9920, -22.5500] },
+            { time: '14:30–14:45', icon: '🚐', title: 'Shuttle a KEF' },
+            { time: '14:45–16:20', icon: '🛂', title: 'Aeropuerto KEF', coords: [63.9850, -22.6056] },
+            { time: '16:50–19:20 🔒', icon: '🛫', title: 'Vuelo FI645 KEF → IAD' },
+            { time: '19:20–20:10', icon: '🛬', title: 'Washington Dulles' },
+            { time: '20:10–21:15', icon: '🏠', title: 'IAD → Pentagon City' }
         ],
-        tip: 'Orden refinado: Hvolsvöllur, Orkan Fitjar para llenar tanque, Go Campers 12:00, aeropuerto de Keflavík y FI645 16:50.',
+        tip: 'Devolver equipo a las 09:00, proteger Blue Lagoon 10:30–12:30 y la entrega oficial de Go Campers a las 14:00 antes de FI645.',
         wow: 'Última mirada a Islandia antes de despegar: lava negra, costa y Atlántico Norte en la memoria.'
     }
 ];
 
+const wanderlogDescriptions = {
+    'go campers': 'Recoger la camper, inspeccionarla y aprender a usar sus sistemas antes de salir.',
+    'iceland camping equipment': 'Recoger o devolver los bastones y pantalones impermeables alquilados para ambos.',
+    'orkan reykjavik': 'Revisar el tanque y familiarizarse con el sistema islandés de pago de combustible.',
+    'hallgrimskirkja': 'Visitar la iglesia y subir a la torre únicamente si hay buena visibilidad.',
+    'bæjarins beztu pylsur': 'Probar el famoso hot dog islandés.',
+    'harpa': 'Recorrer el edificio y fotografiar su fachada geométrica de vidrio.',
+    'viajero del sol': 'Hacer una parada fotográfica breve junto al mar.',
+    'reykjavik eco campsite': 'Estacionar la camper, descansar, ducharse y pasar la noche.',
+    'þingvellir': 'Recorrer el parque nacional y observar la separación entre las placas tectónicas.',
+    'geysir': 'Ver las erupciones de Strokkur y caminar por el área geotérmica.',
+    'bru horsefarm': 'Alimentar y fotografiar los caballos islandeses.',
+    'gullfoss': 'Observar la gran cascada desde sus miradores.',
+    'kerið': 'Caminar por el borde del cráter y contemplar su lago volcánico.',
+    'reykjadalur': 'Hacer el hiking, bañarse en el río termal y regresar caminando.',
+    'camping selfoss': 'Cenar, ducharse y descansar en la camper.',
+    'seljalandsfoss': 'Caminar detrás de la cascada únicamente si el terreno está seguro.',
+    'gljufrabui': 'Entrar al pequeño cañón para ver la cascada escondida.',
+    'skogafoss': 'Ver la cascada desde abajo; subir las gradas solo si las rodillas lo permiten.',
+    'skogar museum': 'Casas de césped, iglesia y cultura rural sin un desvío importante.',
+    'skogar campsite': 'Secar ropa, preparar el equipo del glaciar y dormir temprano.',
+    'troll expeditions': 'Registro y hiking guiado de tres horas sobre una lengua de Vatnajökull.',
+    'jokulsarlon': 'Ver los icebergs flotando en la laguna glaciar.',
+    'glacier lagoon boat': 'Navegar entre icebergs en la laguna glaciar.',
+    'diamond beach': 'Caminar por la playa negra y observar los fragmentos de hielo.',
+    'haukafell campground': 'Camping remoto cerca de Fláajökull, con electricidad, baños y duchas.',
+    'netto': 'Comprar comida, agua y suministros para los últimos días.',
+    'hoffell hot tubs': 'Bañarse en las piscinas geotermales y relajarse.',
+    'viking cafe': 'Comprar el acceso a Stokksnes y tomar café o comer algo.',
+    'vestrahorn': 'Fotografiar la montaña, las dunas y el paisaje costero.',
+    'mirror beach': 'Buscar los reflejos de Vestrahorn sobre el agua.',
+    'viking village': 'Recorrer el escenario cinematográfico de una aldea vikinga.',
+    'kirkjubæjarklaustur': 'Parada técnica para café, baño, comida o suministros.',
+    'stjornarfoss': 'Cascada pequeña rodeada de montañas cubiertas de musgo.',
+    'fjaðrargljufur': 'Caminar por los miradores autorizados del cañón.',
+    'reynisfjara': 'Ver la playa negra y el basalto manteniéndose siempre lejos de las olas.',
+    'dyrholaey': 'Observar los acantilados, el arco de roca y la costa.',
+    'hvolsvollur camp site': 'Cenar, ducharse, limpiar la camper y preparar el equipaje.',
+    'blue lagoon': 'Último descanso termal del viaje antes de devolver la camper.'
+};
+
+function getWanderlogDescription(stop) {
+    if (stop.sub) return stop.sub;
+    const title = normalizeReviewText(stop.title || '');
+    const match = Object.entries(wanderlogDescriptions)
+        .find(([key]) => title.includes(normalizeReviewText(key)));
+    return match?.[1] || '';
+}
+
 let jarvisActiveDay = 0;
+let jarvisShowAllStops = false;
 let jarvisMap = null;
 let jarvisMarkers = [];
 let jarvisStopMarkers = [];
 let jarvisDayRoute = null;
+let jarvisRouteRequest = null;
+let jarvisTravelRequest = null;
+let jarvisTravelMarker = null;
+let jarvisTravelFrame = null;
+const jarvisRoadRouteCache = new Map();
 let selectedStopMarker = null;
 let jarvisTipTimer = null;
 let lastJarvisTrigger = null;
 
 function makePinIcon(s, selected) {
-    const dotClass = ['j-pin-dot', s.star ? 'j-pin-star' : '', s.crit ? 'j-pin-crit' : ''].filter(Boolean).join(' ');
+    const dotClass = ['j-pin-dot', s.star ? 'j-pin-star' : ''].filter(Boolean).join(' ');
     const subHtml = s.sub ? `<small>${s.sub}</small>` : '';
     if (selected) {
-        const selClass = s.crit ? 'j-pin-sel j-pin-crit-sel' : 'j-pin-sel';
+        const selClass = 'j-pin-sel j-pin-crit-sel';
         return L.divIcon({
             className: '',
             html: `<div class="j-pin ${selClass}"><div class="j-pin-caret">▼</div><div class="j-pin-dot-wrap"><span class="j-ring j-ring-1"></span><span class="j-ring j-ring-2"></span><div class="${dotClass}">${s.icon}</div></div><div class="j-pin-time">${s.time}</div></div>`,
@@ -379,23 +1236,126 @@ function makePinIcon(s, selected) {
     });
 }
 
+function stopTransitionEndpoint(from, to) {
+    return `https://router.project-osrm.org/route/v1/driving/${from[1]},${from[0]};${to[1]},${to[0]}?overview=full&geometries=geojson&steps=false`;
+}
+
+function finishStopSelection(marker, s) {
+    const detailZoom = smallScreenQuery.matches ? 15 : 16;
+    jarvisMap.flyTo(marker.getLatLng(), detailZoom, {
+        animate: !reduceMotionQuery.matches,
+        duration: reduceMotionQuery.matches ? 0 : .55
+    });
+    setTimeout(() => marker.openPopup(), reduceMotionQuery.matches ? 0 : 600);
+}
+
+function markSelectedJarvisEntry(stopIndex) {
+    const body = document.getElementById('jarvisBody');
+    body?.querySelectorAll('.j-entry').forEach((entry) => entry.classList.remove('is-selected'));
+    const button = body?.querySelector(`.j-entry-map[data-stop-index="${stopIndex}"]`);
+    const entry = button?.closest('.j-entry');
+    if (entry) {
+        entry.classList.add('is-selected');
+        entry.scrollIntoView({ block: 'nearest', behavior: reduceMotionQuery.matches ? 'auto' : 'smooth' });
+    }
+}
+
+function revealJarvisMapForTravel() {
+    if (window.innerWidth > 760) return;
+    const sidebar = document.getElementById('jarvisSidebar');
+    if (!sidebar || sidebar.classList.contains('j-hidden')) return;
+    sidebar.classList.add('j-hidden');
+    document.getElementById('jarvisTabs')?.classList.add('j-tabs-expanded');
+    const toggle = document.getElementById('jarvisSidebarToggle');
+    if (toggle) toggle.textContent = '▲';
+    setTimeout(() => jarvisMap?.invalidateSize(), 330);
+}
+
+async function animateStopTransition(from, to, marker, s) {
+    if (jarvisTravelRequest) jarvisTravelRequest.abort();
+    if (jarvisTravelFrame) cancelAnimationFrame(jarvisTravelFrame);
+    if (jarvisTravelMarker) jarvisTravelMarker.remove();
+    if (reduceMotionQuery.matches || coordKey(from) === coordKey(to)) {
+        finishStopSelection(marker, s);
+        return;
+    }
+    try {
+        jarvisTravelRequest = new AbortController();
+        const response = await fetch(stopTransitionEndpoint(from, to), { signal: jarvisTravelRequest.signal });
+        if (!response.ok) throw new Error(`Routing HTTP ${response.status}`);
+        const payload = await response.json();
+        const geometry = payload.routes?.[0]?.geometry?.coordinates;
+        if (!geometry?.length) throw new Error('Transition geometry unavailable');
+        const path = geometry.map(([lng, lat]) => [lat, lng]);
+        const cumulative = [0];
+        for (let index = 1; index < path.length; index += 1) {
+            cumulative.push(cumulative[index - 1] + distanceKm(path[index - 1], path[index]));
+        }
+        const total = cumulative.at(-1) || 1;
+        jarvisMap.invalidateSize();
+        jarvisMap.fitBounds(L.latLngBounds(path), {
+            padding: smallScreenQuery.matches ? [48, 48] : [80, 80],
+            animate: true,
+            duration: .35
+        });
+        const travelMarker = L.circleMarker(path[0], {
+            radius: 7, color: '#071310', weight: 4,
+            fillColor: '#ffd08a', fillOpacity: 1,
+            className: 'j-travel-marker'
+        }).addTo(jarvisMap).bringToFront();
+        jarvisTravelMarker = travelMarker;
+        const started = performance.now() + 280;
+        const duration = 2200;
+        const step = (now) => {
+            const progress = Math.max(0, Math.min(1, (now - started) / duration));
+            const eased = progress < .5 ? 2 * progress * progress : 1 - ((-2 * progress + 2) ** 2) / 2;
+            const targetDistance = eased * total;
+            let segment = 1;
+            while (segment < cumulative.length - 1 && cumulative[segment] < targetDistance) segment += 1;
+            const segmentStart = cumulative[segment - 1];
+            const ratio = (targetDistance - segmentStart) / (cumulative[segment] - segmentStart || 1);
+            travelMarker.setLatLng([
+                path[segment - 1][0] + (path[segment][0] - path[segment - 1][0]) * ratio,
+                path[segment - 1][1] + (path[segment][1] - path[segment - 1][1]) * ratio
+            ]);
+            if (progress < 1) jarvisTravelFrame = requestAnimationFrame(step);
+            else {
+                finishStopSelection(marker, s);
+                setTimeout(() => {
+                    travelMarker.remove();
+                    if (jarvisTravelMarker === travelMarker) jarvisTravelMarker = null;
+                }, 650);
+            }
+        };
+        jarvisTravelFrame = requestAnimationFrame(step);
+    } catch (error) {
+        if (error.name !== 'AbortError') finishStopSelection(marker, s);
+    } finally {
+        jarvisTravelRequest = null;
+    }
+}
+
 function selectStopMarker(marker, s) {
+    const previousCoords = selectedStopMarker?._baseCoords;
     if (selectedStopMarker && selectedStopMarker !== marker) {
         selectedStopMarker.setIcon(makePinIcon(selectedStopMarker._stopData, false));
     }
     selectedStopMarker = marker;
     marker.setIcon(makePinIcon(s, true));
-    const markerPoint = marker.getLatLng();
-    const detailZoom = smallScreenQuery.matches ? 15 : 16;
-    jarvisMap.flyTo(markerPoint, detailZoom, {
-        animate: !reduceMotionQuery.matches,
-        duration: reduceMotionQuery.matches ? 0 : 1
-    });
+    markSelectedJarvisEntry(marker._stopIndex);
+    if (previousCoords) {
+        revealJarvisMapForTravel();
+        animateStopTransition(previousCoords, marker._baseCoords || s.coords, marker, s);
+    }
+    else finishStopSelection(marker, s);
 }
 
 function jarvisMarkerIcon(idx, isActive) {
     const d = jarvisData[idx];
-    const cls = ['j-jmarker', isActive ? 'j-jmarker-active' : '', d.critical ? 'j-jmarker-crit' : ''].filter(Boolean).join(' ');
+    const cls = [
+        'j-jmarker',
+        isActive ? 'j-jmarker-active' : ''
+    ].filter(Boolean).join(' ');
     const size = isActive ? 34 : 26;
     return L.divIcon({
         className: '',
@@ -406,24 +1366,106 @@ function jarvisMarkerIcon(idx, isActive) {
     });
 }
 
+
+const jarvisRoutineIcons = new Set(['🛣️', '😴', '🥪', '🍲', '🎒', '🌙', '🧹', '🌅']);
+
+function getJarvisBookingKey(stop) {
+    const title = normalizeReviewText(stop.title || '');
+    if (title.includes('vuelo fi')) return 'booking-icelandair';
+    if (title === 'go campers' || title === 'go campers iceland') return 'booking-camper';
+    if (title === 'reykjavik eco campsite') return 'booking-eco';
+    if (title.includes('troll expeditions') || title.includes('glacier hike')) return 'booking-troll';
+    if (title.includes('glacier lagoon boat') || title.includes('check in del bote')) return 'booking-zodiac';
+    if (title === 'blue lagoon' || title === 'blue lagoon check in') return 'booking-blue';
+    return '';
+}
+
+function isJarvisRoutineStop(stop) {
+    const title = normalizeReviewText(stop.title || '');
+    return jarvisRoutineIcons.has(stop.icon)
+        || /(traslado|conduccion|preparacion|descanso|dormir|almuerzo|cena|camping vestrahorn)/.test(title);
+}
+
+function isJarvisOperationalStop(stop) {
+    if (!stop.coords) return false;
+    const title = normalizeReviewText(stop.title || '');
+    return ['orkan', 'n1 ', 'gasolinera', 'camping', 'campsite', 'campground']
+        .some((pattern) => title.includes(pattern));
+}
+
+function getEssentialJarvisStops(stops) {
+    const firstActionableIndex = stops.findIndex((stop) => stop.coords && !isJarvisRoutineStop(stop));
+    const essential = [];
+    const keyPositions = new Map();
+
+    stops.forEach((stop, stopIndex) => {
+        const routine = isJarvisRoutineStop(stop);
+        if (routine && !stop.crit) return;
+
+        const reviewKey = routine ? null : getStopReviewKey(stop);
+        const bookingKey = getJarvisBookingKey(stop);
+        const keep = bookingKey || reviewKey || stop.star || stop.crit
+            || isJarvisOperationalStop(stop) || stopIndex === firstActionableIndex;
+        if (!keep) return;
+
+        const key = `${normalizeReviewText(stop.title || '')}|${stop.coords?.join(',') || ''}`;
+        const previousPosition = keyPositions.get(key);
+        if (previousPosition === undefined) {
+            keyPositions.set(key, essential.length);
+            essential.push({ stop, stopIndex });
+            return;
+        }
+
+        const previous = essential[previousPosition];
+        const previousIsFixed = previous.stop.crit || String(previous.stop.time || '').includes('🔒');
+        const currentIsFixed = stop.crit || String(stop.time || '').includes('🔒');
+        if (currentIsFixed && !previousIsFixed) essential[previousPosition] = { stop, stopIndex };
+    });
+
+    return essential;
+}
+
+function getVisibleJarvisStops(day) {
+    if (jarvisShowAllStops) {
+        return day.stops.map((stop, stopIndex) => ({ stop, stopIndex }));
+    }
+    return getEssentialJarvisStops(day.stops);
+}
+
 function renderJarvisDay(idx) {
     const d = jarvisData[idx];
     const body = document.getElementById('jarvisBody');
     body.scrollTop = 0;
     const dayLabel = d.label || `DÍA ${d.day}`;
+    const essentialStops = getEssentialJarvisStops(d.stops);
+    const visibleStops = jarvisShowAllStops
+        ? d.stops.map((stop, stopIndex) => ({ stop, stopIndex }))
+        : essentialStops;
+    const hiddenStopCount = d.stops.length - essentialStops.length;
 
-    const stopsHtml = d.stops.map((s, stopIndex) => {
+    const stopsHtml = visibleStops.map(({ stop: s, stopIndex }) => {
         const clickable = s.coords ? ' j-entry-clickable' : '';
         const coordsAttr = s.coords ? ` data-lat="${s.coords[0]}" data-lng="${s.coords[1]}" data-stop-index="${stopIndex}"` : '';
         const entryClass = ['j-entry', s.star ? 'star' : '', s.crit ? 'crit-stop' : ''].filter(Boolean).join(' ') + clickable;
         const titleClass = s.star ? 'j-entry-title star-title' : 'j-entry-title';
-        const subHtml = s.sub ? `<div class="j-entry-sub">${s.sub}</div>` : '';
+        const description = getWanderlogDescription(s);
+        const subHtml = '';
+        const tooltipAttr = description ? ` data-tooltip="${escapeHtml(description)}"` : '';
         const entryContent = `<div class="j-entry-top"><span class="j-time">${s.time}</span><div class="j-entry-content"><div class="${titleClass}">${s.icon} ${s.title}</div>${subHtml}</div></div>`;
-        if (!s.coords) return `<div class="${entryClass}">${entryContent}</div>`;
-        const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${s.coords[0]},${s.coords[1]}`;
+        const directionsUrl = s.coords ? `https://www.google.com/maps/dir/?api=1&destination=${s.coords[0]},${s.coords[1]}` : '';
+        const reviewKey = isJarvisRoutineStop(s) ? null : getStopReviewKey(s);
+        const reviewLabel = reviewKey?.endsWith('-food') ? 'Qué pedir' : 'Review';
+        const reviewAction = reviewKey ? `<button class="j-review-action" type="button" data-review="${escapeHtml(reviewKey)}">${reviewLabel}</button>` : '';
+        const bookingKey = getJarvisBookingKey(s);
+        const bookingAction = bookingKey ? `<button class="j-booking-action" type="button" data-review="${bookingKey}">Reserva</button>` : '';
+        const navigateAction = s.coords ? `<a class="j-navigate" href="${directionsUrl}" target="_blank" rel="noopener">Navegar ↗</a>` : '';
+        const actions = reviewAction || bookingAction || navigateAction
+            ? `<div class="j-entry-actions">${bookingAction}${reviewAction}${navigateAction}</div>`
+            : '';
+        if (!s.coords) return `<div class="${entryClass}">${entryContent}${actions}</div>`;
         return `<div class="${entryClass}">
-            <button class="j-entry-map" type="button"${coordsAttr} aria-label="Ver ${s.title.replace('⭐ ', '')} en el mapa">${entryContent}</button>
-            <div class="j-entry-actions"><a class="j-navigate" href="${directionsUrl}" target="_blank" rel="noopener">Navegar ↗</a></div>
+            <button class="j-entry-map" type="button"${coordsAttr}${tooltipAttr} aria-label="Ver ${s.title.replace('⭐ ', '')} en el mapa">${entryContent}</button>
+            ${actions}
         </div>`;
     }).join('');
 
@@ -438,6 +1480,10 @@ function renderJarvisDay(idx) {
   ${critLabel}
   <span class="j-day-date">${d.date}</span>
 </div>
+<div class="j-day-tools">
+  <span class="j-density-summary">${visibleStops.length} paradas ${jarvisShowAllStops ? 'totales' : 'clave'}</span>
+  ${hiddenStopCount ? `<button class="j-density-toggle" type="button" data-jarvis-density aria-pressed="${jarvisShowAllStops}">${jarvisShowAllStops ? 'Ver solo claves' : `Ver todo (+${hiddenStopCount})`}</button>` : ''}
+</div>
 <div class="j-timeline">${stopsHtml}</div>
 <div class="j-tip">
   <div class="j-tip-label">🧠 JARVIS</div>
@@ -448,6 +1494,13 @@ function renderJarvisDay(idx) {
   <div class="j-wow-text">${d.wow}</div>
 </div>`;
 
+    body.querySelector('[data-jarvis-density]')?.addEventListener('click', () => {
+        jarvisShowAllStops = !jarvisShowAllStops;
+        clearDayMarkers();
+        if (jarvisMap) drawDayMarkers(idx);
+        renderJarvisDay(idx);
+    });
+
     body.querySelectorAll('.j-entry-map').forEach((el) => {
         el.addEventListener('click', () => {
             if (!jarvisMap) return;
@@ -455,7 +1508,6 @@ function renderJarvisDay(idx) {
             const match = jarvisStopMarkers.find((m) => m._stopIndex === stopIndex);
             if (match) {
                 selectStopMarker(match, match._stopData);
-                setTimeout(() => match.openPopup(), 800);
             }
         });
     });
@@ -479,10 +1531,73 @@ function renderJarvisDay(idx) {
 }
 
 function clearDayMarkers() {
+    if (jarvisRouteRequest) {
+        jarvisRouteRequest.abort();
+        jarvisRouteRequest = null;
+    }
+    if (jarvisTravelRequest) jarvisTravelRequest.abort();
+    if (jarvisTravelFrame) cancelAnimationFrame(jarvisTravelFrame);
+    if (jarvisTravelMarker) jarvisTravelMarker.remove();
+    jarvisTravelRequest = null;
+    jarvisTravelFrame = null;
+    jarvisTravelMarker = null;
     jarvisStopMarkers.forEach((m) => m.remove());
     jarvisStopMarkers = [];
     if (jarvisDayRoute) { jarvisDayRoute.remove(); jarvisDayRoute = null; }
     selectedStopMarker = null;
+}
+
+function uniqueConsecutiveCoords(stops) {
+    return stops.reduce((coords, stop) => {
+        const previous = coords.at(-1);
+        if (!previous || coordKey(previous) !== coordKey(stop.coords)) coords.push(stop.coords);
+        return coords;
+    }, []);
+}
+
+function roadRouteLayer(coords) {
+    return L.layerGroup([
+        L.polyline(coords, {
+            color: '#071310', weight: 7, opacity: .72, lineCap: 'round', lineJoin: 'round'
+        }),
+        L.polyline(coords, {
+            color: '#f2a75d', weight: 4, opacity: .96, lineCap: 'round', lineJoin: 'round'
+        })
+    ]);
+}
+
+async function drawRoadRoute(idx, stops) {
+    const coords = uniqueConsecutiveCoords(stops);
+    if (coords.length < 2) return;
+
+    const cacheKey = coords.map(coordKey).join(';');
+    const fallback = L.polyline(coords, {
+        color: '#f2a75d', weight: 2, opacity: .38, dashArray: '4 7', lineJoin: 'round'
+    }).addTo(jarvisMap);
+    jarvisDayRoute = fallback;
+
+    try {
+        let roadCoords = jarvisRoadRouteCache.get(cacheKey);
+        if (!roadCoords) {
+            jarvisRouteRequest = new AbortController();
+            const waypoints = coords.map(([lat, lng]) => `${lng},${lat}`).join(';');
+            const endpoint = `https://router.project-osrm.org/route/v1/driving/${waypoints}?overview=full&geometries=geojson&steps=false`;
+            const response = await fetch(endpoint, { signal: jarvisRouteRequest.signal });
+            if (!response.ok) throw new Error(`Routing HTTP ${response.status}`);
+            const payload = await response.json();
+            const geometry = payload.routes?.[0]?.geometry?.coordinates;
+            if (!geometry?.length) throw new Error('Routing geometry unavailable');
+            roadCoords = geometry.map(([lng, lat]) => [lat, lng]);
+            jarvisRoadRouteCache.set(cacheKey, roadCoords);
+        }
+        if (idx !== jarvisActiveDay || !jarvisMap) return;
+        fallback.remove();
+        jarvisDayRoute = roadRouteLayer(roadCoords).addTo(jarvisMap);
+    } catch (error) {
+        if (error.name !== 'AbortError') console.warn('Jarvis road route unavailable; using fallback.', error);
+    } finally {
+        jarvisRouteRequest = null;
+    }
 }
 
 function distanceKm(a, b) {
@@ -558,24 +1673,26 @@ function buildPlottedStops(stops) {
 
 function drawDayMarkers(idx) {
     const d = jarvisData[idx];
-    const dayColor = d.critical ? '#ffb060' : '#77d8ff';
-    const stopsWithCoords = d.stops.filter((s) => s.coords);
+    const dayColor = '#ffb060';
+    const stopsWithCoords = getVisibleJarvisStops(d)
+        .map(({ stop }) => stop)
+        .filter((stop) => stop.coords);
     const plottedStops = buildPlottedStops(stopsWithCoords);
 
-    if (stopsWithCoords.length > 1) {
-        jarvisDayRoute = L.polyline(stopsWithCoords.map((s) => s.coords), {
-            color: dayColor, weight: 2.5, opacity: .7, dashArray: '6 5', lineJoin: 'round'
-        }).addTo(jarvisMap);
-    }
+    if (stopsWithCoords.length > 1) drawRoadRoute(idx, stopsWithCoords);
 
     plottedStops.forEach(({ stop: s, coords }) => {
         const marker = L.marker(coords, { icon: makePinIcon(s, false) }).addTo(jarvisMap);
         marker._stopData = s;
         marker._baseCoords = s.coords;
         marker._stopIndex = d.stops.indexOf(s);
-        const subHtml = s.sub ? `<small>${s.sub}</small>` : '';
-        marker.bindPopup(`<strong>${s.icon} ${s.title}</strong>${subHtml ? '<br>' + subHtml : ''}`);
-        marker.on('click', () => { selectStopMarker(marker, s); setTimeout(() => marker.openPopup(), 600); });
+        const description = getWanderlogDescription(s);
+        const subHtml = description ? `<small>${escapeHtml(description)}</small>` : '';
+        const reviewKey = getStopReviewKey(s);
+        const popupReviewLabel = reviewKey?.endsWith('-food') ? 'Ver qué pedir' : 'Ver review';
+        const reviewHtml = reviewKey ? `<br><button class="j-popup-review" type="button" data-review="${escapeHtml(reviewKey)}">${popupReviewLabel}</button>` : '';
+        marker.bindPopup(`<strong>${s.icon} ${s.title}</strong>${subHtml ? '<br>' + subHtml : ''}${reviewHtml}`);
+        marker.on('click', () => selectStopMarker(marker, s));
         jarvisStopMarkers.push(marker);
     });
 
@@ -672,8 +1789,6 @@ function buildJarvisUI() {
             attributionControl: true
         });
         addBaseMap(jarvisMap, 'street');
-        L.polyline(routeLine.slice(0, returnRouteStartIndex + 1), { color: '#0f766e', weight: 3, opacity: .82, lineJoin: 'round' }).addTo(jarvisMap);
-        L.polyline(routeLine.slice(returnRouteStartIndex), { color: '#475569', weight: 2, opacity: .5, dashArray: '6 8' }).addTo(jarvisMap);
         jarvisMarkers = jarvisData.map((d, i) => {
             const stop = routeStops.find((s) => s.day === d.day);
             if (!stop) {
@@ -702,12 +1817,13 @@ function setPageInert(inert) {
 function openJarvis(event) {
     if (!jarvisOverlay || !jarvisPanel) return;
     lastJarvisTrigger = event?.currentTarget || document.activeElement;
+    jarvisActiveDay = 0;
     jarvisOverlay.classList.add('active');
     jarvisOverlay.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
     setPageInert(true);
     buildJarvisUI();
-    switchJarvisDay(jarvisActiveDay);
+    switchJarvisDay(0);
     requestAnimationFrame(() => jarvisPanel.focus());
 }
 
