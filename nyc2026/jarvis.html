@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#050b12">
+<title>JARVIS · NYC Thanksgiving 2026</title>
+<link rel="icon" href="../logo.png" type="image/png">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+<style>
+:root{--bg:#03070c;--panel:#08111b;--panel2:#0c1825;--line:#173349;--cyan:#5ee7ff;--cyan2:#9bf3ff;--gold:#ffc857;--text:#eefbff;--muted:#91aabd;--green:#79f2b4}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif}body{overflow:hidden}.shell{height:100svh;display:grid;grid-template-rows:auto 1fr}.topbar{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:12px 16px;border-bottom:1px solid rgba(94,231,255,.22);background:linear-gradient(180deg,#07131d,#050b12);box-shadow:0 10px 30px rgba(0,0,0,.35);z-index:20}.brand{display:flex;align-items:center;gap:12px}.pulse{width:11px;height:11px;border-radius:50%;background:var(--cyan);box-shadow:0 0 0 5px rgba(94,231,255,.09),0 0 22px var(--cyan)}.brand strong{font-size:18px;letter-spacing:.16em}.brand small{display:block;color:var(--muted);font-size:10px;font-weight:800;letter-spacing:.12em;margin-top:2px}.close{color:#dff8ff;text-decoration:none;border:1px solid rgba(94,231,255,.24);border-radius:999px;padding:9px 13px;font-weight:800;font-size:13px;background:rgba(94,231,255,.06)}.stage{min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 390px;position:relative}.map-wrap{position:relative;min-width:0}.map{width:100%;height:100%;background:#061019}.hud{position:absolute;left:18px;top:18px;z-index:500;display:flex;gap:8px;flex-wrap:wrap;pointer-events:none}.hud span{padding:8px 10px;border-radius:999px;border:1px solid rgba(94,231,255,.25);background:rgba(4,12,19,.8);backdrop-filter:blur(10px);font-size:11px;font-weight:900;letter-spacing:.08em;color:#d9fbff}.hud .live{color:var(--green)}.panel{min-height:0;display:grid;grid-template-rows:auto auto 1fr;background:linear-gradient(180deg,#09131e,#07101a);border-left:1px solid rgba(94,231,255,.18)}.tabs{display:grid;grid-template-columns:1fr 1fr;padding:12px;gap:8px;border-bottom:1px solid rgba(255,255,255,.07)}.tab{appearance:none;border:1px solid rgba(94,231,255,.18);background:#0a1722;color:#9fb8c9;border-radius:12px;padding:11px 10px;font-weight:900;cursor:pointer}.tab.active{background:rgba(94,231,255,.12);border-color:rgba(94,231,255,.6);color:#e8fdff;box-shadow:inset 0 0 24px rgba(94,231,255,.06)}.mission{padding:18px 18px 14px;border-bottom:1px solid rgba(255,255,255,.07)}.kicker{color:var(--cyan);font-size:10px;font-weight:900;letter-spacing:.14em;text-transform:uppercase}.mission h1{margin:5px 0 6px;font-size:25px;line-height:1.05}.mission p{margin:0;color:var(--muted);font-size:14px;line-height:1.45}.timeline{overflow:auto;padding:10px 12px 24px}.stop{display:grid;grid-template-columns:72px 34px 1fr;gap:10px;align-items:start;padding:11px 8px;border-radius:13px;cursor:pointer;border:1px solid transparent}.stop:hover,.stop.active{background:rgba(94,231,255,.065);border-color:rgba(94,231,255,.15)}.time{color:var(--gold);font-size:12px;font-weight:900;padding-top:6px}.icon{width:30px;height:30px;display:grid;place-items:center;border-radius:50%;border:1px solid rgba(94,231,255,.25);background:#07151f;font-size:15px}.stop strong{display:block;font-size:14px;line-height:1.3}.stop small{display:block;color:var(--muted);line-height:1.4;margin-top:3px}.route-pin{display:grid;place-items:center;width:30px;height:30px;border:2px solid var(--cyan);border-radius:50%;background:#051019;color:white;font-weight:900;box-shadow:0 0 0 2px rgba(3,7,12,.9),0 0 16px rgba(94,231,255,.6)}.route-pin.hot{border-color:var(--gold);box-shadow:0 0 0 2px rgba(3,7,12,.9),0 0 18px rgba(255,200,87,.65)}.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#07131e;color:white}.leaflet-popup-content{font-size:13px}.leaflet-control-attribution{font-size:9px!important;background:rgba(3,7,12,.72)!important;color:#a8bbc8!important}.leaflet-control-attribution a{color:var(--cyan)!important}
+@media(max-width:800px){body{overflow:auto}.shell{height:auto;min-height:100svh}.stage{grid-template-columns:1fr;grid-template-rows:48svh auto}.panel{border-left:0;border-top:1px solid rgba(94,231,255,.18);min-height:52svh}.map-wrap{min-height:48svh}.timeline{max-height:none;overflow:visible}.brand strong{font-size:15px}.brand small{font-size:9px}.hud{left:10px;top:10px}.stop{grid-template-columns:66px 32px 1fr}}
+</style>
+</head>
+<body>
+<div class="shell">
+<header class="topbar">
+  <div class="brand"><span class="pulse"></span><div><strong>JARVIS</strong><small>MISSION: NYC THANKSGIVING 2026</small></div></div>
+  <a class="close" href="./">Cerrar</a>
+</header>
+<div class="stage">
+  <section class="map-wrap">
+    <div class="hud"><span>2 DÍAS</span><span>26–27 NOV</span><span class="live">● PLANIFICANDO</span></div>
+    <div id="jarvisMap" class="map" aria-label="Mapa Jarvis NYC Thanksgiving 2026"></div>
+  </section>
+  <aside class="panel">
+    <nav class="tabs" id="tabs"></nav>
+    <div class="mission" id="mission"></div>
+    <div class="timeline" id="timeline"></div>
+  </aside>
+</div>
+</div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script>
+const days=[
+ {tab:'JUEVES 26',kicker:'DÍA 1 · THANKSGIVING',title:'Parade + Katz’s + Roosevelt Island',summary:'Llegar, soltar mochilas, vivir la edición 100 del desfile y cerrar el día con Manhattan iluminado desde Roosevelt Island.',stops:[
+  {time:'04:30',icon:'🚗',title:'1201 → Union Station',sub:'Uber programado.',lat:38.8578,lng:-77.0531},
+  {time:'05:20',icon:'🚆',title:'Amtrak a NYC',sub:'Llegada a Moynihan 08:45.',lat:38.8971,lng:-77.0064},
+  {time:'08:45',icon:'🗽',title:'Moynihan Train Hall',sub:'Llegada a Manhattan.',lat:40.7506,lng:-73.9935},
+  {time:'~09:10',icon:'🎒',title:'Pod 51',sub:'Dejar mochilas en secure luggage room.',lat:40.7553,lng:-73.9709,hot:true},
+  {time:'~09:45',icon:'🎈',title:'Macy’s Parade',sub:'Base: 6th Ave & W 45th St. Quedarse hasta ~11:15–11:30.',lat:40.7562,lng:-73.9817,hot:true},
+  {time:'~12:15',icon:'🥪',title:'Katz’s Delicatessen',sub:'Pastrami on rye. Comida grande del día.',lat:40.7223,lng:-73.9874},
+  {time:'~14:00',icon:'🏨',title:'Pod 51',sub:'Check-in desde 15:00 + descanso.',lat:40.7553,lng:-73.9709},
+  {time:'~17:00',icon:'🚡',title:'Roosevelt Island Tram',sub:'Salida desde E 59th St & 2nd Ave.',lat:40.7614,lng:-73.9646,hot:true},
+  {time:'17:10–19:00',icon:'🌃',title:'Roosevelt Island',sub:'Waterfront + skyline. 2–3 km máximo.',lat:40.7605,lng:-73.9509,hot:true},
+  {time:'~20:00',icon:'🚡',title:'Regreso a Manhattan',sub:'Tram; plan B: metro F.',lat:40.7614,lng:-73.9646}
+ ]},
+ {tab:'VIERNES 27',kicker:'DÍA 2 · BLACK FRIDAY',title:'10K + Central Park + Macy’s',summary:'Mañana deportiva, paseo corto juntos, compras y regreso a Washington con margen.',stops:[
+  {time:'~06:30',icon:'🏃',title:'Pod 51 → Central Park',sub:'Pedro sale solo.',lat:40.7553,lng:-73.9709},
+  {time:'06:45–08:00',icon:'🏃',title:'10K Central Park',sub:'Loop personal, aproximadamente 9.8–10 km.',lat:40.7829,lng:-73.9654,hot:true},
+  {time:'~08:15',icon:'🚿',title:'Regreso a Pod 51',sub:'Ducha + desayuno.',lat:40.7553,lng:-73.9709},
+  {time:'09:30–11:00',icon:'❤️',title:'Central Park juntos',sub:'Caminata tranquila de 2–4 km.',lat:40.7694,lng:-73.9735,hot:true},
+  {time:'~12:00',icon:'🧳',title:'Check-out Pod 51',sub:'Límite oficial: 13:00.',lat:40.7553,lng:-73.9709},
+  {time:'12:30–14:00',icon:'🛍️',title:'Macy’s Herald Square',sub:'Black Friday + recuerdo de la edición 100.',lat:40.7508,lng:-73.9895,hot:true},
+  {time:'14:00–16:00',icon:'🍽️',title:'Almuerzo + Midtown',sub:'Bloque flexible y de baja intensidad.',lat:40.7527,lng:-73.9840},
+  {time:'~16:30',icon:'🎒',title:'Recoger equipaje',sub:'Volver a Pod 51.',lat:40.7553,lng:-73.9709},
+  {time:'~17:15',icon:'🚆',title:'Moynihan Train Hall',sub:'Llegar con margen.',lat:40.7506,lng:-73.9935},
+  {time:'18:45',icon:'🚆',title:'Amtrak a Washington',sub:'Llegada prevista 22:07.',lat:40.7506,lng:-73.9935}
+ ]}
+];
+const map=L.map('jarvisMap',{zoomControl:true,scrollWheelZoom:true}).setView([40.758,-73.978],13);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:19,attribution:'© OpenStreetMap © CARTO'}).addTo(map);
+const tabs=document.getElementById('tabs'),mission=document.getElementById('mission'),timeline=document.getElementById('timeline');
+let markers=[],line=null,activeDay=0;
+function pin(i,hot){return L.divIcon({className:'',html:`<span class="route-pin${hot?' hot':''}">${i+1}</span>`,iconSize:[30,30],iconAnchor:[15,15],popupAnchor:[0,-17]})}
+function render(dayIndex){activeDay=dayIndex;tabs.innerHTML=days.map((d,i)=>`<button class="tab${i===dayIndex?' active':''}" data-day="${i}">${d.tab}</button>`).join('');
+ const d=days[dayIndex];mission.innerHTML=`<div class="kicker">${d.kicker}</div><h1>${d.title}</h1><p>${d.summary}</p>`;timeline.innerHTML=d.stops.map((s,i)=>`<div class="stop" data-stop="${i}"><span class="time">${s.time}</span><span class="icon">${s.icon}</span><div><strong>${s.title}</strong><small>${s.sub}</small></div></div>`).join('');
+ markers.forEach(m=>map.removeLayer(m));markers=[];if(line)map.removeLayer(line);const pts=[];
+ d.stops.forEach((s,i)=>{if(typeof s.lat!=='number')return;pts.push([s.lat,s.lng]);const m=L.marker([s.lat,s.lng],{icon:pin(i,s.hot)}).addTo(map).bindPopup(`<strong>${s.time} · ${s.title}</strong><br>${s.sub}`);m.on('click',()=>selectStop(i));markers[i]=m});
+ if(pts.length>1)line=L.polyline(pts,{color:'#5ee7ff',weight:3,opacity:.55,dashArray:'6 7'}).addTo(map);if(pts.length)map.fitBounds(pts,{padding:[50,50],maxZoom:14});
+ document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>render(Number(b.dataset.day))));document.querySelectorAll('.stop').forEach(b=>b.addEventListener('click',()=>selectStop(Number(b.dataset.stop))));setTimeout(()=>map.invalidateSize(),50)}
+function selectStop(i){document.querySelectorAll('.stop').forEach((el,j)=>el.classList.toggle('active',j===i));const m=markers[i];if(m){map.flyTo(m.getLatLng(),15,{duration:.55});m.openPopup()}}
+render(0);
+</script>
+</body>
+</html>
