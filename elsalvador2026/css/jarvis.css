@@ -100,3 +100,68 @@ body.jarvis-open{overflow:hidden!important}
 .j-route-play:focus-visible{outline:3px solid #f6a1bc;outline-offset:2px}
 .j-route-controls small{display:block;color:#e2c8d2;font-size:10px;line-height:1.45}
 .j-tab-critical{border-color:#b66f7b!important}
+
+/* JARVIS Mobile V2 — deliberate single-column composition.
+   The map, timeline and bottom day rail each have one clear visual function. */
+@media (max-width:820px){
+  .j-overlay.is-open{padding:0}
+  .j-panel{width:100%;height:100vh;height:100dvh;border:0;border-radius:0}
+  .j-header{height:49px;flex-basis:49px;padding:0 15px;background:#130d1b}
+  .j-brand strong{font-size:13px;letter-spacing:.16em}
+  .j-brand .j-dot{height:8px;width:8px}
+  .j-mission-label{display:none}
+  .j-close{padding:7px 11px;font-size:11px;border-radius:8px}
+  .j-workspace{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(205px,41%) minmax(0,1fr);min-height:0;overflow:hidden}
+  .j-map-wrap{position:relative;min-width:0;min-height:0;overflow:hidden}
+  #jarvisMap{position:absolute;inset:0;width:100%;height:100%}
+  .j-map-shade{background:none}
+  .j-map-status{top:9px;right:10px;left:auto;width:auto;max-width:calc(100% - 84px);padding:7px 10px;border-radius:8px;border-color:#a87b8a;background:rgba(24,14,31,.91);box-shadow:0 3px 12px rgba(15,10,24,.2)}
+  .j-map-status strong{font-size:11px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;font-weight:800}
+  .j-map-status span{display:none}
+  .j-route-indicator{bottom:66px;left:10px;right:10px;width:auto;max-width:none;padding:5px 9px;border-radius:7px;font-size:9px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none;background:rgba(24,14,31,.87)}
+  .j-map-caption{display:none}
+  #jarvisTabs.j-tabs{bottom:7px;left:8px;right:8px;transform:none;width:auto;max-width:none;gap:4px;padding:5px;border-radius:9px;background:rgba(20,13,29,.95);border:1px solid #79536d;box-shadow:0 6px 16px #1a0d2366;scrollbar-width:none}
+  #jarvisTabs.j-tabs::-webkit-scrollbar{display:none}
+  #jarvisTabs.j-tabs .j-tab{min-width:52px;min-height:33px;flex:0 0 auto;padding:6px 8px;font-size:11px;border-radius:6px}
+  /* Keep attribution visible but away from the day rail. */
+  #jarvisMap .leaflet-bottom.leaflet-right{bottom:54px}
+  #jarvisMap .leaflet-control-attribution{font-size:8px;padding:1px 3px;opacity:.84}
+  #jarvisMap .leaflet-top.leaflet-left{top:6px;left:5px}
+  #jarvisMap .leaflet-bar{box-shadow:0 1px 6px #1a0f2666}
+  #jarvisMap .leaflet-control-zoom a{width:29px;height:29px;line-height:29px;font-size:19px}
+  .j-sidebar-toggle{display:none!important}
+  .j-sidebar{display:flex!important;min-width:0;width:auto!important;min-height:0;overflow:hidden;border:0;border-top:1px solid #5d3b52;background:#15101e}
+  .j-workspace.sidebar-hidden{grid-template-columns:1fr;grid-template-rows:minmax(205px,41%) minmax(0,1fr)}
+  .j-sidebar.j-hidden{width:auto;min-width:0;border-top:1px solid #5d3b52}
+  /* No duplicated day heading: the interactive agenda is the one source of truth. */
+  .j-sidebar-head{display:none}
+  .j-body{padding:9px 15px 22px;scrollbar-width:thin;overflow-y:auto}
+  .j-day-title{padding:7px 0 12px;border-bottom:1px solid #483448}
+  .j-day-title .j-kicker{font-size:10px;letter-spacing:.09em}
+  .j-day-title h3{font-size:17px;line-height:1.28;margin:5px 0 3px;letter-spacing:-.01em}
+  .j-day-title p{font-size:12px;color:#bdacb9}
+  .j-density{padding:10px 0 8px;border:0;gap:8px;font-size:10px;letter-spacing:0}
+  .j-density>span:last-child{display:none}
+  .j-timeline{padding:1px 0 7px 9px}
+  .j-timeline:before{left:17px;top:15px;bottom:17px}
+  .j-entry{padding:10px 4px 10px 23px;border-radius:9px}
+  .j-entry:before{left:4px;top:20px;width:8px;height:8px}
+  .j-entry-focus{gap:9px}
+  .j-entry-time{flex:0 0 83px;font-size:10px;line-height:1.45;overflow-wrap:anywhere}
+  .j-entry-title{font-size:12px;line-height:1.35;font-weight:800}
+  .j-entry-note{font-size:11px;line-height:1.45;margin-top:3px;color:#bfafbd}
+  .j-entry-actions{margin:6px 0 0 92px;gap:6px}
+  .j-entry-actions a,.j-entry-actions span{font-size:10px;padding:5px 8px;border-radius:6px}
+  .j-entry.selected{background:#322034;border-color:#765368;box-shadow:inset 2px 0 #f5bd84}
+  .j-mission-tip,.j-mission-wow{margin:10px 0;padding:12px;border-radius:9px}
+  .j-mission-tip p,.j-mission-wow p{font-size:11px;line-height:1.55}
+  .j-route-controls{margin:9px 0 12px;padding:10px}
+  .j-route-play{padding:10px;font-size:11px}
+}
+@media(max-width:370px){
+  .j-workspace,.j-workspace.sidebar-hidden{grid-template-rows:minmax(190px,39%) minmax(0,1fr)}
+  .j-day-title h3{font-size:16px}
+  .j-entry-time{flex-basis:73px}
+  .j-entry-actions{margin-left:82px}
+  #jarvisTabs.j-tabs .j-tab{min-width:48px;font-size:10px}
+}
