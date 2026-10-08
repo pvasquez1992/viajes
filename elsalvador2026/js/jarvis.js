@@ -190,12 +190,20 @@
   async function getRoadGeometry(coords, signal){
     const key=coords.map(geoKey).join('|');
     if(routeCache.has(key))return routeCache.get(key);
-    const res=await fetch(roadUrl(coords),{signal});
-    if(!res.ok)throw new Error('Routing unavailable');
-    const data=await res.json();
-    if(data.code!=='Ok'||!data.routes?.[0]?.geometry?.coordinates?.length)throw new Error('No road geometry');
-    const geom=data.routes[0].geometry.coordinates.map(([lng,lat])=>[lat,lng]);
-    routeCache.set(key,geom);return geom;
+    const timeout=new AbortController();
+    const timer=setTimeout(()=>timeout.abort(),8500);
+    try{
+      const combined=AbortSignal.any?AbortSignal.any([signal,timeout.signal]):signal;
+      const res=await fetch(roadUrl(coords),{signal:combined});
+      if(!res.ok)throw new Error('Routing unavailable');
+      const data=await res.json();
+      if(data.code!=='Ok'||!data.routes?.[0]?.geometry?.coordinates?.length)throw new Error('No road geometry');
+      const geom=data.routes[0].geometry.coordinates.map(([lng,lat])=>[lat,lng]);
+      routeCache.set(key,geom);return geom;
+    }catch(err){
+      if(timeout.signal.aborted&&!signal.aborted)throw new Error('Routing timeout');
+      throw err;
+    }finally{clearTimeout(timer)}
   }
   function clearMotion() {
     if(animationFrame!==null)cancelAnimationFrame(animationFrame);
@@ -465,7 +473,12 @@
       document.getElementById('jarvisMap').textContent='Mapa no disponible sin conexión a Leaflet.';
     }
   }
-  function open(){
+  function open(event){
+    const requestedDay=event?.currentTarget?.dataset?.jarvisDay;
+    if(requestedDay){
+      const i=DAYS.findIndex(day=>day.dataset.day===requestedDay);
+      if(i>=0)activeIndex=i;
+    }
     previousFocus=document.activeElement;
     initialize();
     overlay.classList.add('is-open');overlay.setAttribute('aria-hidden','false');
