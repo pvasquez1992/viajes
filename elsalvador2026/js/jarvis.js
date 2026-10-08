@@ -439,12 +439,23 @@
       b.tabIndex=i===index?0:-1;
       if(i===index)b.scrollIntoView({block:'nearest',inline:'nearest'});
     });
-    plotDay(index);renderDay(index);
-    const mapped=Object.keys(MISSION[DAYS[index].dataset.day]?.points||{});
-    if(mapped.length){
-      const first=Number(mapped[0]);selectedRow=first;
-      showSelected(first);
-      // showSelected only highlights selected stop; keep overview until user selects an entry.
+    // The itinerary must ALWAYS render, even when the tile provider or Leaflet fails.
+    renderDay(index);
+    try{
+      if(map){
+        plotDay(index);
+        const mapped=Object.keys(MISSION[DAYS[index].dataset.day]?.points||{});
+        if(mapped.length){
+          const first=Number(mapped[0]);
+          showSelected(first);
+          selectedRow=first;
+        }
+      }else{
+        setRouteNote('Mapa no disponible. Fechas, cronología y enlaces siguen operativos.');
+      }
+    }catch(error){
+      console.error('JARVIS map error in day',DAYS[index].dataset.day,error);
+      setRouteNote('⚠ Mapa temporalmente no disponible. La agenda sí está operativa.');
     }
   }
   function initialize() {
@@ -465,12 +476,22 @@
       });
     }
     if(!map&&window.L){
-      map=L.map('jarvisMap',{scrollWheelZoom:false,zoomControl:true,attributionControl:true,preferCanvas:true}).setView(DEFAULT_VIEW,9);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
-        maxZoom:19,attribution:'© OpenStreetMap contributors'
-      }).addTo(map);
+      // Important: initialize Leaflet only AFTER .is-open is applied.
+      // Leaflet reads its container size during construction; a hidden modal is 0 x 0.
+      try{
+        const container=document.getElementById('jarvisMap');
+        map=L.map(container,{scrollWheelZoom:false,zoomControl:true,attributionControl:true,preferCanvas:true}).setView(DEFAULT_VIEW,9);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+          maxZoom:19,attribution:'© OpenStreetMap contributors'
+        }).addTo(map);
+      }catch(error){
+        console.error('JARVIS Leaflet initialization error',error);
+        setRouteNote('⚠ Mapa no disponible. El itinerario y la navegación por fechas siguen visibles.');
+        map=null;
+      }
     }else if(!window.L){
       document.getElementById('jarvisMap').textContent='Mapa no disponible sin conexión a Leaflet.';
+      setRouteNote('⚠ No cargó el mapa. La agenda se puede consultar de todas formas.');
     }
   }
   function open(event){
@@ -480,14 +501,35 @@
       if(i>=0)activeIndex=i;
     }
     previousFocus=document.activeElement;
-    initialize();
-    overlay.classList.add('is-open');overlay.setAttribute('aria-hidden','false');
+
+    // Reveal the modal BEFORE constructing or resizing the Leaflet map.
+    overlay.classList.add('is-open');
+    overlay.setAttribute('aria-hidden','false');
     document.body.classList.add('jarvis-open');
     workspace?.classList.remove('sidebar-hidden');
     document.getElementById('jarvisSidebar')?.classList.remove('j-hidden');
     toggle?.setAttribute('aria-expanded','true');
-    switchDay(activeIndex);
-    requestAnimationFrame(()=>map?.invalidateSize());
+
+    // Show itinerary immediately, independently of Leaflet.
+    renderDay(activeIndex);
+
+    // Browser must calculate visible container dimensions before Leaflet starts.
+    requestAnimationFrame(()=>{
+      if(!overlay.classList.contains('is-open'))return;
+      try{
+        initialize();
+        switchDay(activeIndex);
+      }catch(error){
+        console.error('JARVIS boot failure',error);
+        setRouteNote('⚠ No pudo iniciarse el mapa. La agenda permanece disponible.');
+        renderDay(activeIndex);
+      }
+      requestAnimationFrame(()=>{
+        map?.invalidateSize({pan:false});
+        // Some mobile browsers settle the flex/grid sizing after a paint.
+        setTimeout(()=>{if(overlay.classList.contains('is-open'))map?.invalidateSize({pan:false})},180);
+      });
+    });
     panel?.focus();
   }
   function close(){
