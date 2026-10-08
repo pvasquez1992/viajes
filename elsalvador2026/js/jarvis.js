@@ -416,7 +416,7 @@
       play.addEventListener('click',()=>{
         const rows=Object.keys(data.points).map(Number);
         clearMotion();
-        selectedRow=rows[0];showSelected(rows[0]);
+        showSelected(rows[0]);selectedRow=rows[0];
         void selectStop(rows[rows.length-1]);
       });
       body.append(controls);
