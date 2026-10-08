@@ -1,0 +1,1 @@
+Carpeta para fotografías y recursos visuales del viaje. Agregar únicamente imágenes propias o con derechos de uso autorizados. No incluir documentos personales ni comprobantes.
