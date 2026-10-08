@@ -130,7 +130,7 @@
       wow:'La familia completa viaja junta hacia Río Chiquito. Llegada deseada alrededor de las 15:00.',
       points:{
         0:{at:LOC.santaAna,icon:'🏠',place:'Santa Ana · salida',note:'Referencia urbana; domicilio no publicado'},
-        1:{at:LOC.soyapango,icon:'👨‍👩‍👧‍👦',place:'Soyapango · recogida',note:'Jardines del Pepeto 3; ubicación del sector, no puerta exacta'},
+        1:{at:LOC.soyapango,icon:'👨‍👩‍👧‍👦',place:'Soyapango · recogida',note:'jardines, soyapango; ubicación del sector, no puerta exacta'},
         3:{at:LOC.rioChiquito,icon:'🏡',place:'Río Chiquito · Casa Itzé',note:'Zona aproximada, no dirección verificada'}
       },
       route:true, vehicle:'🚙'
