@@ -92,3 +92,11 @@ body.jarvis-open{overflow:hidden!important}
  .j-workspace.sidebar-hidden .j-sidebar-toggle{bottom:20px;right:14px}
 }
 @media(prefers-reduced-motion:reduce){.j-entry,.j-pin-icon{transition:none!important}}
+
+/* Tajumulco mission: visible travel playback and confirmed vs. reference detail */
+.j-route-controls{display:grid;gap:7px;margin:12px 6px 14px;padding:12px;background:linear-gradient(125deg,#3a2138,#23192f);border:1px solid #996b6e;border-radius:10px}
+.j-route-play{border:1px solid #ffd49c;border-radius:8px;padding:12px;background:linear-gradient(115deg,#ffc47d,#ffe2b2);color:#311b2b;font-size:12px;font-weight:900;letter-spacing:.035em;cursor:pointer;box-shadow:0 3px 17px rgba(255,195,131,.15)}
+.j-route-play:hover{filter:brightness(1.08)}
+.j-route-play:focus-visible{outline:3px solid #f6a1bc;outline-offset:2px}
+.j-route-controls small{display:block;color:#e2c8d2;font-size:10px;line-height:1.45}
+.j-tab-critical{border-color:#b66f7b!important}
