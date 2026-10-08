@@ -19,6 +19,10 @@
   const DAYS = [...document.querySelectorAll('article.day[data-day]')];
   const LOC = Object.freeze({
     santaAna: [13.9942, -89.5597],
+    // Tuichán: published trailhead reference, not user's confirmed arrival point.
+    tuichan: [15.073847, -91.870121],
+    // Tajumulco summit: Smithsonian Global Volcanism Program (not vehicle-accessible).
+    tajumulcoPeak: [15.043, -91.903],
     soyapango: [13.7105, -89.1395],
     multiplaza: [13.675, -89.255],
     rioChiquito: [14.319, -89.127],
@@ -78,27 +82,41 @@
       wow:'Convivencia familiar con la agenda abierta.',
       points:{0:{at:LOC.santaAna,icon:'🏠',place:'Santa Ana · referencia general',note:'Zona general; plan de Nochebuena por definir'}},route:false
     },
+
     '25': {
-      tab:'25 DIC', type:'🚌 Microbús', label:'Santa Ana → Tajumulco',
-      tip:'Se viaja EN MICROBÚS desde Santa Ana. El enlace compartido necesita identificación exacta antes de dibujar la ruta.',
-      wow:'Comienza una escapada de tres días; regreso el 27 por la noche.',
-      points:{0:{at:LOC.santaAna,icon:'🚌',place:'Salida desde Santa Ana',note:'Punto exacto de abordaje por confirmar'}},
-      external:{label:'Ver destino de Tajumulco en Google Maps',url:TAJUMULCO_MAPS},
-      route:false
+      tab:'25 DIC', type:'🚌 Microbús', label:'Santa Ana → Volcán Tajumulco',
+      tip:'🚌 Salida desde Santa Ana hacia Guatemala. JARVIS usa Tuichán como ACCESO VIAL DE REFERENCIA, no como dirección definitiva del grupo. Confirmar destino, hora y documentación fronteriza.',
+      wow:'Comienza el viaje de tres días al volcán.',
+      points:{
+        0:{at:LOC.santaAna,icon:'🚌',place:'Santa Ana · salida',note:'Punto de abordaje y hora por definir'},
+        1:{at:LOC.tuichan,icon:'📍',place:'Tuichán · acceso de referencia',note:'Acceso conocido al volcán, no ubicación confirmada del enlace del usuario'}
+      },
+      landmark:{at:LOC.tajumulcoPeak,icon:'⛰️',place:'Volcán Tajumulco · cumbre',note:'La cumbre NO es accesible por carretera en microbús'},
+      external:{label:'Destino original en Google Maps ↗',url:TAJUMULCO_MAPS},
+      route:true,vehicle:'🚌',approximateDestination:true
     },
     '26': {
-      tab:'26 DIC', type:'🚌 Tajumulco', label:'Estancia en Tajumulco',
-      tip:'Segundo día de estancia. Aún no se dispone de la ubicación precisa ni del plan de actividades.',
-      wow:'Jornada libre para organizar según el destino real y las condiciones del grupo.',
-      points:{},
-      external:{label:'Abrir ubicación compartida',url:TAJUMULCO_MAPS},route:false
+      tab:'26 DIC', type:'⛰️ Volcán', label:'Volcán Tajumulco · Guatemala',
+      tip:'La ubicación de la cumbre es real; Tuichán es un acceso conocido. No se presupone ninguna caminata, ni un traslado vehicular hasta la cumbre.',
+      wow:'Día completo en la zona del volcán, con actividades por confirmar.',
+      points:{
+        0:{at:LOC.tajumulcoPeak,icon:'⛰️',place:'Cumbre de Tajumulco',note:'Solo referencia de la montaña, NO un destino en microbús'},
+        1:{at:LOC.tuichan,icon:'🥾',place:'Acceso Tuichán · referencia',note:'Referencia turística, pendiente de confirmar para este viaje'}
+      },
+      external:{label:'Destino original en Google Maps ↗',url:TAJUMULCO_MAPS},
+      route:false
     },
     '27': {
-      tab:'27 DIC', type:'🚌 Regreso', label:'Tajumulco → Santa Ana',
-      tip:'Regreso EN MICROBÚS el domingo por la noche. No se inventa hora ni ruta de llegada.',
-      wow:'Última noche del recorrido de Tajumulco: retorno a Santa Ana.',
-      points:{1:{at:LOC.santaAna,icon:'🏠',place:'Regreso a Santa Ana',note:'Destino general; llegada nocturna prevista'}},
-      external:{label:'Ver ubicación compartida de origen',url:TAJUMULCO_MAPS},route:false
+      tab:'27 DIC', type:'🚌 Microbús', label:'Volcán Tajumulco → Santa Ana',
+      tip:'🚌 Regreso por la noche desde Guatemala hasta Santa Ana. La ruta arranca en Tuichán solo como REFERENCIA. No hay horario, lugar exacto ni frontera confirmados.',
+      wow:'Regreso familiar el domingo por la noche.',
+      points:{
+        0:{at:LOC.tuichan,icon:'🚌',place:'Tuichán · salida referencial',note:'El origen real del grupo necesita confirmación'},
+        1:{at:LOC.santaAna,icon:'🏠',place:'Santa Ana · regreso',note:'Llegada nocturna prevista, hora por definir'}
+      },
+      landmark:{at:LOC.tajumulcoPeak,icon:'⛰️',place:'Volcán Tajumulco · cumbre',note:'Referencia de localización, no recorrido de vehículo'},
+      external:{label:'Destino original en Google Maps ↗',url:TAJUMULCO_MAPS},
+      route:true,vehicle:'🚌',approximateDestination:true
     },
     '29': {
       tab:'29 DIC', type:'🚙 Recogida', label:'Vehículo en San Salvador',
@@ -231,23 +249,31 @@
       activeMarkers.set(p.row,{marker,point:p});
       coords.push(p.at);
     });
+    if(data.landmark) {
+      const lm=data.landmark;
+      const pin=L.marker(lm.at,{icon:iconOf(lm,false,'CUMBRE · NO VIAL')}).addTo(markerLayer);
+      const box=document.createElement('div'),heading=document.createElement('b'),detail=document.createElement('p');
+      heading.textContent=lm.place;detail.textContent=lm.note;box.append(heading,detail);
+      pin.bindPopup(box);
+      coords.push(lm.at);
+    }
     fitPins(coords,data);
-    if(data.route && coords.length>1) {
+    if(data.route && mapped.length>1) {
       const routePts=mapped.map(p=>p.at).filter((p,i,a)=>!i||!samePlace(p,a[i-1]));
       if(routePts.length>1){
         plotRoad(routePts,false);
-        setRouteNote('⌁ Conexión esquemática · consultando trazado de carretera…');
+        setRouteNote(data.approximateDestination?'🚌 Acceso Tuichán REFERENCIAL · consultando trazado de carretera…':'⌁ Conexión esquemática · consultando trazado de carretera…');
         const thisToken=requestToken;
         const ctrl=new AbortController();pendingRequest=ctrl;
         getRoadGeometry(routePts,ctrl.signal).then(geometry=>{
           if(thisToken!==requestToken)return;
           routeLayer?.remove();routeLayer=null;
           currentRoute=geometry;plotRoad(geometry,true);
-          setRouteNote((data.optional?'Ruta opcional · ':'')+'Ruta por carretera · referencia cartográfica, no tiempos validados');
+          setRouteNote(data.approximateDestination?'🚌 Trazado vial hasta Tuichán REFERENCIAL, no llegada confirmada ni tiempo real.':(data.optional?'Ruta opcional · ':'')+'Ruta por carretera · referencia cartográfica, no tiempos validados');
           fitPins(coords,data);
         }).catch(err=>{
           if(err.name==='AbortError'||thisToken!==requestToken)return;
-          setRouteNote('⚠ Conexión punteada ESQUEMÁTICA: no hay ruta por carretera validada.');
+          setRouteNote('⚠ Línea PUNTEADA esquemática, NO ruta real. La simulación del microbús sigue disponible.');
         }).finally(()=>{if(pendingRequest===ctrl)pendingRequest=null});
       }
     } else {
@@ -309,16 +335,17 @@
       const thisToken=requestToken;
       pendingRequest?.abort();const ctrl=new AbortController();pendingRequest=ctrl;
       try{
-        setRouteNote('⌁ Calculando carretera para animar el '+(d.vehicle==='🚙'?'vehículo':'microbús')+'…');
+        setRouteNote('⌁ Consultando carretera para animar el '+(d.vehicle==='🚙'?'vehículo':'microbús')+'…');
         const road=await getRoadGeometry([from.point.at,target.point.at],ctrl.signal);
         if(thisToken!==requestToken||selectedRow!==row)return;
-        setRouteNote('🚙 Desplazamiento visual sobre carretera · no equivale a tiempo real de viaje');
+        setRouteNote(d.approximateDestination?'🚌 Microbús en ruta vial de REFERENCIA · no ubicación final ni tiempo real':'🚙 Desplazamiento visual sobre carretera · no equivale a tiempo real de viaje');
         if(reducedMotion.matches){finishMarker(target.marker);return}
         drive(road,d.vehicle,target.marker,thisToken);
       }catch(e){
         if(e.name==='AbortError')return;
-        setRouteNote('⚠ Tramo no disponible para animación. Se muestra la parada; no se inventa carretera.');
-        finishMarker(target.marker);
+        setRouteNote('⚠ SIMULACIÓN ESQUEMÁTICA: línea ilustrativa, NO carretera real ni trayectoria confirmada.');
+        if(reducedMotion.matches){finishMarker(target.marker);return}
+        drive([from.point.at,target.point.at],d.vehicle,target.marker,thisToken);
       }finally{if(pendingRequest===ctrl)pendingRequest=null}
     }else{clearMotion();finishMarker(target.marker)}
   }
@@ -370,6 +397,22 @@
       }
       timeline.append(div);
     });body.append(timeline);
+    if(data.route && Object.keys(data.points).length>1 && data.vehicle) {
+      const controls=document.createElement('div');controls.className='j-route-controls';
+      const play=document.createElement('button');play.className='j-route-play';play.type='button';
+      play.textContent='▶ Animar '+(data.vehicle==='🚌'?'microbús':'vehículo')+' · '+data.tab;
+      const expl=document.createElement('small');expl.textContent=data.approximateDestination?
+        'Trayecto al acceso referencial, no al destino exacto de Google Maps.':
+        'La animación es orientativa, no equivale a tiempo de conducción.';
+      controls.append(play,expl);
+      play.addEventListener('click',()=>{
+        const rows=Object.keys(data.points).map(Number);
+        clearMotion();
+        selectedRow=rows[0];showSelected(rows[0]);
+        void selectStop(rows[rows.length-1]);
+      });
+      body.append(controls);
+    }
     const tip=document.createElement('div');tip.className='j-mission-tip';
     const strong=document.createElement('strong');strong.textContent='🧠 ANÁLISIS JARVIS';
     const desc=document.createElement('p');desc.textContent=data.tip;
