@@ -17,3 +17,57 @@ body{background:radial-gradient(ellipse at 8% 3%,rgba(140,31,63,.42),transparent
 button:focus-visible,a:focus-visible{outline:3px solid #ffdc96;outline-offset:3px}
 .j-overlay{background:rgba(10,5,20,.92)}.j-panel{background:#170e22;border-color:#8a5065;box-shadow:0 28px 120px #06020d}.j-header{background:linear-gradient(95deg,#3d1735,#1b1433);border-color:#8a5065}.j-brand strong{color:#ffe2b0}.j-dot{background:#ffce85;box-shadow:0 0 18px #ffc47a}.j-mission-label{color:#eac7cf}.j-close{background:#582741;color:#fff5ee;border-color:#b17c8e}
 .j-map-wrap{background:#170e22}.j-map-caption{color:#e4c9d1}.j-sidebar{background:#1c1328;border-color:#704659}.j-tabs{border-color:#704659}.j-tabs button{background:#39233e;border-color:#86526a;color:#f9e2e8}.j-tabs button.active{background:#ffdc9f;color:#361d32}.j-body .j-time{color:#ffcf88}.j-body .j-state{color:#ffb6c8}.j-body .j-event{border-color:#654255}.j-body small{color:#d9c0cb}.j-body .j-alert{border-left-color:#ffd08a;background:#3c2536;color:#fff0dc}
+
+/* Mobile-first cleanup: one compact nav, one CTA, editorial hero, no duplicate JARVIS cards. */
+.mobile-intro{display:none}
+@media (max-width:700px){
+  html{scroll-padding-top:78px}
+  body{font-size:14px;line-height:1.5;background:#110d1a}
+  .shell{padding-left:20px;padding-right:20px;max-width:100%}
+  .nav{position:sticky;top:0;z-index:50;background:rgba(17,12,25,.97);border-bottom:1px solid #493044}
+  .nav-inner{min-height:62px;padding-top:9px;padding-bottom:9px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:nowrap}
+  .nav-inner>a{white-space:nowrap;font-size:14px;font-weight:800;letter-spacing:-.025em}
+  .nav-links{flex:0 0 auto;display:flex;gap:0;align-items:center}
+  .nav-links>a{display:none!important}
+  .nav-jarvis{font-size:12px!important;line-height:1.2;padding:10px 12px!important;border-radius:10px!important;white-space:nowrap;background:#44213d!important;border:1px solid #97566e!important;box-shadow:none!important}
+  .hero{padding:29px 0 26px;min-height:0}
+  .hero:before{display:none}
+  .hero .eyebrow{font-size:10px;letter-spacing:.13em;margin:0;color:#e6b67c}
+  .hero h1{font-size:clamp(31px,8.9vw,44px);line-height:1.11;letter-spacing:-.045em;margin:13px 0 14px;font-weight:850;overflow-wrap:normal}
+  .hero .lead{display:none}
+  .mobile-intro{display:block;color:#dccdd5;font-size:14px;line-height:1.6;margin:0;max-width:34ch}
+  .hero-actions{margin:19px 0 0;gap:9px}
+  .hero>.hero-actions>.secondary-action{display:none!important}
+  .hero>.hero-actions>.primary-action{padding:11px 17px;border-radius:10px;font-size:13px;box-shadow:none;line-height:1.4;width:auto;display:inline-flex;align-items:center;justify-content:center;min-height:43px}
+  .chips{display:flex;gap:7px;margin:20px 0 0}
+  .chip{font-size:11px;padding:6px 9px;border-radius:9px;background:rgba(83,31,57,.35);border-color:#604052;color:#ead4d8}
+  .chips .chip:nth-child(n+3){display:none}
+  .hero .stats{display:none}
+  #jarvis{display:none}
+  .section{padding:25px 0}
+  .section h2{font-size:25px;line-height:1.2;letter-spacing:-.02em}
+  .section .eyebrow{font-size:10px}
+  #roadbook>.muted{font-size:13px}
+  #roadbook>.hero-actions{gap:8px}
+  #roadbook>.hero-actions button{font-size:12px;padding:10px 11px;border-radius:9px}
+  .filters{flex-wrap:nowrap;overflow:auto;scrollbar-width:thin;margin:16px -20px;padding:0 20px 9px;gap:6px;-webkit-overflow-scrolling:touch}
+  .filters button{white-space:nowrap;flex-shrink:0;font-size:12px;padding:7px 10px;border-radius:9px;background:#2e1c33;border-color:#63455b}
+  .filters button.active{background:#ffdbad;color:#30172a}
+  .day{margin:12px 0;border-radius:13px}
+  .day-header{padding:13px 15px;background:#28192e}
+  .day-header h3{font-size:17px;line-height:1.3}
+  .day-header p{font-size:12px}
+  .event{padding:12px 15px;gap:4px;font-size:13px}
+  .event time{font-size:12px}
+  .event small{font-size:12px;line-height:1.5;margin-top:4px}
+  .panel,.stat,.detail{padding:15px;border-radius:12px}
+  .cards{gap:10px}
+  #routeMap{height:300px;border-radius:12px}
+  .footer{font-size:12px;padding-block:20px 30px}
+}
+@media(max-width:370px){
+  .shell{padding-inline:16px}
+  .nav-jarvis{font-size:11px!important;padding:9px!important}
+  .hero h1{font-size:31px}
+  .chips .chip:nth-child(n+2){display:none}
+}
