@@ -1,5 +1,14 @@
 const trips = [
     {
+        title: 'Navidad Familiar El Salvador 2026',
+        href: 'elsalvador2026/',
+        start: '2026-12-18',
+        end: '2027-01-03',
+        phase: 'planned',
+        description: 'Ocho familiares, Santa Ana, Soyapango, Casa Itzé en Río Chiquito y El Pital como propuesta.',
+        tags: ['18 dic–3 ene', 'Chalatenango', 'Familia']
+    },
+    {
         title: 'Iceland 2026',
         href: 'iceland2026/',
         start: '2026-08-31',
