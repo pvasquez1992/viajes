@@ -44,6 +44,40 @@
       wow:'Tiempo para convivir sin carreras ni horarios forzados.',
       points:{0:{at:LOC.santaAna,icon:'🏠',place:'Santa Ana',note:'Referencia general de la base familiar'}}, route:false
     },
+    '20': {
+      tab:'20 DIC', type:'☕ Día libre', label:'Santa Ana · jornada abierta',
+      tip:'No hay actividades confirmadas. Mantener el día disponible para descansar y convivir.',
+      wow:'Tiempo familiar y recuperación del viaje.',
+      points:{0:{at:LOC.santaAna,icon:'🏠',place:'Santa Ana · referencia general',note:'Zona de Santa Ana, no un lugar reservado'}},
+      route:false
+    },
+    '21': {
+      tab:'21 DIC', type:'🦷 Cita dental', label:'Centro Dental · 09:30 confirmado',
+      tip:'🔒 CENTRO DENTAL confirmó el lunes 21 a las 9:30 a. m. para evaluación y tratamiento de ocho rellenos previstos. Podrían requerirse 2 o 3 sesiones en total, según lo que determine la doctora. Solamente la primera cita está reservada.',
+      wow:'Una gestión de salud prioritaria antes del viaje del 25 al 27. Dejar margen para recuperación y posibles próximas sesiones.',
+      center:LOC.santaAna,
+      points:{},
+      external:{label:'📍 Abrir ubicación exacta compartida de Centro Dental',url:'https://maps.app.goo.gl/hTSedhuSkZm5kRQ26'},
+      route:false
+    },
+    '22': {
+      tab:'22 DIC', type:'☕ Día libre', label:'Santa Ana · agenda abierta',
+      tip:'Día sin actividades confirmadas. Una segunda sesión dental NO está agendada; solamente sería posible si la clínica la indica y confirma disponibilidad.',
+      wow:'Tiempo libre sin excursiones obligatorias.',
+      points:{0:{at:LOC.santaAna,icon:'🏠',place:'Santa Ana · referencia general',note:'Área de la ciudad, sin reserva de actividad'}},route:false
+    },
+    '23': {
+      tab:'23 DIC', type:'☕ Día libre', label:'Santa Ana · agenda abierta',
+      tip:'Sin actividades confirmadas. Preservar flexibilidad si fuese necesario ajustar el tratamiento dental.',
+      wow:'Espacio para descanso, familia o gestiones que se confirmen posteriormente.',
+      points:{0:{at:LOC.santaAna,icon:'🏠',place:'Santa Ana · referencia general',note:'Área de la ciudad, sin reserva de actividad'}},route:false
+    },
+    '24': {
+      tab:'24 DIC', type:'🎄 Nochebuena', label:'Nochebuena · por organizar',
+      tip:'Es Nochebuena, pero todavía no hay horarios, ubicación ni celebración concreta confirmados en el itinerario.',
+      wow:'Convivencia familiar con la agenda abierta.',
+      points:{0:{at:LOC.santaAna,icon:'🏠',place:'Santa Ana · referencia general',note:'Zona general; plan de Nochebuena por definir'}},route:false
+    },
     '25': {
       tab:'25 DIC', type:'🚌 Microbús', label:'Santa Ana → Tajumulco',
       tip:'Se viaja EN MICROBÚS desde Santa Ana. El enlace compartido necesita identificación exacta antes de dibujar la ruta.',
@@ -158,11 +192,11 @@
     activeMarkers=new Map();selectedMarker=null;currentRoute=null;selectedRow=null;
   }
   function setRouteNote(value){if(routeInfo)routeInfo.textContent=value}
-  function fitPins(pins) {
+  function fitPins(pins, data) {
     if(!map)return;
     if(pins.length>1)map.flyToBounds(L.latLngBounds(pins),{padding:[55,65],maxZoom:12,duration:reducedMotion.matches?0:.65});
     else if(pins.length===1)map.flyTo(pins[0],11,{duration:reducedMotion.matches?0:.65});
-    else map.flyTo(DEFAULT_VIEW,8,{duration:reducedMotion.matches?0:.65});
+    else map.flyTo(data?.center || DEFAULT_VIEW,data?.center?12:8,{duration:reducedMotion.matches?0:.65});
   }
   function plotRoad(path,actual) {
     if(!map)return;
@@ -197,7 +231,7 @@
       activeMarkers.set(p.row,{marker,point:p});
       coords.push(p.at);
     });
-    fitPins(coords);
+    fitPins(coords,data);
     if(data.route && coords.length>1) {
       const routePts=mapped.map(p=>p.at).filter((p,i,a)=>!i||!samePlace(p,a[i-1]));
       if(routePts.length>1){
@@ -210,14 +244,14 @@
           routeLayer?.remove();routeLayer=null;
           currentRoute=geometry;plotRoad(geometry,true);
           setRouteNote((data.optional?'Ruta opcional · ':'')+'Ruta por carretera · referencia cartográfica, no tiempos validados');
-          fitPins(coords);
+          fitPins(coords,data);
         }).catch(err=>{
           if(err.name==='AbortError'||thisToken!==requestToken)return;
           setRouteNote('⚠ Conexión punteada ESQUEMÁTICA: no hay ruta por carretera validada.');
         }).finally(()=>{if(pendingRequest===ctrl)pendingRequest=null});
       }
     } else {
-      setRouteNote(data.external?'📍 Destino exacto sin identificar · no se dibuja un recorrido inventado':'📍 Referencias de ubicación · sin ruta carretera verificada');
+      setRouteNote(data.external?'📍 Ubicación proporcionada mediante enlace de Maps · sin pin ni recorrido inventados':'📍 Referencias de ubicación · sin ruta carretera verificada');
     }
   }
   function showSelected(row) {
@@ -332,7 +366,7 @@
       }
       if(data.external&&row===0){
         const actions=document.createElement('div');actions.className='j-entry-actions';
-        actions.append(createExternal('📍 DESTINO COMPARTIDO ↗',data.external.url));div.append(actions);
+        actions.append(createExternal(data.external.label || '📍 DESTINO COMPARTIDO ↗',data.external.url));div.append(actions);
       }
       timeline.append(div);
     });body.append(timeline);
@@ -343,7 +377,7 @@
     const wow=document.createElement('div');wow.className='j-mission-wow';
     const whats=document.createElement('strong');whats.textContent='✦ EXPERIENCIA DEL DÍA';
     const wowp=document.createElement('p');wowp.textContent=data.wow;wow.append(whats,wowp);body.append(wow);
-    if(data.external){const link=createExternal('Abrir destino compartido de Tajumulco ↗',data.external.url);link.style.display='inline-block';link.style.margin='0 8px 18px';body.append(link)}
+    if(data.external){const link=createExternal(data.external.label || 'Abrir ubicación compartida ↗',data.external.url);link.style.display='inline-block';link.style.margin='0 8px 18px';body.append(link)}
     body.scrollTop=0;
   }
   function switchDay(index) {
@@ -367,7 +401,7 @@
       DAYS.forEach((d,i)=>{
         const data=MISSION[d.dataset.day];if(!data)return;
         const btn=document.createElement('button');btn.type='button';
-        btn.className='j-tab'+(['30','3'].includes(d.dataset.day)?' j-tab-critical':'');
+        btn.className='j-tab'+(['21','30','3'].includes(d.dataset.day)?' j-tab-critical':'');
         btn.textContent=data.tab;btn.dataset.index=String(i);
         btn.setAttribute('role','tab');
         btn.addEventListener('click',()=>switchDay(i));
