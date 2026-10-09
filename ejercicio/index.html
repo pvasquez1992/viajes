@@ -6,6 +6,7 @@
   <meta name="google" content="notranslate">
   <title>Ejercicio · BookTrip</title>
   <link rel="icon" href="../logo.png" type="image/png">
+  <link rel="stylesheet" href="../assets/leaflet/leaflet.css">
   <link rel="stylesheet" href="../css/home.css">
   <link rel="stylesheet" href="../css/ejercicio.css">
 </head>
@@ -51,7 +52,26 @@
         <p id="filterError" class="filter-error" role="alert" hidden>La fecha inicial debe ser anterior o igual a la final.</p>
       </form>
 
-      <section class="metric-grid" aria-label="Resumen de las actividades filtradas">
+      <div class="recent-layout">
+        <section class="exercise-panel activity-panel" aria-labelledby="activitiesHeading">
+          <div class="panel-heading"><div><p class="section-kicker">Lo más reciente</p><h2 id="activitiesHeading">Tus 10 últimas actividades</h2></div><span id="filteredCount" class="unit-pill" aria-live="polite"></span></div>
+          <div class="activity-column-headings" aria-hidden="true"><span>Actividad</span><span>Distancia</span><span>Duración</span><span>Ritmo / velocidad</span><span>Pulso medio</span></div>
+          <ul id="activityList" class="activity-list" aria-label="Actividades, de más reciente a más antigua"></ul>
+          <p id="emptyActivities" class="empty-state" hidden>No hay actividades con estos filtros. Prueba con otro deporte o rango de fechas.</p>
+          <div class="list-pagination"><span id="pageInfo" aria-live="polite"></span><div><button id="previousPage" type="button" aria-label="Página anterior">← Anterior</button><button id="nextPage" type="button" aria-label="Página siguiente">Siguiente →</button></div></div>
+        </section>
+
+        <section class="exercise-panel map-panel" aria-labelledby="mapHeading">
+          <div class="panel-heading"><div><p class="section-kicker">Dónde te moviste</p><h2 id="mapHeading">Tus actividades en el mapa</h2></div></div>
+          <p id="mapStatus" class="map-caption" role="status"></p>
+          <div id="activitiesMap" class="activity-map" aria-label="Mapa de inicio y llegada de las actividades de esta página" hidden></div>
+          <div class="map-legend"><span><i class="legend-start" aria-hidden="true"></i> Inicio</span><span><i class="legend-end" aria-hidden="true"></i> Llegada</span></div>
+          <p class="map-caption">Los números siguen el orden de la lista. Se muestran los puntos de esta página; el recorrido completo aún no está disponible.</p>
+        </section>
+      </div>
+
+      <p class="section-kicker">Resumen del historial filtrado</p>
+      <section class="metric-grid" aria-label="Resumen de todo el historial con los filtros actuales">
         <article class="metric-card"><span class="metric-label">Actividades</span><strong id="activityTotal">—</strong><span class="metric-footnote">Veces que te pusiste en marcha</span></article>
         <article class="metric-card"><span class="metric-label">Distancia</span><strong><span id="distanceTotal">—</span><small> km</small></strong><span class="metric-footnote">Todo el recorrido acumulado</span></article>
         <article class="metric-card"><span class="metric-label">Tiempo de actividad</span><strong id="durationTotal">—</strong><span class="metric-footnote">Duración de tus actividades</span></article>
@@ -69,24 +89,20 @@
         </article>
       </section>
 
-      <section class="exercise-panel activity-panel" aria-labelledby="activitiesHeading">
-        <div class="panel-heading"><div><p class="section-kicker">El registro</p><h2 id="activitiesHeading">Tus actividades</h2></div><span id="filteredCount" class="unit-pill" aria-live="polite"></span></div>
-        <div class="activity-column-headings" aria-hidden="true"><span>Actividad</span><span>Distancia</span><span>Duración</span><span>Ritmo / velocidad</span><span>Pulso medio</span></div>
-        <ul id="activityList" class="activity-list" aria-label="Actividades, de más reciente a más antigua"></ul>
-        <p id="emptyActivities" class="empty-state" hidden>No hay actividades con estos filtros. Prueba con otro deporte o rango de fechas.</p>
-        <div class="list-pagination"><span id="pageInfo" aria-live="polite"></span><div><button id="previousPage" type="button" aria-label="Página anterior">← Anterior</button><button id="nextPage" type="button" aria-label="Página siguiente">Siguiente →</button></div></div>
-      </section>
     </div>
   </main>
 
   <dialog id="activityDialog" class="activity-dialog" aria-labelledby="detailTitle">
     <div class="detail-top"><span id="detailSport" class="sport-tag"></span><button id="closeDetail" type="button" class="dialog-close" aria-label="Cerrar detalle">×</button></div>
     <h2 id="detailTitle"></h2><p id="detailDate" class="detail-date"></p>
+    <p id="detailMapStatus" class="map-caption" role="status"></p>
+    <div id="detailMap" class="activity-map detail-map" aria-label="Mapa de inicio y llegada de esta actividad" hidden></div>
     <div id="detailMetrics" class="detail-metrics"></div>
     <p class="detail-note">Los datos que Garmin no registró aparecen como «—».</p>
   </dialog>
 
   <footer class="site-footer"><span>BookTrip · Ejercicio</span><p>Del primer paso al siguiente recuerdo.</p></footer>
+  <script src="../assets/leaflet/leaflet.js" defer></script>
   <script type="module" src="../js/ejercicio.js"></script>
 </body>
 </html>

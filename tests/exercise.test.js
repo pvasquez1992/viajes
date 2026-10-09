@@ -1,11 +1,20 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { generateKeyPair, exportJWK, createLocalJWKSet, SignJWT } from 'jose';
-import { filterActivities, summarize, monthlyDistances, loadActivities, pace, syncCaption, loadSyncStatus } from '../js/exercise-data.js';
+import { filterActivities, summarize, monthlyDistances, loadActivities, pace, syncCaption, loadSyncStatus, activityLocations } from '../js/exercise-data.js';
 import { createHandler, createAccessVerifier } from '../functions/api/ejercicio/[[path]].js';
 
 const activity = (id, localDate, overrides = {}) => ({ id, localDate, startedAt: `${localDate}T10:00:00Z`, name: 'Mañana en el parque', sport: 'running', distanceMeters: 5000, durationSeconds: 1800, ...overrides });
 const data = [activity('1', '2026-01-31'), activity('2', '2026-03-01', { sport: 'cycling', distanceMeters: 12000, elevationGainMeters: 200 })];
+test('map uses only recorded coordinates, accepts zero and handles missing, invalid and coincident endpoints', () => {
+  assert.deepEqual(activityLocations({ startPosition: null, endPosition: null }), []);
+  assert.deepEqual(activityLocations({ startPosition: { latitude: 0, longitude: 0 } }), [{ kind: 'start', latitude: 0, longitude: 0 }]);
+  assert.deepEqual(activityLocations({ endPosition: { latitude: -20, longitude: 180 } }), [{ kind: 'end', latitude: -20, longitude: 180 }]);
+  assert.deepEqual(activityLocations({ startPosition: { latitude: null, longitude: 0 }, endPosition: { latitude: 91, longitude: 0 } }), []);
+  assert.deepEqual(activityLocations({ startPosition: { latitude: NaN, longitude: 0 }, endPosition: { latitude: 0, longitude: -181 } }), []);
+  const point = { latitude: 10, longitude: 20 };
+  assert.deepEqual(activityLocations({ startPosition: point, endPosition: point }), [{ kind: 'both', ...point }]);
+});
 test('inclusive dates, accent-insensitive search and sport filters agree with totals', () => {
   assert.equal(filterActivities(data, { search: 'manana', from: '2026-01-31', to: '2026-01-31' }).length, 1);
   assert.equal(filterActivities(data, { sport: 'cycling' })[0].id, '2');

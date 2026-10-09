@@ -11,4 +11,11 @@ for (const entry of await readdir(root, { withFileTypes: true })) {
     await cp(path.join(root, entry.name), path.join(output, entry.name), { recursive: true });
   }
 }
+// Serve the pinned map library ourselves, without a runtime CDN dependency.
+const leafletOutput = path.join(output, 'assets', 'leaflet');
+await mkdir(leafletOutput, { recursive: true });
+for (const file of ['leaflet.js', 'leaflet.css', 'images']) {
+  await cp(path.join(root, 'node_modules', 'leaflet', 'dist', file), path.join(leafletOutput, file), { recursive: true });
+}
+await cp(path.join(root, 'node_modules', 'leaflet', 'LICENSE'), path.join(leafletOutput, 'LICENSE'));
 console.log('Public site built in dist/site');

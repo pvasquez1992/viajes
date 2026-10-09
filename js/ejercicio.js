@@ -1,8 +1,11 @@
 import { sportName, colorFor, number, dateLabel, duration, pace, filterActivities, summarize, monthlyDistances, loadActivities, loadSyncStatus, syncCaption } from './exercise-data.js';
+import { ActivityMap } from './exercise-map.js';
 
 const $ = id => document.getElementById(id);
 let activities = [], filtered = [], page = 0, controller;
-const pageSize = 15;
+const pageSize = 10;
+const overviewMap = new ActivityMap($('activitiesMap'), $('mapStatus'), { onSelect: showDetail });
+const detailMap = new ActivityMap($('detailMap'), $('detailMapStatus'));
 const text = (id, value) => { $(id).textContent = value; };
 function node(tag, className, content) {
   const el = document.createElement(tag);
@@ -69,7 +72,6 @@ function applyFilters() {
   text('distanceTotal', number(summary.distance / 1000, 1));
   text('durationTotal', duration(summary.seconds, true));
   text('elevationTotal', number(summary.elevation));
-  text('filteredCount', `${number(filtered.length)} actividades`);
   renderChart();
   renderSports();
   renderList();
@@ -116,13 +118,17 @@ function renderSports() {
 
 function renderList() {
   const start = page * pageSize;
+  const visible = filtered.slice(start, start + pageSize);
+  const hasFilters = $('activitySearch').value.trim() || $('sportFilter').value || $('dateFrom').value || $('dateTo').value;
+  text('activitiesHeading', page === 0 && !hasFilters ? 'Tus 10 últimas actividades' : 'Tus actividades');
+  text('filteredCount', `${number(visible.length)} de ${number(filtered.length)}`);
   $('activityList').replaceChildren();
-  for (const activity of filtered.slice(start, start + pageSize)) {
+  for (const [index, activity] of visible.entries()) {
     const li = node('li'), button = node('button', 'activity-row'); button.type = 'button';
     button.setAttribute('aria-label', `Ver ${activity.name}, ${dateLabel(activity.localDate)}`);
     const identity = node('span', 'activity-identity'), tag = node('span', 'sport-tag', sportName(activity.sport));
     tag.style.setProperty('--sport-color', colorFor(activity.sport));
-    identity.append(tag, node('strong', 'activity-name', activity.name), node('span', 'activity-date', dateLabel(activity.localDate)));
+    identity.append(tag, node('strong', 'activity-name', `${index + 1}. ${activity.name}`), node('span', 'activity-date', dateLabel(activity.localDate)));
     button.append(identity);
     for (const [label, value] of [['Distancia', `${number(activity.distanceMeters / 1000, 2)} km`], ['Duración', duration(activity.durationSeconds)], ['Ritmo / velocidad', pace(activity)], ['Pulso medio', `${number(activity.averageHeartRateBpm)}${Number.isFinite(activity.averageHeartRateBpm) ? ' lpm' : ''}`]]) {
       const cell = node('span', 'activity-value', value); cell.dataset.label = label; button.append(cell);
@@ -133,6 +139,7 @@ function renderList() {
   text('pageInfo', filtered.length ? `${start + 1}–${Math.min(start + pageSize, filtered.length)} de ${number(filtered.length)}` : '0 actividades');
   $('previousPage').disabled = page === 0;
   $('nextPage').disabled = start + pageSize >= filtered.length;
+  overviewMap.render(visible);
 }
 
 function showDetail(activity) {
@@ -153,6 +160,7 @@ function showDetail(activity) {
     const card = node('div', 'detail-metric'); card.append(node('span', '', label), node('strong', '', value)); $('detailMetrics').append(card);
   }
   $('activityDialog').showModal();
+  detailMap.render([activity]);
 }
 
 $('filterForm').addEventListener('submit', event => event.preventDefault());

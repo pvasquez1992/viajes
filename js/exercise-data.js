@@ -121,3 +121,18 @@ export async function loadSyncStatus(fetcher = fetch, { signal } = {}) {
   }
   return (await response.json()).data;
 }
+
+export function activityLocations(activity) {
+  const locations = [];
+  for (const [field, kind] of [['startPosition', 'start'], ['endPosition', 'end']]) {
+    const point = activity[field];
+    if (point && Number.isFinite(point.latitude) && Number.isFinite(point.longitude)
+      && Math.abs(point.latitude) <= 90 && Math.abs(point.longitude) <= 180) {
+      locations.push({ kind, latitude: point.latitude, longitude: point.longitude });
+    }
+  }
+  if (locations.length === 2 && locations[0].latitude === locations[1].latitude && locations[0].longitude === locations[1].longitude) {
+    return [{ ...locations[0], kind: 'both' }];
+  }
+  return locations;
+}
