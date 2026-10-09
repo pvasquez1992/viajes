@@ -43,10 +43,10 @@
       route:false
     },
     '19': {
-      tab:'19 DIC', type:'☕ Descanso', label:'Recuperación',
-      tip:'Reservar este día para recuperarse del viaje; las actividades siguen flexibles.',
-      wow:'Tiempo para convivir sin carreras ni horarios forzados.',
-      points:{0:{at:LOC.santaAna,icon:'🏠',place:'Santa Ana',note:'Referencia general de la base familiar'}}, route:false
+      tab:'19 DIC', type:'🎬 Cine', label:'Cinépolis Metrocentro Santa Ana · 15:00',
+      tip:'Función comprada para el sábado 19 de diciembre a las 15:00. Avengers: Doomsday IFV 3D Dob, Sala 1. Llegar con anticipación y prever lentes 3D. Los códigos de la compra no se publican.',
+      wow:'Tarde de cine en Santa Ana; el resto del día queda libre.',
+      points:{1:{at:[13.97802,-89.56189],icon:'🎬',place:'Cinépolis Metrocentro Santa Ana',note:'Cine en primer nivel de Metrocentro Santa Ana'}},route:false
     },
     '20': {
       tab:'20 DIC', type:'☕ Día libre', label:'Santa Ana · jornada abierta',
