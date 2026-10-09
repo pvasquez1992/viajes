@@ -12,6 +12,8 @@
 .source-label { color: var(--exercise-muted); }
 .status-dot { width: 7px; height: 7px; background: #8ef2c4; border-radius: 50%; box-shadow: 0 0 12px #8ef2c450; }
 .history-caption { display: flex; gap: 16px; justify-content: space-between; align-items: center; color: var(--exercise-muted); font-size: .82rem; margin: 0 0 18px; }
+.sync-caption { color: var(--exercise-muted); font-size: .78rem; line-height: 1.6; margin: -8px 0 22px; }
+.sync-caption[data-tone="warning"] { color: #ffcf9d; }
 .exercise-page button, .exercise-page input, .exercise-page select { font: inherit; }
 .exercise-page button, .action-button { cursor: pointer; }
 .exercise-page button:disabled { opacity: .4; cursor: default; }

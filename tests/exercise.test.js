@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { generateKeyPair, exportJWK, createLocalJWKSet, SignJWT } from 'jose';
-import { filterActivities, summarize, monthlyDistances, loadActivities, pace } from '../js/exercise-data.js';
+import { filterActivities, summarize, monthlyDistances, loadActivities, pace, syncCaption, loadSyncStatus } from '../js/exercise-data.js';
 import { createHandler, createAccessVerifier } from '../functions/api/ejercicio/[[path]].js';
 
 const activity = (id, localDate, overrides = {}) => ({ id, localDate, startedAt: `${localDate}T10:00:00Z`, name: 'Mañana en el parque', sport: 'running', distanceMeters: 5000, durationSeconds: 1800, ...overrides });
@@ -28,6 +28,22 @@ test('pagination loads every page, deduplicates and rejects a stuck cursor', asy
 
 const env = { GARMIN_API_KEY: 'server-only-test-key', ACCESS_TEAM_DOMAIN: 'test.cloudflareaccess.com', ACCESS_AUD: 'expected-audience' };
 const context = (path = 'activities', headers = {}) => ({ request: new Request('https://booktrip.test/api/ejercicio/activities?limit=100', { headers }), env, params: { path } });
+test('sync status exposes stalled updates, failures and required login while retaining the last success', async () => {
+  const lastSuccessAt = '2026-10-09T12:00:00.000Z';
+  const recent = Date.parse(lastSuccessAt) + 1800000;
+  assert.equal(syncCaption({ state: 'ok', lastSuccessAt }, recent).tone, 'ok');
+  assert.match(syncCaption({ state: 'ok', lastSuccessAt }, recent + 7200000).text, /dos horas/);
+  assert.match(syncCaption({ state: 'reauth_required', lastSuccessAt }, recent).text, /volver a conectar.*Última actualización/);
+  assert.match(syncCaption({ state: 'failed', lastSuccessAt }, recent).text, /falló.*Última actualización/);
+  assert.equal(syncCaption({ state: 'not_configured', lastSuccessAt: null }).tone, 'warning');
+  const handler = createHandler({ authorize: async () => true, fetchUpstream: async url => {
+    assert.equal(url.pathname, '/api/sync-status');
+    return Response.json({ data: { state: 'ok', lastSuccessAt } });
+  } });
+  const result = await loadSyncStatus(async () => handler(context('sync-status')));
+  assert.equal(result.lastSuccessAt, lastSuccessAt);
+  await assert.rejects(loadSyncStatus(async () => new Response('Access login', { headers: { 'Content-Type': 'text/html' } })));
+});
 test('proxy denies guests, missing configuration and unrecognized destinations without contacting Garmin', async () => {
   let calls = 0;
   const handler = createHandler({ fetchUpstream: async () => { calls++; return Response.json({}); } });

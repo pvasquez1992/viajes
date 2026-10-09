@@ -1,4 +1,4 @@
-import { sportName, colorFor, number, dateLabel, duration, pace, filterActivities, summarize, monthlyDistances, loadActivities } from './exercise-data.js';
+import { sportName, colorFor, number, dateLabel, duration, pace, filterActivities, summarize, monthlyDistances, loadActivities, loadSyncStatus, syncCaption } from './exercise-data.js';
 
 const $ = id => document.getElementById(id);
 let activities = [], filtered = [], page = 0, controller;
@@ -17,6 +17,17 @@ async function load() {
   $('loadingState').hidden = false;
   $('errorState').hidden = true;
   $('refreshButton').disabled = true;
+  loadSyncStatus(fetch, { signal: current.signal }).then(status => {
+    if (current !== controller) return;
+    const caption = syncCaption(status);
+    text('syncStatus', caption.text);
+    $('syncStatus').dataset.tone = caption.tone;
+  }).catch(error => {
+    if (current !== controller || error.name === 'AbortError') return;
+    const caption = syncCaption(null);
+    text('syncStatus', caption.text);
+    $('syncStatus').dataset.tone = caption.tone;
+  });
   try {
     const result = await loadActivities(fetch, { signal: current.signal });
     if (current !== controller) return;

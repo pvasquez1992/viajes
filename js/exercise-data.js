@@ -98,3 +98,26 @@ export async function loadActivities(fetcher = fetch, { signal } = {}) {
   const unique = [...new Map(activities.map(a => [a.id, a])).values()];
   return unique.sort((a, b) => b.startedAt.localeCompare(a.startedAt) || b.id.localeCompare(a.id));
 }
+
+export function syncCaption(status, now = Date.now()) {
+  if (!status || !['not_configured', 'ok', 'failed', 'reauth_required'].includes(status.state)) {
+    return { tone: 'warning', text: 'No pudimos comprobar la última sincronización.' };
+  }
+  const last = Date.parse(status.lastSuccessAt);
+  const suffix = Number.isFinite(last) ? ` Última actualización: ${new Intl.DateTimeFormat('es', { dateStyle: 'medium', timeStyle: 'short' }).format(last)}.` : '';
+  if (status.state === 'reauth_required') return { tone: 'warning', text: `Hay que volver a conectar la cuenta de Garmin.${suffix}` };
+  if (status.state === 'failed') return { tone: 'warning', text: `La última sincronización falló. Se volverá a intentar.${suffix}` };
+  if (status.state === 'not_configured' || !Number.isFinite(last)) return { tone: 'warning', text: 'La sincronización automática aún no ha completado su primera actualización.' };
+  if (now - last > 2 * 60 * 60 * 1000) return { tone: 'warning', text: `La sincronización lleva más de dos horas sin actualizarse.${suffix}` };
+  return { tone: 'ok', text: `Sincronización automática.${suffix} Se comprueban nuevas actividades aproximadamente cada 30 minutos.` };
+}
+
+export async function loadSyncStatus(fetcher = fetch, { signal } = {}) {
+  const response = await fetcher('/api/ejercicio/sync-status', {
+    credentials: 'same-origin', headers: { Accept: 'application/json' }, signal,
+  });
+  if (!response.ok || response.redirected || !response.headers.get('Content-Type')?.includes('application/json')) {
+    throw new Error('No se pudo comprobar la sincronización.');
+  }
+  return (await response.json()).data;
+}
