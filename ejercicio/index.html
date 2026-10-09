@@ -40,6 +40,7 @@
     </section>
 
     <div id="dashboard" hidden>
+      <p id="deleteNotice" class="notice delete-notice" role="status" hidden></p>
       <div class="history-caption"><span id="historyRange"></span><button id="refreshButton" type="button" class="text-button">↻ Actualizar</button></div>
       <p id="syncStatus" class="sync-caption" role="status" aria-live="polite">Consultando última sincronización…</p>
 
@@ -99,6 +100,15 @@
     <div id="detailMap" class="activity-map detail-map" aria-label="Mapa de inicio y llegada de esta actividad" hidden></div>
     <div id="detailMetrics" class="detail-metrics"></div>
     <p class="detail-note">Los datos que Garmin no registró aparecen como «—».</p>
+    <div class="delete-actions">
+      <button id="deleteButton" class="danger-button" type="button">Eliminar de esta web</button>
+      <div id="deleteConfirmation" hidden>
+        <p class="detail-note">¿Eliminar esta actividad de nuestra API? Esto no la borra de Garmin. Si sigue allí, volverá a importarse en una sincronización.</p>
+        <button id="confirmDelete" class="danger-button" type="button">Sí, eliminar</button>
+        <button id="cancelDelete" class="action-button secondary" type="button">Cancelar</button>
+      </div>
+      <p id="deleteError" class="delete-error" role="alert" hidden></p>
+    </div>
   </dialog>
 
   <footer class="site-footer"><span>BookTrip · Ejercicio</span><p>Del primer paso al siguiente recuerdo.</p></footer>

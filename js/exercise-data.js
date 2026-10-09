@@ -136,3 +136,17 @@ export function activityLocations(activity) {
   }
   return locations;
 }
+
+export async function deleteActivity(id, fetcher = fetch) {
+  if (typeof id !== 'string' || !/^[1-9]\d{0,19}$/.test(id)) throw new Error('Identificador de actividad inválido.');
+  const response = await fetcher(`/api/ejercicio/activities/${id}`, {
+    method: 'DELETE', credentials: 'same-origin', headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(15000),
+  });
+  if (response.redirected || !response.headers.get('Content-Type')?.includes('application/json')) {
+    throw Object.assign(new Error('Tu sesión ha terminado. Vuelve a iniciar sesión.'), { status: 401 });
+  }
+  const body = await response.json();
+  if (!response.ok) throw Object.assign(new Error(body.error?.message || 'No pudimos eliminar la actividad. Inténtalo de nuevo.'), { status: response.status });
+  if (body.data?.id !== id || typeof body.data?.deleted !== 'boolean') throw new Error('No pudimos confirmar la eliminación. Actualiza la página antes de volver a intentar.');
+  return body.data;
+}

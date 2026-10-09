@@ -1,8 +1,9 @@
-import { sportName, colorFor, number, dateLabel, duration, pace, filterActivities, summarize, monthlyDistances, loadActivities, loadSyncStatus, syncCaption } from './exercise-data.js';
+import { sportName, colorFor, number, dateLabel, duration, pace, filterActivities, summarize, monthlyDistances, loadActivities, loadSyncStatus, syncCaption, deleteActivity } from './exercise-data.js';
 import { ActivityMap } from './exercise-map.js';
 
 const $ = id => document.getElementById(id);
 let activities = [], filtered = [], page = 0, controller;
+let activeActivity, deleting = false;
 const pageSize = 10;
 const overviewMap = new ActivityMap($('activitiesMap'), $('mapStatus'), { onSelect: showDetail });
 const detailMap = new ActivityMap($('detailMap'), $('detailMapStatus'));
@@ -40,8 +41,7 @@ async function load() {
     [...new Set(activities.map(a => a.sport))].sort((a, b) => sportName(a).localeCompare(sportName(b), 'es'))
       .forEach(sport => $('sportFilter').add(new Option(sportName(sport), sport)));
     $('sportFilter').value = selected;
-    const dates = activities.map(a => a.localDate).sort();
-    text('historyRange', activities.length ? `${number(activities.length)} actividades · ${dateLabel(dates[0])} — ${dateLabel(dates.at(-1))}` : 'Tu historial aún no tiene actividades.');
+    updateHistoryRange();
     $('dashboard').hidden = false;
     applyFilters();
   } catch (error) {
@@ -61,12 +61,17 @@ async function load() {
   }
 }
 
-function applyFilters() {
+function updateHistoryRange() {
+  const dates = activities.map(a => a.localDate).sort();
+  text('historyRange', activities.length ? `${number(activities.length)} actividades · ${dateLabel(dates[0])} — ${dateLabel(dates.at(-1))}` : 'Tu historial aún no tiene actividades.');
+}
+
+function applyFilters({ preservePage = false } = {}) {
   const from = $('dateFrom').value, to = $('dateTo').value;
   $('filterError').hidden = !(from && to && from > to);
   if (!$('filterError').hidden) return;
   filtered = filterActivities(activities, { search: $('activitySearch').value, sport: $('sportFilter').value, from, to });
-  page = 0;
+  page = preservePage ? Math.min(page, Math.max(0, Math.ceil(filtered.length / pageSize) - 1)) : 0;
   const summary = summarize(filtered);
   text('activityTotal', number(summary.count));
   text('distanceTotal', number(summary.distance / 1000, 1));
@@ -143,6 +148,10 @@ function renderList() {
 }
 
 function showDetail(activity) {
+  activeActivity = activity;
+  $('deleteConfirmation').hidden = true;
+  $('deleteButton').hidden = false;
+  $('deleteError').hidden = true;
   text('detailTitle', activity.name); text('detailSport', sportName(activity.sport)); text('detailDate', dateLabel(activity.localDate));
   $('detailSport').style.setProperty('--sport-color', colorFor(activity.sport));
   $('detailMetrics').replaceChildren();
@@ -163,13 +172,48 @@ function showDetail(activity) {
   detailMap.render([activity]);
 }
 
+async function confirmDeletion() {
+  if (deleting || !activeActivity) return;
+  const activity = activeActivity;
+  deleting = true;
+  for (const id of ['confirmDelete', 'cancelDelete', 'closeDetail', 'refreshButton']) $(id).disabled = true;
+  $('deleteError').hidden = true;
+  text('confirmDelete', 'Eliminando…');
+  try {
+    await deleteActivity(activity.id);
+    // Keep an older in-flight refresh from reinserting a just-deleted row.
+    controller?.abort();
+    controller = null;
+    $('loadingState').hidden = true;
+    $('errorState').hidden = true;
+    $('dashboard').hidden = false;
+    activities = activities.filter(item => item.id !== activity.id);
+    updateHistoryRange();
+    applyFilters({ preservePage: true });
+    $('activityDialog').close();
+    text('deleteNotice', 'Actividad eliminada de esta web. Si sigue en Garmin, el sincronizador podrá recuperarla.');
+    $('deleteNotice').hidden = false;
+  } catch (error) {
+    text('deleteError', error.name === 'TimeoutError' ? 'No pudimos confirmar la eliminación. Actualiza la página antes de volver a intentar.' : error.message);
+    $('deleteError').hidden = false;
+  } finally {
+    deleting = false;
+    for (const id of ['confirmDelete', 'cancelDelete', 'closeDetail', 'refreshButton']) $(id).disabled = false;
+    text('confirmDelete', 'Sí, eliminar');
+  }
+}
+
 $('filterForm').addEventListener('submit', event => event.preventDefault());
-$('filterForm').addEventListener('input', applyFilters);
+$('filterForm').addEventListener('input', () => applyFilters());
 $('resetFilters').addEventListener('click', () => { $('filterForm').reset(); applyFilters(); });
 $('previousPage').addEventListener('click', () => { if (page > 0) { page--; renderList(); } });
 $('nextPage').addEventListener('click', () => { if ((page + 1) * pageSize < filtered.length) { page++; renderList(); } });
 $('closeDetail').addEventListener('click', () => $('activityDialog').close());
-$('activityDialog').addEventListener('click', event => { if (event.target === $('activityDialog')) { const r = event.target.getBoundingClientRect(); if (event.clientX < r.left || event.clientX > r.right || event.clientY < r.top || event.clientY > r.bottom) event.target.close(); } });
+$('activityDialog').addEventListener('cancel', event => { if (deleting) event.preventDefault(); });
+$('activityDialog').addEventListener('click', event => { if (!deleting && event.target === $('activityDialog')) { const r = event.target.getBoundingClientRect(); if (event.clientX < r.left || event.clientX > r.right || event.clientY < r.top || event.clientY > r.bottom) event.target.close(); } });
+$('deleteButton').addEventListener('click', () => { $('deleteButton').hidden = true; $('deleteConfirmation').hidden = false; $('cancelDelete').focus(); });
+$('cancelDelete').addEventListener('click', () => { $('deleteConfirmation').hidden = true; $('deleteButton').hidden = false; $('deleteButton').focus(); });
+$('confirmDelete').addEventListener('click', confirmDeletion);
 $('refreshButton').addEventListener('click', load);
 $('retryButton').addEventListener('click', load);
 load();

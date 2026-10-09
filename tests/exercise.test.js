@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { generateKeyPair, exportJWK, createLocalJWKSet, SignJWT } from 'jose';
-import { filterActivities, summarize, monthlyDistances, loadActivities, pace, syncCaption, loadSyncStatus, activityLocations } from '../js/exercise-data.js';
+import { filterActivities, summarize, monthlyDistances, loadActivities, pace, syncCaption, loadSyncStatus, activityLocations, deleteActivity } from '../js/exercise-data.js';
 import { createHandler, createAccessVerifier } from '../functions/api/ejercicio/[[path]].js';
 
 const activity = (id, localDate, overrides = {}) => ({ id, localDate, startedAt: `${localDate}T10:00:00Z`, name: 'Mañana en el parque', sport: 'running', distanceMeters: 5000, durationSeconds: 1800, ...overrides });
@@ -37,6 +37,48 @@ test('pagination loads every page, deduplicates and rejects a stuck cursor', asy
 
 const env = { GARMIN_API_KEY: 'server-only-test-key', ACCESS_TEAM_DOMAIN: 'test.cloudflareaccess.com', ACCESS_AUD: 'expected-audience' };
 const context = (path = 'activities', headers = {}) => ({ request: new Request('https://booktrip.test/api/ejercicio/activities?limit=100', { headers }), env, params: { path } });
+test('deletion proxy verifies Access and origin, scopes the destination and keeps the delete credential on the server', async () => {
+  let calls = 0;
+  const deletionContext = (path = 'activities/123', origin = 'https://booktrip.test') => ({
+    request: new Request(`https://booktrip.test/api/ejercicio/${path}`, { method: 'DELETE', headers: origin ? { Origin: origin } : {} }),
+    env: { ...env, GARMIN_DELETE_KEY: 'server-only-delete-key' }, params: { path },
+  });
+  const trusted = createHandler({ authorize: async () => true, fetchUpstream: async (url, options) => {
+    calls++;
+    assert.equal(url.pathname, '/api/activities/123');
+    assert.equal(options.method, 'DELETE');
+    assert.equal(options.headers.Authorization, 'Bearer server-only-delete-key');
+    assert.equal(options.redirect, 'manual');
+    return Response.json({ data: { id: '123', deleted: true } });
+  } });
+  assert.equal((await createHandler({ authorize: async () => false })(deletionContext())).status, 401);
+  assert.equal((await trusted(deletionContext('activities/123', 'https://evil.test'))).status, 403);
+  assert.equal((await trusted(deletionContext('activities/123', null))).status, 403);
+  assert.equal((await trusted(deletionContext('activities'))).status, 405);
+  assert.equal((await trusted(deletionContext('stats'))).status, 405);
+  assert.equal((await trusted({ ...deletionContext(), env })).status, 503);
+  const query = deletionContext(); query.request = new Request(query.request.url + '?all=true', { method: 'DELETE', headers: { Origin: 'https://booktrip.test' } });
+  assert.equal((await trusted(query)).status, 400);
+  assert.equal(calls, 0);
+  const result = await trusted(deletionContext());
+  assert.equal(result.status, 200);
+  assert.equal(calls, 1);
+  assert.ok(!(await result.text()).includes('server-only-delete-key'));
+});
+test('delete client sends only an ID with the browser session and does not hide failed or unconfirmed requests', async () => {
+  const result = await deleteActivity('123', async (url, options) => {
+    assert.equal(url, '/api/ejercicio/activities/123');
+    assert.equal(options.method, 'DELETE');
+    assert.equal(options.credentials, 'same-origin');
+    assert.equal(options.headers.Authorization, undefined);
+    return Response.json({ data: { id: '123', deleted: false } });
+  });
+  assert.equal(result.deleted, false);
+  await assert.rejects(deleteActivity('../stats', async () => { throw Error('Should not fetch'); }), /Identificador/);
+  await assert.rejects(deleteActivity('123', async () => Response.json({ error: { message: 'No disponible' } }, { status: 502 })), /No disponible/);
+  await assert.rejects(deleteActivity('123', async () => Response.json({ data: { id: '456', deleted: true } })), /confirmar/);
+  await assert.rejects(deleteActivity('123', async () => new Response('Access login', { headers: { 'Content-Type': 'text/html' } })), error => error.status === 401);
+});
 test('sync status exposes stalled updates, failures and required login while retaining the last success', async () => {
   const lastSuccessAt = '2026-10-09T12:00:00.000Z';
   const recent = Date.parse(lastSuccessAt) + 1800000;

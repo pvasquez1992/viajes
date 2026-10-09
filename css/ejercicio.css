@@ -96,6 +96,11 @@
 .detail-metric { display: flex; flex-direction: column; gap: 8px; padding: 15px; background: #ffffff05; border-radius: 10px; }
 .detail-metric span { color: var(--exercise-muted); font-size: .7rem; }
 .detail-metric strong { font-size: 1rem; }
+.delete-actions { border-top: 1px solid #ffffff18; padding-top: 18px; }
+.danger-button { border: 1px solid #ff9a8b80; background: #ff695515; color: #ffc5b9; border-radius: 8px; padding: 11px 15px; }
+.danger-button:hover { background: #ff695530; }
+.delete-error { color: #ffbcaf; font-size: .8rem; line-height: 1.6; }
+.delete-notice { margin-bottom: 18px; padding: 16px 20px; font-size: .85rem; }
 .exercise-page :focus-visible { outline: 2px solid var(--exercise-accent); outline-offset: 3px; }
 @media (max-width: 1000px) {
   .recent-layout { grid-template-columns: 1fr; }
