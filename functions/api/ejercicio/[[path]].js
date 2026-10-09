@@ -1,7 +1,7 @@
 import { createRemoteJWKSet, jwtVerify } from 'jose';
 
 const keySets = new Map();
-const allowed = /^(activities(?:\/[1-9]\d{0,19})?|daily-stats|sports|stats)$/;
+const allowed = /^(activities(?:\/[1-9]\d{0,19})?|daily-stats|sports|stats|sync-status)$/;
 
 function remoteKeys(issuer) {
   if (!keySets.has(issuer)) keySets.set(issuer, createRemoteJWKSet(new URL(`${issuer}/cdn-cgi/access/certs`)));
