@@ -41,7 +41,7 @@ test('proxy keeps bearer on the server and sanitizes upstream errors', async () 
   const handler = createHandler({ authorize: async () => true, fetchUpstream: async (url, options) => {
     assert.equal(url.href, 'https://my-garmin-api.pvasquez1992.workers.dev/api/activities?limit=100');
     assert.equal(options.headers.Authorization, 'Bearer server-only-test-key');
-    assert.equal(options.redirect, 'error');
+    assert.equal(options.redirect, 'manual');
     return Response.json({ data });
   } });
   const response = await handler(context());
@@ -50,6 +50,31 @@ test('proxy keeps bearer on the server and sanitizes upstream errors', async () 
   assert.ok(!(await response.text()).includes(env.GARMIN_API_KEY));
   const broken = createHandler({ authorize: async () => true, fetchUpstream: async () => new Response('secret diagnostic', { status: 401 }) });
   assert.equal((await broken(context())).status, 502);
+});
+test('proxy never follows an upstream redirect or forwards its location', async () => {
+  const handler = createHandler({ authorize: async () => true, fetchUpstream: async (_url, options) => {
+    assert.equal(options.redirect, 'manual');
+    return new Response('{}', { status: 302, headers: { 'Content-Type': 'application/json', Location: 'https://other.test' } });
+  } });
+  const response = await handler(context());
+  assert.equal(response.status, 502);
+  assert.equal(response.headers.get('Location'), null);
+});
+test('production proxy uses the service binding and fails closed when it is missing', async () => {
+  const handler = createHandler({ authorize: async () => true });
+  assert.equal((await handler(context())).status, 503);
+  let calls = 0;
+  const service = { async fetch(url, options) {
+    assert.equal(this, service);
+    assert.equal(url.pathname, '/api/activities');
+    assert.equal(options.headers.Authorization, `Bearer ${env.GARMIN_API_KEY}`);
+    calls++;
+    return Response.json({ data, pagination: { total: data.length } });
+  } };
+  const response = await handler({ ...context(), env: { ...env, GARMIN_API: service } });
+  assert.equal(response.status, 200);
+  assert.equal(calls, 1);
+  assert.equal((await response.json()).data.length, 2);
 });
 test('Access requires a signed unexpired application JWT for the correct issuer and audience', async () => {
   const { privateKey, publicKey } = await generateKeyPair('RS256');

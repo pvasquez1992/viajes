@@ -30,7 +30,7 @@ export function createAccessVerifier({ getKeySet = remoteKeys } = {}) {
 
 export const verifyAccess = createAccessVerifier();
 
-export function createHandler({ authorize = verifyAccess, fetchUpstream = fetch } = {}) {
+export function createHandler({ authorize = verifyAccess, fetchUpstream } = {}) {
   return async ({ request, env, params }) => {
     if (request.method !== 'GET') return error(405, 'method_not_allowed', 'Solo se permiten consultas GET.', { Allow: 'GET' });
     if (!env.GARMIN_API_KEY || !env.ACCESS_TEAM_DOMAIN || !env.ACCESS_AUD) {
@@ -42,12 +42,14 @@ export function createHandler({ authorize = verifyAccess, fetchUpstream = fetch 
     const incoming = new URL(request.url);
     const destination = new URL(`/api/${route}`, 'https://my-garmin-api.pvasquez1992.workers.dev');
     destination.search = incoming.search;
+    const call = fetchUpstream || env.GARMIN_API?.fetch.bind(env.GARMIN_API);
+    if (!call) return error(503, 'not_configured', 'La conexión de actividades todavía no está disponible.');
     try {
-      const response = await fetchUpstream(destination, {
-        method: 'GET', redirect: 'error', signal: AbortSignal.timeout(12000),
+      const response = await call(destination, {
+        method: 'GET', redirect: 'manual', signal: AbortSignal.timeout(12000),
         headers: { Accept: 'application/json', Authorization: `Bearer ${env.GARMIN_API_KEY}` },
       });
-      if (!response.headers.get('Content-Type')?.includes('application/json') || response.status >= 500 || response.status === 401 || response.status === 403) {
+      if (!response.headers.get('Content-Type')?.includes('application/json') || (response.status >= 300 && response.status < 400) || response.status >= 500 || response.status === 401 || response.status === 403) {
         return error(502, 'upstream_error', 'No pudimos consultar las actividades. Inténtalo de nuevo.');
       }
       return new Response(response.body, { status: response.status, headers: {
