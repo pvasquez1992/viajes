@@ -32,22 +32,31 @@ export const verifyAccess = createAccessVerifier();
 
 export function createHandler({ authorize = verifyAccess, fetchUpstream } = {}) {
   return async ({ request, env, params }) => {
-    if (request.method !== 'GET') return error(405, 'method_not_allowed', 'Solo se permiten consultas GET.', { Allow: 'GET' });
-    if (!env.GARMIN_API_KEY || !env.ACCESS_TEAM_DOMAIN || !env.ACCESS_AUD) {
+    if (!['GET', 'DELETE'].includes(request.method)) return error(405, 'method_not_allowed', 'Método no permitido.', { Allow: 'GET, DELETE' });
+    const deleting = request.method === 'DELETE';
+    const key = deleting ? env.GARMIN_DELETE_KEY : env.GARMIN_API_KEY;
+    if (!key || !env.ACCESS_TEAM_DOMAIN || !env.ACCESS_AUD) {
       return error(503, 'not_configured', 'La conexión de actividades todavía no está disponible.');
     }
     if (!await authorize(request, env)) return error(401, 'unauthorized', 'Inicia sesión para consultar tus actividades.');
     const route = Array.isArray(params.path) ? params.path.join('/') : params.path || '';
     if (!allowed.test(route)) return error(404, 'not_found', 'Consulta no encontrada.');
     const incoming = new URL(request.url);
+    if (deleting) {
+      if (!/^activities\/[1-9]\d{0,19}$/.test(route)) return error(405, 'method_not_allowed', 'Solo puedes eliminar una actividad por su identificador.', { Allow: 'GET' });
+      if (incoming.search) return error(400, 'invalid_request', 'Indica solo el identificador de una actividad.');
+      if (request.headers.get('Origin') !== incoming.origin || request.headers.get('Sec-Fetch-Site') === 'cross-site') {
+        return error(403, 'invalid_origin', 'La eliminación debe solicitarse desde esta web.');
+      }
+    }
     const destination = new URL(`/api/${route}`, 'https://my-garmin-api.pvasquez1992.workers.dev');
     destination.search = incoming.search;
     const call = fetchUpstream || env.GARMIN_API?.fetch.bind(env.GARMIN_API);
     if (!call) return error(503, 'not_configured', 'La conexión de actividades todavía no está disponible.');
     try {
       const response = await call(destination, {
-        method: 'GET', redirect: 'manual', signal: AbortSignal.timeout(12000),
-        headers: { Accept: 'application/json', Authorization: `Bearer ${env.GARMIN_API_KEY}` },
+        method: request.method, redirect: 'manual', signal: AbortSignal.timeout(12000),
+        headers: { Accept: 'application/json', Authorization: `Bearer ${key}` },
       });
       if (!response.headers.get('Content-Type')?.includes('application/json') || (response.status >= 300 && response.status < 400) || response.status >= 500 || response.status === 401 || response.status === 403) {
         return error(502, 'upstream_error', 'No pudimos consultar las actividades. Inténtalo de nuevo.');
