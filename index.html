@@ -7,7 +7,496 @@
 <meta http-equiv="Content-Language" content="es">
 <title>BookTrip</title>
 <link rel="icon" href="logo.png" type="image/png">
-<link rel="stylesheet" href="css/home.css">
+<style id="booktrip-original-styles">
+*{
+    box-sizing:border-box;
+}
+html{
+    min-height:100%;
+}
+body{
+    margin:0;
+    min-height:100vh;
+    font-family:Arial,Helvetica,sans-serif;
+    background:
+        linear-gradient(rgba(7,11,16,.58),rgba(7,11,16,.94)),
+        url('iceland2026/img/hero-aurora.jpg') center/cover fixed;
+    color:white;
+    -webkit-font-smoothing:antialiased;
+}
+.site-header{
+    position:sticky;
+    top:0;
+    z-index:10;
+    padding:10px 16px;
+}
+.site-header-inner{
+    display:flex;
+    justify-content:space-between;
+    gap:18px;
+    align-items:center;
+    width:min(1280px,100%);
+    margin:auto;
+    padding:12px 18px;
+    border:1px solid rgba(217,232,245,.14);
+    border-radius:18px;
+    background:rgba(7,11,16,.72);
+    backdrop-filter:blur(12px);
+    box-shadow:0 12px 34px rgba(0,0,0,.24);
+}
+.brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    color:white;
+    text-decoration:none;
+    font-weight:900;
+    letter-spacing:.01em;
+}
+.brand img{
+    width:34px;
+    height:34px;
+    object-fit:contain;
+}
+.site-header nav{
+    display:flex;
+    gap:8px;
+    align-items:center;
+}
+.site-header nav a{
+    padding:8px 11px;
+    border-radius:999px;
+    color:#d9e8f5;
+    text-decoration:none;
+    font-size:14px;
+    font-weight:800;
+}
+.site-header nav a:hover{
+    background:rgba(119,216,255,.12);
+    color:#bcefff;
+}
+.home-shell{
+    width:min(1280px,100%);
+    margin:auto;
+    padding:30px 28px 64px;
+}
+.home-hero{
+    max-width:760px;
+    margin:0 0 32px;
+}
+.eyebrow,
+.section-kicker{
+    margin:0 0 10px;
+    color:#9bdfff;
+    font-size:14px;
+    font-weight:800;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+}
+.hero-mark{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    width:max-content;
+    margin-bottom:14px;
+    padding:7px 10px;
+    border:1px solid rgba(217,232,245,.16);
+    border-radius:999px;
+    background:rgba(7,11,16,.42);
+    color:#9bdfff;
+    font-size:12px;
+    font-weight:900;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+}
+.hero-mark img{
+    width:28px;
+    height:28px;
+    object-fit:contain;
+}
+h1{
+    margin:0;
+    max-width:760px;
+    font-size:clamp(38px,5.5vw,62px);
+    line-height:1.05;
+    letter-spacing:0;
+}
+.magic-copy{
+    position:relative;
+    max-width:1020px;
+    margin:18px 0 0;
+    padding:13px 16px;
+    border:1px solid rgba(155,223,255,.2);
+    border-radius:18px;
+    background:
+        linear-gradient(135deg,rgba(155,223,255,.12),rgba(196,181,253,.08) 42%,rgba(255,209,102,.06)),
+        rgba(11,15,20,.36);
+    color:#eef7ff;
+    font-size:clamp(16px,1.55vw,19px);
+    line-height:1.5;
+    text-shadow:0 0 22px rgba(155,223,255,.18);
+    box-shadow:0 18px 46px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.06);
+}
+.magic-copy::before{
+    content:"";
+    position:absolute;
+    inset:10px auto auto 12px;
+    width:7px;
+    height:7px;
+    border-radius:50%;
+    background:#ffd166;
+    box-shadow:
+        28px -8px 0 rgba(155,223,255,.8),
+        56px 4px 0 rgba(196,181,253,.7);
+}
+.journey-steps{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-top:14px;
+}
+.journey-steps span{
+    padding:6px 10px;
+    border:1px solid rgba(217,232,245,.16);
+    border-radius:999px;
+    background:rgba(15,23,34,.58);
+    color:#d9e8f5;
+    font-size:13px;
+    font-weight:800;
+}
+.journey-steps span:nth-child(1){color:#ddd6fe;border-color:rgba(196,181,253,.32);}
+.journey-steps span:nth-child(2){color:#bcefff;border-color:rgba(119,216,255,.32);}
+.journey-steps span:nth-child(3){color:#c8ffe5;border-color:rgba(142,242,196,.32);}
+.journey-steps span:nth-child(4){color:#e5edf5;border-color:rgba(217,232,245,.24);}
+.library-panel{
+    padding:22px;
+    border:1px solid rgba(217,232,245,.16);
+    border-radius:24px;
+    background:rgba(8,13,20,.5);
+    backdrop-filter:blur(10px);
+}
+.library-top{
+    display:flex;
+    justify-content:space-between;
+    gap:20px;
+    align-items:flex-end;
+    margin-bottom:22px;
+}
+.library-top h2{
+    margin:0;
+    font-size:clamp(30px,4vw,48px);
+}
+.trip-count{
+    flex:0 0 auto;
+    padding:8px 12px;
+    border:1px solid rgba(119,216,255,.25);
+    border-radius:999px;
+    color:#bcefff;
+    background:rgba(119,216,255,.1);
+    font-size:14px;
+    font-weight:800;
+}
+.library-tools{
+    display:grid;
+    grid-template-columns:minmax(260px,1fr) auto;
+    gap:14px;
+    align-items:end;
+    margin-bottom:24px;
+}
+.search-box{
+    display:grid;
+    gap:8px;
+}
+.search-box span{
+    color:#b9cadf;
+    font-size:13px;
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+}
+.search-box input{
+    width:100%;
+    min-height:48px;
+    padding:0 16px;
+    border:1px solid rgba(217,232,245,.18);
+    border-radius:14px;
+    background:rgba(15,23,34,.82);
+    color:white;
+    font:inherit;
+    outline:none;
+}
+.search-box input:focus{
+    border-color:rgba(119,216,255,.68);
+    box-shadow:0 0 0 3px rgba(119,216,255,.12);
+}
+.filter-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+}
+.filter-button{
+    min-height:48px;
+    padding:0 14px;
+    border:1px solid rgba(217,232,245,.18);
+    border-radius:999px;
+    background:rgba(15,23,34,.72);
+    color:#d9e8f5;
+    font:inherit;
+    font-weight:800;
+    cursor:pointer;
+}
+.filter-button.active{
+    border-color:rgba(119,216,255,.64);
+    background:rgba(119,216,255,.14);
+    color:#bcefff;
+}
+.filter-button[data-filter="dreaming"].active{
+    border-color:rgba(196,181,253,.7);
+    background:rgba(196,181,253,.16);
+    color:#ddd6fe;
+}
+.filter-button[data-filter="planned"].active{
+    border-color:rgba(119,216,255,.7);
+    background:rgba(119,216,255,.16);
+    color:#bcefff;
+}
+.filter-button[data-filter="current"].active{
+    border-color:rgba(142,242,196,.7);
+    background:rgba(142,242,196,.16);
+    color:#c8ffe5;
+}
+.filter-button[data-filter="finished"].active{
+    border-color:rgba(217,232,245,.34);
+    background:rgba(217,232,245,.1);
+    color:#d9e8f5;
+}
+.trip-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+    gap:18px;
+}
+.trip-card{
+    --status-color:#77d8ff;
+    position:relative;
+    min-height:198px;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    padding:20px;
+    border:1px solid rgba(217,232,245,.18);
+    border-radius:18px;
+    background:rgba(15,23,34,.82);
+    color:white;
+    text-decoration:none;
+    box-shadow:0 18px 42px rgba(0,0,0,.24);
+    backdrop-filter:blur(10px);
+    transition:transform .18s ease,border-color .18s ease,background .18s ease;
+    overflow:hidden;
+}
+.trip-card::before{
+    content:"";
+    position:absolute;
+    inset:0 auto 0 0;
+    width:6px;
+    background:var(--status-color);
+}
+.trip-card::after{
+    content:"";
+    position:absolute;
+    inset:0 0 auto;
+    height:5px;
+    background:linear-gradient(90deg,var(--status-color),transparent 75%);
+    opacity:.9;
+}
+.trip-card.active{
+    border-color:rgba(119,216,255,.68);
+    background:
+        linear-gradient(135deg,rgba(119,216,255,.18),rgba(15,23,34,.72) 46%),
+        rgba(15,23,34,.86);
+}
+.trip-card.dreaming{
+    --status-color:#c4b5fd;
+    border-color:rgba(196,181,253,.62);
+    background:
+        linear-gradient(135deg,rgba(196,181,253,.26),rgba(15,23,34,.72) 52%),
+        rgba(15,23,34,.82);
+}
+.trip-card.dreaming .trip-status{
+    color:#ddd6fe;
+    border-color:rgba(196,181,253,.42);
+    background:rgba(196,181,253,.12);
+}
+.trip-card.planned{
+    --status-color:#77d8ff;
+    border-color:rgba(119,216,255,.68);
+    background:
+        linear-gradient(135deg,rgba(119,216,255,.24),rgba(15,23,34,.72) 52%),
+        rgba(15,23,34,.84);
+}
+.trip-card.current{
+    --status-color:#8ef2c4;
+    border-color:rgba(142,242,196,.72);
+    background:
+        linear-gradient(135deg,rgba(142,242,196,.26),rgba(15,23,34,.72) 52%),
+        rgba(15,23,34,.84);
+}
+.trip-card.current .trip-status{
+    color:#c8ffe5;
+    border-color:rgba(142,242,196,.42);
+    background:rgba(142,242,196,.12);
+}
+.trip-card.finished{
+    --status-color:#9aa8b8;
+    opacity:.82;
+    border-color:rgba(217,232,245,.24);
+    background:
+        linear-gradient(135deg,rgba(217,232,245,.12),rgba(15,23,34,.74) 52%),
+        rgba(15,23,34,.72);
+}
+.trip-card.finished .trip-status{
+    color:#d9e8f5;
+    border-color:rgba(217,232,245,.22);
+    background:rgba(217,232,245,.08);
+}
+.trip-card.planned .trip-status{
+    color:#bcefff;
+    border-color:rgba(119,216,255,.3);
+    background:rgba(119,216,255,.1);
+}
+.trip-card:hover{
+    transform:translateY(-2px);
+    border-color:rgba(119,216,255,.46);
+}
+.trip-status{
+    width:max-content;
+    padding:7px 11px;
+    border:1px solid rgba(119,216,255,.3);
+    border-radius:999px;
+    color:#bcefff;
+    font-size:13px;
+    font-weight:800;
+}
+.trip-card h3{
+    margin:18px 0 10px;
+    font-size:clamp(26px,3.2vw,34px);
+    line-height:1;
+}
+.trip-card p{
+    margin:0;
+    color:#d9e8f5;
+    font-size:16px;
+    line-height:1.5;
+}
+.trip-meta{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:24px;
+}
+.trip-meta span{
+    padding:7px 10px;
+    border-radius:999px;
+    background:rgba(217,232,245,.1);
+    color:#d9e8f5;
+    font-size:13px;
+}
+.empty-state{
+    margin:22px 0 0;
+    padding:22px;
+    border:1px dashed rgba(217,232,245,.22);
+    border-radius:16px;
+    color:#d9e8f5;
+    text-align:center;
+}
+.site-footer{
+    display:flex;
+    justify-content:space-between;
+    gap:18px;
+    align-items:center;
+    width:min(1280px,100%);
+    margin:auto;
+    padding:26px 28px 34px;
+    color:#9fb2c5;
+}
+.site-footer span{
+    color:#d9e8f5;
+    font-weight:900;
+}
+.site-footer p{
+    margin:0;
+}
+@media (max-width:760px){
+    body{
+        background-attachment:scroll;
+    }
+    .home-shell{
+        padding:22px 14px 42px;
+    }
+    .site-header{
+        padding:8px 10px;
+    }
+    .site-header-inner{
+        padding:10px 12px;
+        border-radius:14px;
+    }
+    .brand span{
+        display:none;
+    }
+    .site-header nav a{
+        padding:7px 9px;
+        font-size:13px;
+    }
+    .home-hero{
+        margin-bottom:24px;
+    }
+    .hero-mark{
+        width:100%;
+        justify-content:flex-start;
+        font-size:12px;
+    }
+    h1{
+        font-size:clamp(32px,9vw,46px);
+    }
+    .magic-copy{
+        margin-top:16px;
+        padding:12px 14px;
+        font-size:16px;
+    }
+    .library-panel{
+        padding:16px;
+        border-radius:18px;
+    }
+    .library-top,
+    .library-tools{
+        grid-template-columns:1fr;
+        align-items:start;
+    }
+    .library-top{
+        display:grid;
+    }
+    .filter-row{
+        overflow-x:auto;
+        flex-wrap:nowrap;
+        padding-bottom:2px;
+    }
+    .filter-button{
+        flex:0 0 auto;
+    }
+    .trip-grid{
+        grid-template-columns:1fr;
+    }
+    .trip-card{
+        min-height:190px;
+        border-radius:16px;
+        padding:18px;
+    }
+    .site-footer{
+        display:grid;
+        padding:22px 14px 30px;
+    }
+}
+
+</style>
 </head>
 <body>
 <header class="site-header">
@@ -63,6 +552,151 @@
 <span>BookTrip</span>
 <p>Del sueño al mapa. Del mapa a la memoria.</p>
 </footer>
-<script src="js/home.js?v=20261010-shenandoah"></script>
+<script id="booktrip-original-app">
+const trips = [
+    {
+        title: 'Shenandoah National Park 2026',
+        href: 'shenandoah2026/',
+        start: '2026-10-10',
+        end: '2026-10-10',
+        phase: 'planned',
+        description: 'Roadtrip de otoño por Skyline Drive: Dickey Ridge, miradores, Stony Man y Big Meadows.',
+        tags: ['10 oct 2026', 'Virginia', 'Skyline Drive']
+    },
+    {
+        title: 'Navidad Familiar El Salvador 2026',
+        href: 'elsalvador2026/',
+        start: '2026-12-18',
+        end: '2027-01-03',
+        phase: 'planned',
+        description: 'Ocho familiares, Santa Ana, Soyapango, Casa Itzé en Río Chiquito y El Pital como propuesta.',
+        tags: ['18 dic–3 ene', 'Chalatenango', 'Familia']
+    },
+    {
+        title: 'Iceland 2026',
+        href: 'iceland2026/',
+        start: '2026-08-31',
+        end: '2026-09-07',
+        phase: 'planned',
+        description: 'Vuelo, camper, descanso primero, Reykjadalur, S1, Zodiac, Vestrahorn y Viking Set.',
+        tags: ['31 ago-7 sept', 'S1 + Zodiac', 'Roadtrip'],
+        featured: true
+    },
+    {
+        title: 'NYC Thanksgiving 2026',
+        href: 'nyc2026/',
+        start: '2026-11-26',
+        end: '2026-11-27',
+        phase: 'planned',
+        description: 'Macy’s Parade 100, Katz’s, Roosevelt Island de noche, 10K y Central Park.',
+        tags: ['26-27 nov', 'Thanksgiving', 'NYC']
+    },
+    {
+        title: 'Suiza 2025',
+        href: 'suiza2025/',
+        start: '2025-06-01',
+        end: '2025-06-15',
+        phase: 'finished',
+        description: 'Base lista para sumar trenes, montañas, ciudades y reservas.',
+        tags: ['2025', 'Europa', 'Draft']
+    },
+    {
+        title: 'Italia 2025',
+        href: 'italia2025/',
+        start: '2025-09-01',
+        end: '2025-09-15',
+        phase: 'finished',
+        description: 'Cascarón preparado para itinerario, comidas, hoteles y mapa.',
+        tags: ['2025', 'Europa', 'Draft']
+    },
+    {
+        title: 'Irlanda 2026',
+        href: 'irlanda2026/',
+        start: '2026-03-11',
+        end: '2026-03-18',
+        phase: 'finished',
+        description: 'Belfast, Calzada del Gigante, Cliffs of Moher y el Día de San Patricio en Dublín.',
+        tags: ['8 días', 'Mar 2026', 'Belfast · Dublín']
+    }
+];
+
+const today = new Date();
+today.setHours(0, 0, 0, 0);
+
+const grid = document.getElementById('tripGrid');
+const search = document.getElementById('tripSearch');
+const count = document.getElementById('tripCount');
+const emptyState = document.getElementById('emptyState');
+const filterButtons = document.querySelectorAll('.filter-button');
+let activeFilter = 'all';
+
+function getStatus(trip) {
+    const phaseLabels = {
+        dreaming: 'Soñándolo',
+        planned: 'Planificando',
+        current: 'Viviéndolo',
+        finished: 'Finalizado'
+    };
+    const startDate = new Date(`${trip.start}T00:00:00`);
+    const endDate = new Date(`${trip.end}T00:00:00`);
+
+    if (endDate < today) {
+        return { key: 'finished', label: 'Finalizado' };
+    }
+
+    if (startDate <= today && today <= endDate) {
+        return { key: 'current', label: 'Viviéndolo' };
+    }
+
+    const phase = trip.phase || 'dreaming';
+    return { key: phase, label: phaseLabels[phase] || phaseLabels.dreaming };
+}
+
+function normalize(value) {
+    return value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+function renderTrips() {
+    const query = normalize(search.value.trim());
+    const filtered = trips.filter((trip) => {
+        const status = getStatus(trip);
+        const haystack = normalize([trip.title, trip.description, ...trip.tags].join(' '));
+        const matchesSearch = !query || haystack.includes(query);
+        const matchesFilter = activeFilter === 'all' || status.key === activeFilter;
+        return matchesSearch && matchesFilter;
+    });
+
+    grid.innerHTML = filtered.map((trip) => {
+        const status = getStatus(trip);
+        const classes = ['trip-card', status.key, trip.featured ? 'active' : ''].filter(Boolean).join(' ');
+        const tags = trip.tags.map((tag) => `<span>${tag}</span>`).join('');
+
+        return `
+            <a class="${classes}" href="${trip.href}">
+                <span class="trip-status">${status.label}</span>
+                <h3>${trip.title}</h3>
+                <p>${trip.description}</p>
+                <div class="trip-meta">${tags}</div>
+            </a>
+        `;
+    }).join('');
+
+    count.textContent = `${filtered.length} ${filtered.length === 1 ? 'viaje' : 'viajes'}`;
+    emptyState.hidden = filtered.length > 0;
+}
+
+filterButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+        filterButtons.forEach((item) => item.classList.remove('active'));
+        button.classList.add('active');
+        activeFilter = button.dataset.filter;
+        renderTrips();
+    });
+});
+
+search.addEventListener('input', renderTrips);
+renderTrips();
+
+</script>
 </body>
 </html>
