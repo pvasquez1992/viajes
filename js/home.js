@@ -1,5 +1,14 @@
 const trips = [
     {
+        title: 'Shenandoah National Park 2026',
+        href: 'shenandoah2026/',
+        start: '2026-10-10',
+        end: '2026-10-10',
+        phase: 'planned',
+        description: 'Roadtrip de otoño por Skyline Drive: Dickey Ridge, miradores, Stony Man y Big Meadows.',
+        tags: ['10 oct 2026', 'Virginia', 'Skyline Drive']
+    },
+    {
         title: 'Navidad Familiar El Salvador 2026',
         href: 'elsalvador2026/',
         start: '2026-12-18',
