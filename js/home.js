@@ -5,8 +5,8 @@ const trips = [
         start: '2026-10-10',
         end: '2026-10-10',
         phase: 'planned',
-        description: 'Un día de naturaleza sin prisas: sendero Limberlost, almuerzo en Skyland y paseo por Big Meadows.',
-        tags: ['10 oct 2026', 'Limberlost', 'Senderismo suave']
+        description: 'Unos 5–6 km caminando: Limberlost, Story of the Forest, almuerzo en Skyland y Big Meadows.',
+        tags: ['10 oct 2026', '5–6 km', 'Senderismo']
     },
     {
         title: 'Navidad Familiar El Salvador 2026',
