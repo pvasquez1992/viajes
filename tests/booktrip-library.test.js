@@ -113,6 +113,8 @@ test('unknown, ambiguous, read-only and deletion requests do not create, update 
     if(last.includes('ambiguo')) return {...plan('clarify'),reply:'¿Cuál de los dos viajes a Boston quieres ajustar?'};
     return plan('edit',last.includes('ajeno')?'foreign-fictional':'invented-id');
   });
+  env.BOOKTRIP_CREATOR_EMAIL='bootstrap-admin@example.test';
+  await env.BOOKTRIP_DB.prepare("INSERT INTO booktrip_users (email,role) VALUES (?,'creator')").bind(identity.email).run();
   const saved=clone();seed(env,saved);
   const foreign={...clone(),id:'foreign-fictional'};seed(env,foreign,{id:'another-owner'});
   for(const request of ['elimina Boston','Boston ambiguo','editar viaje ajeno','editar un viaje inexistente']) {

@@ -4,14 +4,26 @@ y se oculta sobre cualquier página; no hay pantalla de borradores ni pasos por
 GitHub. El antiguo enlace /assistant/ abre ahora el chat sobre la portada.
 
 ## Uso y permisos
-Por ahora, solo la cuenta configurada en BOOKTRIP_CREATOR_EMAIL puede crear y
-modificar viajes. El servidor compara el correo COMPLETO del JWT verificado de
-Cloudflare Access; no acepta permisos enviados por el cliente ni cabeceras de
-correo sin verificar. Los demás usuarios autorizados por Access pueden consultar
-el libro y sus entradas, pero no ven controles de creación y la API deniega
-sus solicitudes de escritura antes de llamar a la IA.
-La regla está centralizada en server/booktrip/access.js (canCreate), para poder
-sustituirla más adelante por roles y permisos. No hay editor de roles todavía.
+La cuenta configurada en BOOKTRIP_CREATOR_EMAIL es el administrador inicial
+protegido. El panel **Permisos**, en la cabecera del chat, permite administrar
+roles y asignar edición por viaje sin pasar por la IA. Los roles se guardan
+por correo completo en `booktrip_users`: Administrador gestiona los viajes de D1
+y los permisos; Creador crea y puede editar/eliminar sus propios viajes; Lector
+consulta. Todos siguen necesitando entrar por Cloudflare Access.
+
+`booktrip_trip_access` permite conceder edición a un correo en un viaje concreto.
+Ese editor puede modificar el viaje, pero no eliminarlo ni crear otros si su rol
+general es Lector. Al retirar la edición vuelve a lectura; el propietario y los
+administradores conservan sus derechos según su rol. Los ocho HTML anteriores
+y los JSON estáticos siguen siendo de lectura: este panel gestiona los viajes D1.
+
+El servidor usa el JWT verificado, el rol vigente y el ID/propietario del viaje;
+no acepta roles del navegador ni cabeceras de correo sin verificar. Los permisos
+se comprueban al cargar contexto y otra vez en SQL al escribir, incluso si fueron
+retirados durante la inferencia. Los recibos y tokens anteriores no recuperan un
+permiso revocado. Un administrador que edita no cambia el propietario original.
+Cada viaje ya tiene ID: no es secreto y no constituye autorización. El modelo
+produce únicamente datos validados; no modifica el DOM, HTML, CSS ni plantillas.
 
 1. Abre la burbuja y describe destino, fechas y preferencias.
 2. Si falta información, la IA pregunta en el mismo chat.
@@ -55,8 +67,11 @@ anteriores no pueden restaurarlo. No hay interfaz de recuperación todavía.
 Los ocho viajes anteriores siguen en sus páginas y no se migran.
 
 - GET /api/booktrip/config: identidad y capacidades; no devuelve claves.
-- POST /api/booktrip/chat: conversación del creador y guardado directo.
-- POST /api/booktrip/remove: eliminación confirmada por el creador con token específico.
+- POST /api/booktrip/chat: conversación y guardado según rol y permiso por viaje.
+- POST /api/booktrip/remove: eliminación confirmada por creador/administrador con token específico.
+- GET /api/booktrip/admin: usuarios, roles y viajes con editores; solo administradores.
+- POST /api/booktrip/admin: asignar rol (`action: role`) o conceder/retirar edición
+  (`action: trip-access`, `permission: edit/view`); solo administradores y mismo origen.
 - GET /api/booktrip/trips: catálogo completo (antiguos, estáticos y D1) para usuarios autenticados.
 - GET /api/booktrip/trips/<id>: itinerario para usuarios autenticados.
 - /trips/<id>/: página compartida del viaje guardado, protegida por Access y JWT.
@@ -71,7 +86,7 @@ repositorio, pero las entradas creadas desde el chat permanecen en D1.
 `server/booktrip/library.js` lo combina con `/trips/catalog.json` mediante ASSETS
 y con D1, sin duplicar enlaces. El servidor entrega esta lista al modelo en cada
 turno. La IA solicita listar/seleccionar/editar; el código ejecuta esas acciones,
-construye los enlaces reales y comprueba propietario antes de cargar un viaje para
+construye los enlaces reales y comprueba permisos antes de cargar un viaje para
 editar. Si falla la lectura del catálogo, no inventa que el libro esté vacío.
 La selección firma la versión leída; el guardado conserva las comprobaciones de
 concurrencia e idempotencia. Seleccionar un viaje de solo lectura retira el anterior
@@ -85,15 +100,19 @@ producción por separado de los previews; no copiar sus claves ni su base de dat
 | --- | --- | --- |
 | AI | Binding Workers AI | Modelo alojado. |
 | BOOKTRIP_DB | Binding D1 | Base privada de viajes. |
-| BOOKTRIP_CREATOR_EMAIL | Variable | Único correo autenticado que puede escribir. |
+| BOOKTRIP_CREATOR_EMAIL | Variable existente | Administrador inicial protegido. Los demás roles viven en D1. |
 | BOOKTRIP_DRAFT_SECRET | Secreto existente, 32+ caracteres | Firma de continuidad del chat. |
 | ACCESS_TEAM_DOMAIN, ACCESS_AUD | Variables existentes | Verificar JWT de Access. |
 | BOOKTRIP_AI_MODEL | Variable opcional | Por defecto @cf/meta/llama-3.3-70b-instruct-fp8-fast. |
 | BOOKTRIP_SEARCH_KEY | Secreto opcional | Investigación mediante Tavily. |
 
-Aplicar migrations/0001_booktrip.sql y migrations/0002_booktrip_removals.sql,
-añadir el binding y redesplegar. La segunda migración es idempotente y no elimina
-ninguna entrada existente.
+Aplicar migrations/0001_booktrip.sql, migrations/0002_booktrip_removals.sql y
+migrations/0003_booktrip_permissions.sql, añadir el binding y redesplegar.
+La tercera añade tablas de roles y edición, sin alterar documentos de viaje.
+Registrar el administrador inicial y los creadores por correo completo en D1;
+no guardar el listado de correos personales en el repositorio público. `user_id`
+se enlaza al identificador verificado al iniciar sesión. Para entradas anteriores,
+puede enlazarse al creador original al migrar si su identidad fue comprobada.
 La implementación no contrata planes ni modifica la facturación automáticamente.
 
 ## Verificación local

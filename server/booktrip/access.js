@@ -17,7 +17,7 @@ export function createIdentityVerifier({ getKeySet = issuer => {
   };
 }
 export const verifyIdentity = createIdentityVerifier();
-export function canCreate(identity, env) {
+export function isBootstrapAdmin(identity, env) {
   const allowed = env.BOOKTRIP_CREATOR_EMAIL?.trim().toLowerCase();
   return Boolean(allowed && identity?.email && identity.email.trim().toLowerCase() === allowed);
 }

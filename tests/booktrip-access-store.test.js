@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { sampleTrip } from './fixtures/trip.js';
-import { canCreate } from '../server/booktrip/access.js';
+import { isBootstrapAdmin } from '../server/booktrip/access.js';
 import { createBooktripHandler } from '../server/booktrip/handler.js';
 import { createTripStore } from '../server/booktrip/store.js';
 import { localTripDatabase } from '../scripts/local-trip-store.mjs';
@@ -12,8 +12,8 @@ function context(settings,route,input,headers={}) {
   const get=route==='config' || route.startsWith('trips');
   return {request:new Request(`https://booktrip.test/api/booktrip/${route}`,{method:get?'GET':'POST',headers:{Origin:'https://booktrip.test','Content-Type':'application/json',...headers},...(get?{}:{body:JSON.stringify(input)})}),env:settings,params:{path:route}};
 }
-test('only the full verified creator email can write; readers cannot spoof a header or trigger AI',async()=>{
-  assert.equal(canCreate(identity,env),true);assert.equal(canCreate(identity,{}),false);
+test('bootstrap admin requires the full verified email; unassigned readers cannot spoof a header or trigger AI',async()=>{
+  assert.equal(isBootstrapAdmin(identity,env),true);assert.equal(isBootstrapAdmin(identity,{}),false);
   for(const email of ['wife@example.test','pvasquez1992@other.test','']) {
     const viewer={id:'reader',name:'pvasquez1992',email};let calls=0;
     const handler=createBooktripHandler({identify:async()=>viewer,chat:()=>{calls++;},store:()=>{calls++;throw Error('No writes');}});

@@ -6,6 +6,7 @@ export function localTripDatabase(filename=':memory:') {
   db.exec('PRAGMA foreign_keys = ON;');
   db.exec(readFileSync(new URL('../migrations/0001_booktrip.sql',import.meta.url),'utf8'));
   db.exec(readFileSync(new URL('../migrations/0002_booktrip_removals.sql',import.meta.url),'utf8'));
+  db.exec(readFileSync(new URL('../migrations/0003_booktrip_permissions.sql',import.meta.url),'utf8'));
   function prepare(sql) {
     const statement=db.prepare(sql); let values=[];
     return {

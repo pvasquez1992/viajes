@@ -2,7 +2,7 @@ import { legacyTrips } from '../../js/trip-library.js';
 import { TripError } from '../../js/trip-contract.js';
 
 export function libraryReference(entry) {
-  return {id:(entry.href.startsWith('trips/')?'':'legacy:')+entry.href.replace(/^trips\//,'').replace(/\/$/,''),title:entry.title,url:'/'+entry.href,start:entry.start,end:entry.end,editable:entry.editable===true};
+  return {id:(entry.href.startsWith('trips/')?'':'legacy:')+entry.href.replace(/^trips\//,'').replace(/\/$/,''),title:entry.title,url:'/'+entry.href,start:entry.start,end:entry.end,editable:entry.editable===true,removable:entry.removable ?? entry.editable===true};
 }
 
 // The same legacy catalog drives the home page and the assistant. Generated

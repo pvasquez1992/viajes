@@ -1,4 +1,5 @@
 import { legacyTrips } from './trip-library.js';
+import { attachPermissions } from './permissions-panel.js';
 const host=document.createElement('booktrip-chat');
 const root=host.attachShadow({mode:'open'});
 root.innerHTML=`<link rel="stylesheet" href="/css/chat-widget.css">
@@ -30,7 +31,7 @@ function setOpen(open) {
 }
 function showError(message='') {$('error').hidden=!message;$('error').textContent=message;}
 function controls() {
-  const ready=config?.canCreate && config.aiReady && config.storageReady && config.sessionReady;
+  const ready=config?.canChat && config.aiReady && config.storageReady && config.sessionReady;
   $('send').disabled=busy || !ready;
   $('message').disabled=busy || !ready;
   $('new-chat').disabled=busy;
@@ -74,7 +75,7 @@ function resolveRemovals() {
   root.querySelectorAll('.removal-card').forEach(card=>card.dataset.resolved='true');
 }
 async function confirmRemoval(message) {
-  if(busy || message.removalResolved || !config?.canCreate || !validRemoval(message.pendingRemoval)) return;
+  if(busy || message.removalResolved || !config?.canChat || !validRemoval(message.pendingRemoval)) return;
   const target=message.pendingRemoval;busy=true;removalRetry=target.id;showError();controls();persist();
   try {
     const result=await api('remove',{confirmationToken:target.confirmationToken});
@@ -94,7 +95,7 @@ async function confirmRemoval(message) {
 }
 async function sendMessage(content) {
   const text=content.trim();
-  if(busy || !config?.canCreate || !config.aiReady || !config.storageReady || !config.sessionReady || !text) return;
+  if(busy || !config?.canChat || !config.aiReady || !config.storageReady || !config.sessionReady || !text) return;
   if(removalRetry) {showError('Reintenta primero la eliminación pendiente con su botón para comprobar el resultado, o empieza una conversación nueva.');return;}
   if(failedContent && text!==failedContent) {showError('Reintenta primero el mismo mensaje para comprobar si se guardó, o empieza una conversación nueva.');return;}
   if(messages.length>=20) {showError('Empieza otra conversación para continuar. Tu viaje ya guardado sigue en el libro.');return;}
@@ -118,18 +119,19 @@ $('chat-form').addEventListener('submit',event=>{event.preventDefault();sendMess
 $('message').addEventListener('keydown',event=>{if(event.key==='Enter' && !event.shiftKey && !event.isComposing && !matchMedia('(pointer: coarse)').matches){event.preventDefault();sendMessage($('message').value);}});
 root.querySelectorAll('[data-prompt]').forEach(button=>button.addEventListener('click',()=>{$('message').value=button.dataset.prompt;$('message').focus();}));
 $('new-chat').addEventListener('click',()=>{messages=[];conversationToken=null;trip=null;failedContent=null;removalRetry=null;$('messages').replaceChildren();appendMessage('assistant','Puedo mostrarte tus viajes, cargar uno para ajustarlo o ayudarte a crear otro. ¿Qué hacemos?');$('suggestions').hidden=false;$('message').value='';showError();persist();});
-document.addEventListener('click',event=>{if(event.target.closest('[data-booktrip-open]') && config?.canCreate) {event.preventDefault();setOpen(true);}});
+document.addEventListener('click',event=>{if(event.target.closest('[data-booktrip-open]') && config?.canChat) {event.preventDefault();setOpen(true);}});
 function viewport() {const view=window.visualViewport;host.style.setProperty('--bt-viewport',(view?.height || innerHeight)+'px');host.style.setProperty('--bt-keyboard',Math.max(0,innerHeight-(view?.height || innerHeight)-(view?.offsetTop || 0))+'px');}
 window.visualViewport?.addEventListener('resize',viewport);window.visualViewport?.addEventListener('scroll',viewport);window.addEventListener('resize',viewport);viewport();
 try {
   config=await api('config');
-  if(!config.canCreate) {document.querySelectorAll('[data-booktrip-open]').forEach(element=>element.hidden=true);host.remove();}
+  if(!config.canChat) {document.querySelectorAll('[data-booktrip-open]').forEach(element=>element.hidden=true);host.remove();}
   else {
     storageKey='booktrip-chat-v2:'+config.user.id;
     $('launcher').hidden=false;
     document.querySelectorAll('[data-booktrip-open]').forEach(element=>element.hidden=false);
     $('connection').textContent=config.demo?'Demostración local · sin IA':'Hola, '+config.user.name;
     $('connection').classList.toggle('demo',Boolean(config.demo));
+    if(config.canAdmin) attachPermissions(root,api);
     let saved;try{saved=JSON.parse(sessionStorage.getItem(storageKey)||'null');}catch{}
     if(saved && Array.isArray(saved.messages) && saved.messages.length<=20 && saved.messages.every(m=>['user','assistant'].includes(m.role) && typeof m.content==='string')) {
       messages=saved.messages;conversationToken=typeof saved.conversationToken==='string'?saved.conversationToken:null;trip=validTrip(saved.trip)?saved.trip:null;failedContent=typeof saved.failedContent==='string'?saved.failedContent:null;

@@ -55,6 +55,7 @@ const requiredFiles = [
   'css/chat-widget.css',
   'css/roadbook.css',
   'js/assistant.js',
+  'js/permissions-panel.js',
   'js/trip-view.js',
   'js/trip-presentation.js',
   'js/trip-contract.js',
