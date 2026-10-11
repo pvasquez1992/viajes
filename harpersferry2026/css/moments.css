@@ -18,7 +18,7 @@
 .day-total{white-space:nowrap;color:#e8d2da;border:1px solid #745467;border-radius:30px;padding:6px 10px;font-size:12px}
 .moment-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px;align-items:stretch}
 .moment-grid-two{grid-template-columns:repeat(2,minmax(0,1fr))}
-.moment-group{border:1px solid #634660;border-radius:20px;overflow:hidden;background:linear-gradient(155deg,#34263d,#251e34 55%);box-shadow:0 10px 32px #100e1820;min-width:0}
+.moment-group{margin:0;border:1px solid #634660;border-radius:20px;overflow:hidden;background:linear-gradient(155deg,#34263d,#251e34 55%);box-shadow:0 10px 32px #100e1820;min-width:0}
 .moment-evening{background:linear-gradient(155deg,#4b293e,#261d32 57%);border-color:#a76553}
 .moment-morning{border-color:#655272}
 .moment-afternoon{border-color:#87634d}
