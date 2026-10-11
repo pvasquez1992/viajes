@@ -84,5 +84,25 @@ Sin BOOKTRIP_SEARCH_KEY, horarios, lugares y disponibilidad quedan por comprobar
 JARVIS ofrece enlaces a Google Maps, no mapas Mission Control ni trazados calculados.
 No se añadió MCP. Garmin y Foundry continúan independientes.
 
+## Presentación independiente del chat
+
+La plantilla reutilizable vive en `templates/halloween/`: portada, boletos de
+reservas, selector de días y momentos del día extraídos de Harpers Ferry.
+`js/trip-presentation.js` elige el diseño para el lector; `js/roadbook.js` carga
+los datos y solicita su presentación. No hay selección de plantilla en el chat,
+en el prompt, en la API ni en el documento guardado. Cambiar el diseño permite
+presentar los viajes existentes sin volver a generarlos ni escribir en D1.
+
+El lector básico (`js/trip-view.js` y `css/roadbook.css`) siempre está disponible.
+Un paquete inexistente, un módulo defectuoso o CSS que no carga activa esa vista;
+la creación y edición por chat funcionan igualmente. El build admite que falte
+el paquete opcional y solo copia los archivos de ejecución, excluyendo su README.
+Para otra plantilla, registrar sus importaciones explícitas en el lector. La IA
+no puede elegir rutas de módulos, HTML ni CSS. Ver `templates/halloween/README.md`.
+
+La plantilla no copia las reservas reales de Halloween. Presenta las del propio
+viaje cuando existen y respeta su estado, sin afirmar confirmaciones verificadas.
+Conserva enlaces a Maps; aún no incorpora el mapa Mission Control del viaje original.
+
 Referencias: [D1](https://developers.cloudflare.com/d1/worker-api/d1-database/),
 [Workers AI en Pages](https://developers.cloudflare.com/pages/functions/bindings/#workers-ai).

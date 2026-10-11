@@ -1,4 +1,4 @@
-import { access, cp, mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
+import { access, cp, mkdir, readdir, readFile, writeFile, rm } from 'node:fs/promises';
 import path from 'node:path';
 import { generateTrips } from './generate-trips.mjs';
 
@@ -21,6 +21,17 @@ for (const file of ['leaflet.js', 'leaflet.css', 'images']) {
 await cp(path.join(root, 'node_modules', 'leaflet', 'LICENSE'), path.join(leafletOutput, 'LICENSE'));
 await generateTrips(root, output);
 await cp(path.join(root, 'templates', 'trip.html'), path.join(output, 'trip-shell.html'));
+// Templates are optional reader assets. Copy only runtime files; a missing bundle
+// leaves the always-available basic reader and the chat operational.
+const templateDirectory=path.join(root,'templates','halloween');
+const templateOutput=path.resolve(output,'templates','halloween');
+if(path.dirname(templateOutput)!==path.resolve(output,'templates') || !templateOutput.startsWith(path.resolve(output)+path.sep)) throw Error('Invalid template output boundary');
+await rm(templateOutput,{recursive:true,force:true});
+try {
+  const files=await readdir(templateDirectory);
+  await mkdir(templateOutput,{recursive:true});
+  for(const file of files) if(['index.js','theme.css','tickets.css','moments.css'].includes(file)) await cp(path.join(templateDirectory,file),path.join(templateOutput,file));
+} catch(error) {if(error.code!=='ENOENT') throw error;}
 // Every page shares the same floating chat; its styles stay isolated in Shadow DOM.
 async function addChat(directory) {
   for (const entry of await readdir(directory, { withFileTypes: true })) {
@@ -41,8 +52,10 @@ const requiredFiles = [
   'assistant/index.html',
   'css/assistant.css',
   'css/chat-widget.css',
+  'css/roadbook.css',
   'js/assistant.js',
   'js/trip-view.js',
+  'js/trip-presentation.js',
   'js/trip-contract.js',
   'js/roadbook.js',
   'trips/catalog.json',
