@@ -30,6 +30,7 @@ const requiredFiles = [
   'harpersferry2026/index.html',
   'harpersferry2026/css/halloween.css',
   'harpersferry2026/css/moments.css',
+  'harpersferry2026/css/tickets.css',
   'harpersferry2026/js/app.js',
   'harpersferry2026/js/jarvis.js'
 ];
