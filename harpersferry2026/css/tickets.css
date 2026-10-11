@@ -1,0 +1,72 @@
+/* BookTrip · Halloween · Reservas en formato boleto (diseño B).
+   Mantener este módulo independiente de JARVIS y de moments.css. */
+.reservation-section{margin-top:36px}
+.reservation-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:15px;margin-bottom:19px}
+.reservation-heading .eyebrow{font-size:11px;margin:0 0 5px}
+.reservation-heading h2{margin:0 0 5px;font-size:clamp(25px,3.2vw,34px);line-height:1.18;letter-spacing:-.025em}
+.reservation-intro{color:#d6c6d3;font-size:14px;line-height:1.5;max-width:510px;margin:0}
+.reservation-count{font-size:11px;color:#f0d7c2;border:1px solid #866049;background:#422f3e;padding:7px 11px;border-radius:999px;white-space:nowrap}
+.booking-tickets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px;align-items:start}
+.booking-ticket{position:relative;min-width:0;overflow:visible;border:1px solid #785263;border-radius:19px;padding:19px 21px 0;background:linear-gradient(140deg,#342538,#251e33 68%);box-shadow:0 12px 27px #130d182c}
+.booking-ticket-hotel{border-color:#6f5d75;background:linear-gradient(140deg,#302b42,#241e35 65%)}
+.ticket-topline{display:flex;align-items:center;justify-content:space-between;gap:9px;flex-wrap:wrap}
+.ticket-type{color:#ffbc86;font-size:11px;font-weight:800;letter-spacing:.1em;display:flex;gap:7px;align-items:center}
+.ticket-type span{font-size:17px}
+.ticket-confirmed{display:inline-flex;gap:5px;align-items:center;font-size:11px;color:#b8f1cd;border:1px solid #517d64;background:#18372e;border-radius:999px;padding:4px 8px;font-weight:700}
+.booking-ticket h3{font-size:clamp(19px,2.1vw,24px);line-height:1.25;letter-spacing:-.02em;margin:15px 0 18px;color:#fff3e9}
+.booking-ticket h3 span{font-weight:500;color:#dbc4d0}
+.ticket-dates{display:grid;grid-template-columns:minmax(0,1fr) 18px minmax(0,1fr);gap:6px;align-items:center;margin:0 0 20px}
+.ticket-date{min-width:0;display:flex;flex-direction:column;align-items:flex-start}
+.ticket-date-label{font-size:10px;color:#d6c2ca;letter-spacing:.09em;font-weight:800;margin-bottom:4px}
+.ticket-date strong{font-size:clamp(22px,2.7vw,29px);font-weight:850;white-space:nowrap;line-height:1.18;letter-spacing:-.03em}
+.ticket-date time{display:block;color:#ffe1bb;font-size:13px;font-weight:700;line-height:1.4;margin-top:5px}
+.ticket-weekday{color:#bdaebe;font-size:11px;margin-top:2px}
+.ticket-direction{display:block;color:#e5a66f;text-align:center;align-self:center;font-size:19px}
+.ticket-details{border-top:1px dashed #926b7d;margin:0 -21px}
+.ticket-details::before,.ticket-details::after{content:"";position:absolute;width:16px;height:16px;border-radius:50%;background:#1c1827;bottom:auto;top:auto;transform:translateY(-9px)}
+.ticket-details::before{left:-9px}.ticket-details::after{right:-9px}
+.ticket-details summary{display:flex;align-items:center;justify-content:space-between;gap:8px;list-style:none;cursor:pointer;min-height:52px;padding:13px 21px;color:#ffc08c;font-size:13px;font-weight:750;border-radius:0 0 18px 18px}
+.ticket-details summary::-webkit-details-marker{display:none}
+.ticket-details summary:hover{background:#66455933}
+.ticket-details summary:focus-visible{outline:2px solid #ffc085;outline-offset:-2px}
+.ticket-arrow,.travel-route-arrow{font-size:20px;line-height:1;transition:transform .2s;color:#f3bd91}
+.ticket-details[open] .ticket-arrow,.travel-route-summary[open] .travel-route-arrow{transform:rotate(180deg)}
+.ticket-details-body{padding:3px 21px 20px}
+.ticket-facts{margin:0 0 13px;display:grid;gap:10px}
+.ticket-facts div{display:grid;gap:2px}
+.ticket-facts dt{font-size:11px;font-weight:750;color:#ffcfab}
+.ticket-facts dd{margin:0;font-size:13px;line-height:1.48;color:#e6d9e4;overflow-wrap:anywhere}
+.ticket-map-link{display:inline-flex;align-items:center;gap:6px;border:1px solid #c68b66;border-radius:10px;text-decoration:none;color:#ffe1be;padding:8px 12px;font-size:12px;font-weight:750;line-height:1.4}
+.ticket-map-link:hover{background:#684358}
+.travel-route-summary{border:1px solid #675369;background:#251f30;border-radius:14px;margin-top:13px;padding:0 14px}
+.travel-route-summary summary{list-style:none;display:flex;align-items:center;gap:13px;cursor:pointer;padding:12px 0}
+.travel-route-summary summary::-webkit-details-marker{display:none}
+.travel-route-summary summary:focus-visible{outline:2px solid #ffc085;outline-offset:2px}
+.travel-route-icon{display:flex;flex:none;width:38px;height:38px;border-radius:11px;align-items:center;justify-content:center;background:#433049;font-size:20px}
+.travel-route-text{flex:1;min-width:0}
+.travel-route-text strong{display:block;color:#fff2e8;font-size:14px}
+.travel-route-text small{display:block;color:#cbbacb;font-size:11px;line-height:1.35;margin-top:3px}
+.travel-route-body{border-top:1px solid #59495b;padding:13px 0 17px;color:#dccfdb;font-size:13px}
+.travel-route-body p{margin:0 0 13px;line-height:1.6}
+@media(max-width:760px){
+ .reservation-heading{align-items:start;flex-direction:column;gap:9px}
+ .reservation-count{font-size:10px;padding:5px 9px}
+ .booking-tickets{grid-template-columns:1fr;gap:12px}
+ .booking-ticket{padding:17px 18px 0;border-radius:17px}
+ .booking-ticket h3{font-size:21px;margin:11px 0 17px}
+ .ticket-dates{margin-bottom:16px}
+ .ticket-date strong{font-size:24px}
+ .ticket-date time{font-size:12px}
+ .ticket-details{margin:0 -18px}
+ .ticket-details summary{padding:12px 18px;min-height:48px}
+ .ticket-details-body{padding:3px 18px 17px}
+ .reservation-intro{font-size:13px}
+}
+@media(max-width:365px){
+ .ticket-date strong{font-size:21px}
+ .ticket-dates{gap:3px;grid-template-columns:minmax(0,1fr) 15px minmax(0,1fr)}
+ .ticket-date time{font-size:11px}
+ .ticket-topline .ticket-type{font-size:10px}
+ .ticket-confirmed{font-size:10px}
+}
+@media(prefers-reduced-motion:reduce){.ticket-arrow,.travel-route-arrow{transition:none}}
