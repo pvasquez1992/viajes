@@ -3,3 +3,44 @@
 .hero{padding:52px 0 24px!important}.hero h1{max-width:780px}.lead{max-width:710px}.hero-actions{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin-top:20px}.section-intro{color:var(--muted);max-width:680px;margin-bottom:18px}.jarvis-button{background:#eb9b50;color:#24121c;font-weight:850;border-color:#ffc488;padding:11px 16px;border-radius:12px}.stop{grid-template-columns:110px 1fr;padding:16px 20px;align-items:start}.stop p{margin-bottom:6px}.stop h3{margin-bottom:3px}.stop-summary{font-size:14px;color:#d4ccd6;line-height:1.5}.extra{margin-top:9px;color:var(--muted)}.extra summary{color:#ffbc80;cursor:pointer;font-size:13px;font-weight:700;padding:5px 0}.extra[open]{padding-top:8px;border-top:1px solid #6a5161}.extra[open] p{margin:9px 0}.extra a{font-size:14px}.checklist-panel summary{cursor:pointer;color:#ffbc80;font-weight:800}.checklist-panel .checks{margin-top:18px}
 .j-overlay{display:none;position:fixed;inset:0;z-index:9999;background:#120e17f5;padding:0}.j-overlay.is-open{display:block}body.jarvis-open{overflow:hidden}.j-panel{height:100dvh;max-width:1600px;margin:auto;display:flex;flex-direction:column;background:#171321}.j-header{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid #4e405b}.j-header strong{color:#ffb66d;letter-spacing:.07em}.j-header small{display:block;color:#c4b2c5;font-size:12px}.j-header button,.j-days button,.j-controls button{border-radius:10px;padding:9px 13px}.j-toolbar{display:flex;justify-content:space-between;align-items:center;padding:10px 20px;gap:12px}.j-days{display:flex;gap:7px}.j-days button.selected{background:#ef9c54;color:#24131d;font-weight:850}.j-content{min-height:0;flex:1;display:grid;grid-template-columns:1.1fr .9fr;gap:0}#jarvisMap{width:100%;height:100%;min-height:290px;background:#2a2838}.j-info{overflow-y:auto;padding:24px 26px;background:#221c2f}.j-info h2{font-size:clamp(23px,3vw,34px);margin:10px 0}.j-info p{color:#d6ceda}.j-mini{padding:14px;background:#31283e;border-radius:13px;margin:20px 0}.j-mini strong{color:#ffc17f}.j-mini p{margin:4px 0 0}.j-controls{display:flex;gap:9px;margin:24px 0 10px}.j-controls button{flex:1}.j-controls button:disabled{opacity:.4;cursor:not-allowed}.j-hint{font-size:12px}.leaflet-container{font:inherit}
 @media(max-width:720px){.j-content{grid-template-columns:1fr;grid-template-rows:43% 57%}.j-info{padding:17px}.j-header{padding:10px 14px}.j-toolbar{padding:7px 12px}.j-info h2{font-size:22px}.j-controls{margin-top:16px}.stop{grid-template-columns:1fr;gap:1px}.hero{padding-top:36px!important}.top .pill{display:none}.jarvis-button{font-size:13px}}
+
+/* BookTrip shared header: same structure, proportions and links as homepage */
+.site-header{position:sticky;top:0;z-index:30;padding:10px 16px;background:transparent}
+.site-header-inner{display:flex;justify-content:space-between;gap:18px;align-items:center;width:min(1280px,100%);margin:auto;padding:12px 18px;border:1px solid rgba(217,232,245,.14);border-radius:18px;background:rgba(7,11,16,.80);backdrop-filter:blur(12px);box-shadow:0 12px 34px rgba(0,0,0,.24)}
+.site-brand{display:flex;align-items:center;gap:10px;color:white;text-decoration:none;font-weight:900;letter-spacing:.01em}
+.site-brand img{width:34px;height:34px;object-fit:contain}
+.site-header nav{display:flex;gap:8px;align-items:center}
+.site-header nav a{padding:8px 11px;border-radius:999px;color:#d9e8f5;text-decoration:none;font-size:14px;font-weight:800}
+.site-header nav a:hover{background:rgba(119,216,255,.12);color:#bcefff}
+.site-header .jarvis-button{padding:9px 13px;font-size:13px}
+/* JARVIS Iceland-style mission control: large map + full visible timeline */
+.j-panel{max-width:none;background:#071512}
+.j-header{background:#071611;border-color:#24473c;min-height:64px}
+.j-brand{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.j-brand strong{color:#78e1be;font-size:19px}
+.j-brand span{color:#8ab8ac;font-size:11px;font-weight:850;letter-spacing:.11em}
+.j-content{grid-template-columns:minmax(0,1fr) minmax(335px,380px)}
+.j-maparea{position:relative;min-height:0;overflow:hidden}
+#jarvisMap{height:100%;min-height:0}
+.j-sidebar{overflow-y:auto;min-height:0;padding:0;background:#0c211d;border-left:1px solid #335648;color:#e7f8ef}
+.j-sidehead{padding:20px 18px 12px;border-bottom:1px solid #2b4b40}
+.j-sidehead h2{font-size:22px;line-height:1.2;margin:4px 0 7px;color:#f5fff8}
+.j-sidehead p{font-size:12px;color:#9dc9b8;margin:0}
+.j-stoplist{padding:13px 11px 18px;display:flex;flex-direction:column;gap:4px}
+.j-stop{display:grid;grid-template-columns:78px 1fr;align-items:start;text-align:left;gap:9px;background:transparent;border:1px solid transparent;border-left:3px solid #376c5d;border-radius:8px;padding:10px 8px;color:#e0f2e9;font:inherit;cursor:pointer;width:100%}
+.j-stop:hover{background:#183b31;border-color:#3e806b}
+.j-stop.selected{background:#244335;border-color:#60b78f;border-left-color:#ffb26b}
+.j-stop-time{color:#9ccbbb;font-size:11px;font-weight:850}
+.j-stop-name{font-size:14px;font-weight:750;line-height:1.3}
+.j-stop small{display:block;color:#82b6a2;font-size:11px;margin-top:3px}
+.j-selected{border-top:1px solid #386050;padding:16px 18px;background:#152d25;margin:0}
+.j-selected h3{font-size:17px;color:white;margin:6px 0}
+.j-selected p{font-size:13px;color:#bcd8cc}
+.j-selected .j-mini{margin:10px 0;padding:10px;background:#203d32}
+.j-selected .j-mini strong{color:#ffc17f;font-size:12px}
+.j-selected .action{font-size:12px;padding:7px 10px}
+.j-hint{padding:10px 18px;color:#b0cbbf;font-size:11px}
+.j-days{position:absolute;z-index:600;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:7px;background:#081914ee;padding:8px;border:1px solid #416958;border-radius:12px;white-space:nowrap}
+.j-days button{background:#122a23;color:#b4d9ca;border:1px solid #366656;font-size:12px;cursor:pointer}
+.j-days button.selected{color:#24120d;background:#efa45c;border-color:#f4c58e}
+@media(max-width:720px){.site-header{padding:8px 10px}.site-header-inner{padding:9px 11px}.site-header nav a{font-size:12px;padding:7px}.site-header .jarvis-button{font-size:11px;padding:8px}.j-content{display:grid;grid-template-columns:1fr;grid-template-rows:43% 57%}.j-maparea{min-height:0}.j-sidebar{border-left:0;border-top:1px solid #30584b}.j-stop{grid-template-columns:75px 1fr}.j-days{bottom:8px}.j-header{padding:8px 11px}.j-brand span{font-size:9px}}
