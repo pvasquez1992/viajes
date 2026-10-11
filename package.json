@@ -9,7 +9,9 @@
     "build": "node scripts/build-site.mjs",
     "test": "node --test tests/*.test.js",
     "dev": "npm run build && wrangler pages dev dist/site --ip 127.0.0.1 --port 8788 --compatibility-date 2026-10-08",
-    "build:functions": "wrangler pages functions build functions --outdir dist"
+    "build:functions": "wrangler pages functions build functions --outdir dist",
+    "preview:assistant": "npm run build && node scripts/preview-assistant.mjs",
+    "demo:assistant": "npm run build && node scripts/preview-assistant.mjs --demo"
   },
   "dependencies": {
     "jose": "6.2.12",
