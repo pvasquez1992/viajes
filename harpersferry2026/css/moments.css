@@ -1,0 +1,77 @@
+/* BookTrip · Harpers Ferry · Diseño C: momentos del día
+   Estructura independiente del mapa JARVIS y de las tarjetas de reserva.
+   El contenido extenso permanece disponible dentro de <details>. */
+.itinerary-intro{margin:54px 0 25px}
+.itinerary-intro h2{font-size:clamp(26px,3.8vw,40px);letter-spacing:-.025em;margin:8px 0 7px}
+.itinerary-intro>p{font-size:15px;color:#dccfdb;max-width:710px}
+.day-switcher{display:flex;gap:10px;flex-wrap:wrap;margin:22px 0 5px}
+.day-switcher a{display:grid;grid-template-columns:auto 1fr;gap:0 10px;align-items:center;text-decoration:none;color:#fff4ea;border:1px solid #78526c;background:#31233b;border-radius:14px;padding:11px 17px;min-width:188px;transition:background .15s,border-color .15s}
+.day-switcher a:hover{background:#493047;border-color:#e0a367}
+.day-switcher a>span{grid-row:span 2;font-size:23px}
+.day-switcher strong{font-size:14px}
+.day-switcher small{font-size:12px;color:#c8b5c9}
+.itinerary-day{scroll-margin-top:115px;margin-top:50px}
+.day-heading{display:flex;justify-content:space-between;align-items:end;gap:14px;margin-bottom:18px}
+.day-heading h2{margin:5px 0 5px;letter-spacing:-.025em}
+.day-heading p{font-size:14px;color:#cfc1d0;margin:0}
+.day-kicker{color:#ffbd85;font-size:11px;font-weight:900;letter-spacing:.12em}
+.day-total{white-space:nowrap;color:#e8d2da;border:1px solid #745467;border-radius:30px;padding:6px 10px;font-size:12px}
+.moment-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px;align-items:stretch}
+.moment-grid-two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.moment-group{border:1px solid #634660;border-radius:20px;overflow:hidden;background:linear-gradient(155deg,#34263d,#251e34 55%);box-shadow:0 10px 32px #100e1820;min-width:0}
+.moment-evening{background:linear-gradient(155deg,#4b293e,#261d32 57%);border-color:#a76553}
+.moment-morning{border-color:#655272}
+.moment-afternoon{border-color:#87634d}
+.moment-group-head{display:flex;align-items:center;gap:11px;padding:17px 18px 14px}
+.moment-period-icon{display:flex;align-items:center;justify-content:center;flex:none;width:42px;height:42px;background:#52394f;border:1px solid #775465;border-radius:13px;font-size:22px}
+.moment-group-titles{min-width:0;flex:1}
+.moment-group-titles h3{font-size:17px;line-height:1.1;margin:0}
+.moment-group-titles p{font-size:12px;line-height:1.35;color:#cbbbcd;margin:4px 0 0}
+.moment-count{flex:none;font-size:11px;color:#d5bcce}
+.moment-items{padding:0 12px 12px}
+.moment-stop{border-top:1px solid #664c657a;min-width:0}
+.moment-stop summary{list-style:none;display:grid;grid-template-columns:65px 29px minmax(0,1fr) 12px;gap:7px;align-items:center;padding:15px 4px;cursor:pointer;border-radius:9px}
+.moment-stop summary::-webkit-details-marker{display:none}
+.moment-stop summary:hover,.moment-stop[open] summary{background:#6445584c}
+.moment-stop summary:focus-visible{outline:2px solid #ffb16c;outline-offset:-2px}
+.moment-time strong{display:block;color:#ffc085;font-size:13px;line-height:1.15;font-variant-numeric:tabular-nums}
+.moment-time small{display:block;color:#c3b0bc;font-size:10px;margin-top:4px;font-variant-numeric:tabular-nums}
+.moment-icon{font-size:20px;text-align:center}
+.moment-identity{min-width:0;overflow-wrap:anywhere}
+.moment-identity>strong{display:block;font-size:13px;line-height:1.34;color:#fff6ea}
+.moment-identity>small{display:block;font-size:11px;line-height:1.35;color:#ccbfce;margin-top:3px}
+.moment-identity>em{display:inline-block;font-style:normal;font-size:10px;line-height:1.2;color:#ffd3a0;border:1px solid #997053;border-radius:18px;padding:3px 7px;margin-top:6px}
+.moment-chevron{color:#edb178;font-weight:900;font-size:18px;transition:transform .15s}
+.moment-stop[open] .moment-chevron{transform:rotate(180deg)}
+.moment-detail{padding:2px 12px 17px 105px;color:#eadce3;font-size:13px;line-height:1.6}
+.moment-detail-label{color:#ffbd85;font-size:10px;letter-spacing:.07em;text-transform:uppercase;font-weight:800;margin-bottom:7px}
+.moment-detail p{margin:0 0 9px}
+.moment-detail a{color:#ffd3a3;text-underline-offset:3px;overflow-wrap:anywhere}
+.itinerary-tip{font-size:13px;line-height:1.55;color:#ead5cc;border-left:3px solid #f2a966;padding:12px 15px;margin:18px 0 0;background:#44303f8a;border-radius:0 10px 10px 0}
+@media(max-width:1040px){.moment-grid,.moment-grid-two{grid-template-columns:1fr}.moment-identity>strong{font-size:15px}.moment-identity>small{font-size:12px}.moment-stop summary{grid-template-columns:75px 36px minmax(0,1fr) 16px;gap:11px;padding:13px 10px}.moment-detail{padding-left:135px}}
+@media(max-width:650px){
+.itinerary-intro{margin-top:42px}
+.day-switcher{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.day-switcher a{min-width:0;padding:10px 9px;gap:0 7px;border-radius:13px}
+.day-switcher a>span{font-size:20px}
+.day-switcher strong{font-size:12px}
+.day-switcher small{font-size:11px}
+.itinerary-day{margin-top:37px;scroll-margin-top:95px}
+.day-heading{align-items:start}
+.day-heading h2{font-size:24px}
+.day-heading p{font-size:12px}
+.day-total{font-size:11px;padding:5px 8px}
+.moment-grid,.moment-grid-two{gap:13px}
+.moment-group{border-radius:17px}
+.moment-group-head{padding:15px 15px 12px}
+.moment-items{padding:0 10px 10px}
+.moment-stop summary{grid-template-columns:59px 30px minmax(0,1fr) 13px;gap:8px;padding:14px 4px}
+.moment-time strong{font-size:12px}
+.moment-time small{font-size:10px}
+.moment-icon{font-size:19px}
+.moment-identity>strong{font-size:14px}
+.moment-identity>small{font-size:11px}
+.moment-detail{padding:0 10px 16px 102px;font-size:12px}
+}
+@media(max-width:355px){.moment-stop summary{grid-template-columns:51px 24px minmax(0,1fr) 12px;gap:6px}.moment-detail{padding-left:82px}.moment-count{font-size:10px}}
+@media(prefers-reduced-motion:reduce){.moment-chevron,.day-switcher a{transition:none}}
