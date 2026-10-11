@@ -12,8 +12,30 @@
 {time:'10:30–11:00',name:'🛎️ Check-out',lat:39.317,lng:-77.75,desc:'Entregar habitación antes de las 11:00 a. m.',parking:'Estacionamiento del hotel',nav:'Quality Inn 25 Union St Harpers Ferry WV'},
 {time:'11:00–12:00',name:'☕ Café o almuerzo ligero',lat:39.3235,lng:-77.731,desc:'Última comida sencilla sin largas esperas. Salir temprano para mantener margen hacia DCA.',parking:'Comprobar estacionamiento disponible',nav:'Harpers Ferry WV cafes'},
 {time:'12:00–15:30',name:'🚗 Regreso y devolución · DCA',lat:38.8521,lng:-77.0402,desc:'Regresar con tiempo para tráfico y combustible. Devolución Hertz reservada para las 3:30 p. m.',parking:'Hertz Car Rental Return DCA',nav:'Hertz Car Rental Return DCA'}]];
-const $=id=>document.getElementById(id);let day=0,index=0,map,marker,route;const mapsUrl=s=>'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(s.nav);
-function render(){const stops=days[day],s=stops[index];$('jarvisTime').textContent='DÍA '+(day+1)+' · '+s.time;$('jarvisName').textContent=s.name;$('jarvisDesc').textContent=s.desc;$('jarvisParking').textContent=s.parking;$('jarvisNavigate').href=mapsUrl(s);$('jarvisCounter').textContent=(index+1)+' / '+stops.length;$('jarvisPrev').disabled=index===0;$('jarvisNext').disabled=index===stops.length-1;for(let d=0;d<2;d++)$('jarvisDay'+d).classList.toggle('selected',day===d);if(map){if(route)map.removeLayer(route);route=L.polyline(stops.map(x=>[x.lat,x.lng]),{color:'#ed9c50',weight:4,opacity:.8,dashArray:'8 8'}).addTo(map);if(marker)marker.setLatLng([s.lat,s.lng]);else marker=L.marker([s.lat,s.lng]).addTo(map);map.setView([s.lat,s.lng],index===0?11:13,{animate:false});}}
+const $=id=>document.getElementById(id);let day=0,index=0,map,marker,route,routeAbort;const routeCache=new Map();const mapsUrl=s=>'https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(s.nav)+'&travelmode=driving';
+function render(){const stops=days[day],s=stops[index];$('jarvisTime').textContent='DÍA '+(day+1)+' · '+s.time;$('jarvisName').textContent=s.name;$('jarvisDesc').textContent=s.desc;$('jarvisParking').textContent=s.parking;$('jarvisNavigate').href=mapsUrl(s);$('jarvisCounter').textContent=(index+1)+' / '+stops.length;$('jarvisPrev').disabled=index===0;$('jarvisNext').disabled=index===stops.length-1;for(let d=0;d<2;d++)$('jarvisDay'+d).classList.toggle('selected',day===d);if(map){if(routeAbort)routeAbort.abort();if(route)map.removeLayer(route);route=null;loadRoadRoute(day);if(marker)marker.setLatLng([s.lat,s.lng]);else marker=L.marker([s.lat,s.lng]).addTo(map);map.setView([s.lat,s.lng],index===0?11:13,{animate:false});}}
+async function loadRoadRoute(requestDay){
+ if(!map)return;
+ const list=days[requestDay];
+ if(routeCache.has(requestDay)){drawRoadRoute(routeCache.get(requestDay),requestDay);return;}
+ routeAbort=new AbortController();
+ const signal=routeAbort.signal;
+ // Public OSRM service returns actual drivable road geometry. Never draw straight lines as a substitute.
+ const coordinates=list.map(s=>s.lng+','+s.lat).join(';');
+ try{
+ const res=await fetch('https://router.project-osrm.org/route/v1/driving/'+coordinates+'?overview=full&geometries=geojson',{signal});
+ if(!res.ok)throw Error('Routing service unavailable');
+ const data=await res.json();
+ if(!data.routes?.[0]?.geometry?.coordinates?.length)throw Error('No road geometry');
+ const latlngs=data.routes[0].geometry.coordinates.map(p=>[p[1],p[0]]);
+ routeCache.set(requestDay,latlngs);
+ drawRoadRoute(latlngs,requestDay);
+ }catch(error){if(error.name!=='AbortError'){const hint=$('jarvisRouteStatus');if(hint)hint.textContent='Ruta vial no disponible ahora. Se muestran las paradas; abre Google Maps para navegación real.';}}
+}
+function drawRoadRoute(latlngs,requestDay){if(day!==requestDay||!map)return;if(route)map.removeLayer(route);
+ route=L.polyline(latlngs,{color:'#ff9f46',weight:5,opacity:.9}).addTo(map);
+ const hint=$('jarvisRouteStatus');if(hint)hint.textContent='Ruta por carreteras (OSRM/OpenStreetMap). Revisa tráfico y restricciones en Google Maps.';
+}
 function open(){overlay.classList.add('is-open');overlay.setAttribute('aria-hidden','false');document.body.classList.add('jarvis-open');if(!map&&window.L){map=L.map('jarvisMap',{zoomControl:true}).setView([39.32,-77.73],11);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors',maxZoom:18}).addTo(map);}render();if(map)requestAnimationFrame(()=>map.invalidateSize());}
 function close(){overlay.classList.remove('is-open');overlay.setAttribute('aria-hidden','true');document.body.classList.remove('jarvis-open');}
 document.querySelectorAll('[data-jarvis-open]').forEach(x=>x.addEventListener('click',open));$('jarvisClose').addEventListener('click',close);$('jarvisPrev').addEventListener('click',()=>{index=Math.max(0,index-1);render();});$('jarvisNext').addEventListener('click',()=>{index=Math.min(days[day].length-1,index+1);render();});for(let d=0;d<2;d++)$('jarvisDay'+d).addEventListener('click',()=>{day=d;index=0;render();});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&overlay.classList.contains('is-open'))close();});})();
