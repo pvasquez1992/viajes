@@ -7,6 +7,7 @@
   <title>Halloween en Harpers Ferry 2026 | BookTrip</title>
   <link rel="stylesheet" href="css/halloween.css">
   <link rel="stylesheet" href="css/moments.css">
+  <link rel="stylesheet" href="css/tickets.css">
 <link rel="stylesheet" href="../assets/leaflet/leaflet.css">
 </head>
 <body>
@@ -23,32 +24,103 @@
     </div>
   <div class="hero-actions"><a class="action" href="#sabado">Ver itinerario ↓</a><button class="jarvis-button" type="button" data-jarvis-open>🧭 Iniciar JARVIS</button></div>
 </header>
-  <section id="reservas">
-<p class="section-intro">Lo imprescindible de tus dos reservas. Abre cada tarjeta para consultar los detalles.</p>
-    <h2>Reservas y logística</h2>
-    <div class="grid">
-      <article class="card">
-        <p class="meta">🚗 Transporte · confirmado</p><h3>Hertz — DCA</h3>
-        <p><strong>Retiro:</strong> sábado 31 de octubre, 9:00 a. m.<br><strong>Devolución:</strong> domingo 1 de noviembre, 3:30 p. m.<br><strong>Oficina:</strong> Ronald Reagan Washington National Airport (DCA).</p>
-        <details class="extra"><summary>Más sobre el carro</summary><p><strong>Clase:</strong> Compact, Chevrolet Trax o similar. El modelo no está garantizado; confirmar transmisión automática en mostrador.</p>
-        <p><strong>Reserva:</strong> L738E634411</p></details>
-        <a class="action" href="https://www.google.com/maps/search/?api=1&query=Hertz+Rental+Car+Reagan+National+Airport">📍 Ir a Hertz DCA</a>
-      </article>
-      <article class="card">
-        <p class="meta">🛎️ Hotel · confirmado</p><h3>Quality Inn Harpers Ferry – Charles Town</h3>
-        <p><strong>Dirección:</strong> 25 Union St, Harpers Ferry, WV 25425.<br><strong>Entrada:</strong> sábado 31 desde las 3:00 p. m.<br><strong>Salida:</strong> domingo 1 antes de las 11:00 a. m.</p>
-        <details class="extra"><summary>Habitación y condiciones</summary><p><strong>Habitación:</strong> Standard King · 2 adultos · desayuno incluido.<br><strong>Booking:</strong> 6833447006 (PIN no publicado por seguridad).</p>
-        <p><strong>Cancelación gratuita:</strong> hasta el 29 de octubre, 11:59 p. m. EDT, según confirmación.</p></details>
-        <a class="action" href="https://www.google.com/maps/search/?api=1&query=Quality+Inn+25+Union+St+Harpers+Ferry+WV">📍 Abrir hotel</a>
-      </article>
+  <section id="reservas" class="reservation-section" aria-labelledby="reservation-heading">
+  <div class="reservation-heading">
+    <div>
+      <p class="eyebrow">Todo preparado para salir</p>
+      <h2 id="reservation-heading">Reservas y logística</h2>
+      <p class="reservation-intro">Las fechas clave están a la vista. Abre un boleto para ver las indicaciones completas.</p>
     </div>
-    <div class="card" style="margin-top:16px">
-      <p class="meta">🏠 Punto de partida</p>
-      <p>1201 S Eads St, Arlington, VA 22202 → DCA para recoger el auto → Harpers Ferry → DCA para devolución → Arlington. Dejar margen para aeropuerto, revisión del vehículo, tráfico de fin de semana y gasolinera.</p>
-      <a class="action" href="https://www.google.com/maps/dir/?api=1&origin=Ronald+Reagan+Washington+National+Airport&destination=25+Union+St+Harpers+Ferry+WV&travelmode=driving">🧭 Ruta DCA → hotel</a>
+    <span class="reservation-count">2 reservas confirmadas</span>
+  </div>
+
+  <div class="booking-tickets">
+    <article class="booking-ticket booking-ticket-car" aria-labelledby="ticket-hertz-heading">
+      <div class="ticket-topline">
+        <span class="ticket-type"><span aria-hidden="true">🚗</span> ALQUILER DE AUTO</span>
+        <span class="ticket-confirmed"><span aria-hidden="true">✓</span> Confirmado</span>
+      </div>
+      <h3 id="ticket-hertz-heading">Hertz <span>· DCA</span></h3>
+      <div class="ticket-dates" role="group" aria-label="Fechas de recogida y devolución del auto">
+        <div class="ticket-date">
+          <span class="ticket-date-label">RECOGIDA</span>
+          <strong>31 OCT</strong>
+          <time datetime="2026-10-31T09:00">9:00 a. m.</time>
+          <span class="ticket-weekday">Sábado</span>
+        </div>
+        <span class="ticket-direction" aria-hidden="true">→</span>
+        <div class="ticket-date">
+          <span class="ticket-date-label">DEVOLUCIÓN</span>
+          <strong>1 NOV</strong>
+          <time datetime="2026-11-01T15:30">3:30 p. m.</time>
+          <span class="ticket-weekday">Domingo</span>
+        </div>
+      </div>
+      <details class="ticket-details">
+        <summary>Ver detalles y ubicación <span class="ticket-arrow" aria-hidden="true">⌄</span></summary>
+        <div class="ticket-details-body">
+          <dl class="ticket-facts">
+            <div><dt>Recogida y entrega</dt><dd>Ronald Reagan Washington National Airport (DCA)</dd></div>
+            <div><dt>Vehículo</dt><dd>Compact · Chevrolet Trax o similar</dd></div>
+            <div><dt>Transmisión</dt><dd>Confirmar automática en el mostrador</dd></div>
+            <div><dt>Referencia</dt><dd>Terminación 4411 · consultar la confirmación privada</dd></div>
+          </dl>
+          <a class="ticket-map-link" href="https://www.google.com/maps/search/?api=1&amp;query=Hertz+Rental+Car+Reagan+National+Airport" target="_blank" rel="noopener noreferrer">📍 Ir a Hertz DCA <span aria-hidden="true">↗</span></a>
+        </div>
+      </details>
+    </article>
+
+    <article class="booking-ticket booking-ticket-hotel" aria-labelledby="ticket-hotel-heading">
+      <div class="ticket-topline">
+        <span class="ticket-type"><span aria-hidden="true">🛎️</span> ALOJAMIENTO</span>
+        <span class="ticket-confirmed"><span aria-hidden="true">✓</span> Confirmado</span>
+      </div>
+      <h3 id="ticket-hotel-heading">Quality Inn <span>· Harpers Ferry</span></h3>
+      <div class="ticket-dates" role="group" aria-label="Fechas de entrada y salida del hotel">
+        <div class="ticket-date">
+          <span class="ticket-date-label">CHECK-IN</span>
+          <strong>31 OCT</strong>
+          <time datetime="2026-10-31T15:00">Desde 3:00 p. m.</time>
+          <span class="ticket-weekday">Sábado</span>
+        </div>
+        <span class="ticket-direction" aria-hidden="true">→</span>
+        <div class="ticket-date">
+          <span class="ticket-date-label">CHECK-OUT</span>
+          <strong>1 NOV</strong>
+          <time datetime="2026-11-01T11:00">Hasta 11:00 a. m.</time>
+          <span class="ticket-weekday">Domingo</span>
+        </div>
+      </div>
+      <details class="ticket-details">
+        <summary>Ver habitación y ubicación <span class="ticket-arrow" aria-hidden="true">⌄</span></summary>
+        <div class="ticket-details-body">
+          <dl class="ticket-facts">
+            <div><dt>Hotel</dt><dd>Quality Inn Harpers Ferry – Charles Town</dd></div>
+            <div><dt>Dirección</dt><dd>25 Union St, Harpers Ferry, WV 25425</dd></div>
+            <div><dt>Habitación</dt><dd>Standard King · 2 adultos · desayuno incluido</dd></div>
+            <div><dt>Cancelación gratuita</dt><dd>Hasta el 29 de octubre, 11:59 p. m. EDT, según confirmación</dd></div>
+            <div><dt>Referencia</dt><dd>Terminación 7006 · consultar la confirmación privada</dd></div>
+          </dl>
+          <a class="ticket-map-link" href="https://www.google.com/maps/search/?api=1&amp;query=Quality+Inn+25+Union+St+Harpers+Ferry+WV" target="_blank" rel="noopener noreferrer">📍 Ir al hotel <span aria-hidden="true">↗</span></a>
+        </div>
+      </details>
+    </article>
+  </div>
+
+  <details class="travel-route-summary">
+    <summary>
+      <span class="travel-route-icon" aria-hidden="true">🧭</span>
+      <span class="travel-route-text"><strong>Ruta y punto de partida</strong><small>Arlington → DCA → Harpers Ferry → DCA</small></span>
+      <span class="travel-route-arrow" aria-hidden="true">⌄</span>
+    </summary>
+    <div class="travel-route-body">
+      <p>Salir desde Arlington, recoger el auto en DCA, conducir a Harpers Ferry y devolverlo en DCA el domingo antes de las 3:30 p. m. Reservar tiempo para combustible, revisión del automóvil y tráfico de regreso.</p>
+      <a class="ticket-map-link" href="https://www.google.com/maps/dir/?api=1&amp;origin=Ronald+Reagan+Washington+National+Airport&amp;destination=25+Union+St+Harpers+Ferry+WV&amp;travelmode=driving" target="_blank" rel="noopener noreferrer">🗺️ Ruta de DCA al hotel <span aria-hidden="true">↗</span></a>
     </div>
-  </section>
-  <div class="itinerary-intro"><span class="eyebrow">ITINERARIO · 2 DÍAS</span><h2>El plan de viaje, de un vistazo</h2><p>Actividades agrupadas por momentos del día. Toca una parada para abrir instrucciones y enlaces; JARVIS mantiene el mapa y todas las paradas.</p><nav class="day-switcher" aria-label="Ir al día del itinerario"><a href="#sabado"><span>🎃</span><strong>Sáb 31 oct</strong><small>Halloween</small></a><a href="#domingo"><span>🍂</span><strong>Dom 1 nov</strong><small>Regreso</small></a></nav></div>
+  </details>
+</section>
+
+<div class="itinerary-intro"><span class="eyebrow">ITINERARIO · 2 DÍAS</span><h2>El plan de viaje, de un vistazo</h2><p>Actividades agrupadas por momentos del día. Toca una parada para abrir instrucciones y enlaces; JARVIS mantiene el mapa y todas las paradas.</p><nav class="day-switcher" aria-label="Ir al día del itinerario"><a href="#sabado"><span>🎃</span><strong>Sáb 31 oct</strong><small>Halloween</small></a><a href="#domingo"><span>🍂</span><strong>Dom 1 nov</strong><small>Regreso</small></a></nav></div>
 <section id="sabado" class="itinerary-day" aria-labelledby="titulo-sabado">
   <header class="day-heading"><div><span class="day-kicker">DÍA 01 · 31 OCTUBRE</span><h2 id="titulo-sabado">🎃 Sábado · Halloween</h2><p>Salida desde Arlington, pueblo histórico y noche de Halloween.</p></div><span class="day-total">9 paradas</span></header>
   <div class="moment-grid">
