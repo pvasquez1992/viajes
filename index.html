@@ -520,7 +520,7 @@ h1{
 <nav aria-label="Navegación principal">
 <a href="#library">Viajes</a>
 <a href="ejercicio/">Ejercicio</a>
-<a href="iceland2026/index.html">Iceland 2026</a>
+
 </nav>
 </div>
 </header>
@@ -693,6 +693,12 @@ function renderTrips() {
         const matchesSearch = !query || haystack.includes(query);
         const matchesFilter = activeFilter === 'all' || status.key === activeFilter;
         return matchesSearch && matchesFilter;
+    }).sort((a, b) => {
+        const rank = {current: 0, planned: 1, dreaming: 2, finished: 3};
+        const diff = rank[getStatus(a).key] - rank[getStatus(b).key];
+        return diff || (getStatus(a).key === "finished"
+            ? b.start.localeCompare(a.start)
+            : a.start.localeCompare(b.start));
     });
 
     grid.innerHTML = filtered.map((trip) => {
