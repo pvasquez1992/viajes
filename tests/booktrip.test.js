@@ -14,9 +14,11 @@ import { researchQueries } from '../server/booktrip/research.js';
 import { proposePublication } from '../server/booktrip/github.js';
 import { createBooktripHandler } from '../functions/api/booktrip/[[path]].js';
 import { generateTrips } from '../scripts/generate-trips.mjs';
+import { localTripDatabase } from '../scripts/local-trip-store.mjs';
+import { createTripStore } from '../server/booktrip/store.js';
 const trip=()=>structuredClone(sampleTrip);
-const identity={id:'pedro',name:'Pedro'};
-const env={BOOKTRIP_DRAFT_SECRET:'private-test-signing-secret-32-characters',AI:{run(){throw Error('No real AI in these tests');}}};
+const identity={id:'pedro',name:'Pedro',email:'pvasquez1992@outlook.com'};
+const env={BOOKTRIP_DRAFT_SECRET:'private-test-signing-secret-32-characters',BOOKTRIP_CREATOR_EMAIL:identity.email,BOOKTRIP_DB:localTripDatabase(),AI:{run(){throw Error('No real AI in these tests');}}};
 const request=(route,input,overrides={})=>({request:new Request(`https://booktrip.test/api/booktrip/${route}`,{method:route==='config'?'GET':'POST',headers:{Origin:'https://booktrip.test','Content-Type':'application/json',...overrides.headers},...(route==='config'?{}:{body:JSON.stringify(input)}),...overrides.options}),env,params:{path:route}});
 
 test('trip contract rejects impossible dates, missing days, extra fields, duplicate IDs, overlaps and incorrect periods',()=>{
@@ -49,7 +51,7 @@ test('identity comes from a verified application JWT, never the supplied email h
   const settings={ACCESS_AUD:'booktrip',ACCESS_TEAM_DOMAIN:'test.cloudflareaccess.com'};
   const token=await new SignJWT({type:'app',email:'pedro@example.test'}).setProtectedHeader({alg:'RS256',kid:'test'}).setIssuer('https://test.cloudflareaccess.com').setAudience('booktrip').setSubject('real-user').setExpirationTime('5m').sign(privateKey);
   const req=new Request('https://booktrip.test',{headers:{'Cf-Access-Jwt-Assertion':token,'Cf-Access-Authenticated-User-Email':'evil@example.test'}});
-  assert.deepEqual(await verify(req,settings),{id:'real-user',name:'pedro'});
+  assert.deepEqual(await verify(req,settings),{id:'real-user',name:'pedro',email:'pedro@example.test'});
   assert.equal(await verify(req,{...settings,ACCESS_AUD:'other'}),null);
   assert.equal(await verify(new Request('https://booktrip.test',{headers:{'Cf-Access-Authenticated-User-Email':'pedro@example.test'}}),settings),null);
 });
@@ -83,21 +85,22 @@ test('chat API denies guests, cross-origin changes, system prompts, arbitrary dr
   assert.equal((await handler(request('chat',{messages:[{role:'user',content:'x'.repeat(200001)}]}))).status,413);
   assert.equal(calls,0);
 });
-test('chat API returns signed drafts, exposes capabilities without secrets, and preserves them on clarification',async()=>{
+test('chat saves directly and clarification preserves the signed conversation',async()=>{
   const handler=createBooktripHandler({identify:async()=>identity,chat:async(_input,current)=>({reply:'Listo',trip:current?null:trip(),research:[],warnings:[]})});
   const config=await (await handler(request('config'))).text();assert.ok(config.includes('pedro'));assert.ok(!config.includes(env.BOOKTRIP_DRAFT_SECRET));
   const response=await handler(request('chat',{messages:[{role:'user',content:'Viaje'}]}));assert.equal(response.status,200);assert.equal(response.headers.get('Cache-Control'),'private, no-store');
-  const {data}=await response.json();assert.ok(data.draftToken);assert.equal((await openDraft(data.draftToken,identity,env.BOOKTRIP_DRAFT_SECRET)).trip.id,sampleTrip.id);
-  const next=await (await handler(request('chat',{messages:[{role:'user',content:'Pregunta'}],draftToken:data.draftToken}))).json();assert.equal(next.data.draftToken,data.draftToken);
+  const {data}=await response.json();assert.ok(data.conversationToken);assert.ok(data.reply.includes('Creé'));assert.ok(!data.trip.days);
+  assert.equal((await createTripStore(env).get(data.trip.id)).title,sampleTrip.title);
+  assert.equal((await openDraft(data.conversationToken,identity,env.BOOKTRIP_DRAFT_SECRET)).trip.id,data.trip.id);
+  const next=await (await handler(request('chat',{messages:[{role:'user',content:'Pregunta'}],conversationToken:data.conversationToken}))).json();assert.equal(next.data.conversationToken,data.conversationToken);
 });
-test('publication requires explicit approval and the exact owner-signed draft',async()=>{
-  let calls=0;const token=await sealDraft(trip(),identity,env.BOOKTRIP_DRAFT_SECRET);
-  const handler=createBooktripHandler({identify:async()=>identity,publish:async(value,owner)=>{calls++;assert.equal(value.id,sampleTrip.id);assert.equal(owner.id,identity.id);return {state:'review',number:1,url:'https://github.com/test/booktrip/pull/1'};}});
-  assert.equal((await handler(request('publish',{draftToken:token,approved:true}))).status,400);
-  assert.equal((await handler(request('publish',{draftToken:token,approved:true,privacyReviewed:true,trip:trip()}))).status,400);
+
+test('legacy publication is retired and conversation tokens cannot cross users',async()=>{
+  let calls=0;
+  const handler=createBooktripHandler({identify:async()=>identity,chat:async()=>{calls++;throw Error('Should not call');}});
+  assert.equal((await handler(request('publish',{}))).status,410);
   const wrong=await sealDraft(trip(),{id:'wife'},env.BOOKTRIP_DRAFT_SECRET);
-  assert.equal((await handler(request('publish',{draftToken:wrong,approved:true,privacyReviewed:true}))).status,409);assert.equal(calls,0);
-  assert.equal((await handler(request('publish',{draftToken:token,approved:true,privacyReviewed:true}))).status,200);assert.equal(calls,1);
+  assert.equal((await handler(request('chat',{conversationToken:wrong,messages:[{role:'user',content:'Ajusta'}]}))).status,409);assert.equal(calls,0);
 });
 test('GitHub publication creates one JSON file on a new branch and a draft PR; retry reuses the proposal',async()=>{
   const calls=[];let published=false;const settings={BOOKTRIP_GITHUB_TOKEN:'test-github-secret',BOOKTRIP_GITHUB_REPOSITORY:'test/booktrip'};

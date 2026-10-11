@@ -169,19 +169,30 @@ search.addEventListener('input', renderTrips);
 renderTrips();
 
 
-// New trips are generated from reviewed JSON; existing destination pages remain intact.
-fetch('/trips/catalog.json', { credentials: 'same-origin' }).then(response => {
-    if (!response.ok || !response.headers.get('Content-Type')?.includes('application/json')) throw Error('Catalog unavailable');
-    return response.json();
-}).then(catalog => {
-    if (!Array.isArray(catalog)) return;
-    for (const trip of catalog) {
+// New entries live privately in Cloudflare; static trips remain in the library.
+async function loadNewTrips() {
+  try {
+    const responses=await Promise.all([fetch('/trips/catalog.json',{credentials:'same-origin',cache:'no-store'}),fetch('/api/booktrip/trips',{credentials:'same-origin',cache:'no-store'})]);
+    const catalogs=await Promise.all(responses.map(async response=>{
+      if(!response.ok || !response.headers.get('Content-Type')?.includes('application/json')) throw Error('Catalog unavailable');
+      const body=await response.json();return Array.isArray(body)?body:body.data;
+    }));
+    for(const catalog of catalogs) {
+      if(!Array.isArray(catalog)) throw Error('Invalid catalog');
+      for(const trip of catalog) {
         if (!trip || typeof trip.title !== 'string' || typeof trip.description !== 'string' || !/^trips\/[a-z0-9][a-z0-9-]{2,63}\/$/.test(trip.href) || !/^20\d{2}-\d{2}-\d{2}$/.test(trip.start) || !/^20\d{2}-\d{2}-\d{2}$/.test(trip.end) || !['city','forest','ice','halloween','christmas','alpine','italy','ireland'].includes(trip.theme) || !Array.isArray(trip.tags) || !trip.tags.every(tag => typeof tag === 'string')) continue;
-        if (!trips.some(existing => existing.href === trip.href)) trips.push({ ...trip, phase: 'planned', featured: false });
+        const index=trips.findIndex(existing=>existing.href===trip.href);
+        const entry={...trip,phase:'planned',featured:false};
+        if(index<0) trips.push(entry);else trips[index]=entry;
+      }
     }
-    renderTrips();
-}).catch(() => {
-    const notice = document.createElement('p'); notice.className = 'empty-state';
-    notice.textContent = 'No pudimos cargar los viajes nuevos. Los anteriores siguen disponibles; vuelve a cargar la página para reintentar.';
+    document.getElementById('catalog-error')?.remove();renderTrips();
+  } catch {
+    if(document.getElementById('catalog-error')) return;
+    const notice=document.createElement('p');notice.id='catalog-error';notice.className='empty-state';
+    notice.textContent='No pudimos cargar los viajes nuevos. Vuelve a cargar la página para reintentar.';
     document.querySelector('.library-panel').append(notice);
-});
+  }
+}
+loadNewTrips();
+window.addEventListener('booktrip:saved',loadNewTrips);

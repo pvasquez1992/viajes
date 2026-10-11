@@ -1,69 +1,102 @@
-import { renderTrip } from './trip-view.js';
-import { validateTrip } from './trip-contract.js';
-const $=id=>document.getElementById(id);
-let config=null,messages=[],draft=null,busy=false,storageKey=null,publication=null;
-function showError(message='') {$('error').hidden=!message;$('error').textContent=message;}
+const host=document.createElement('booktrip-chat');
+const root=host.attachShadow({mode:'open'});
+root.innerHTML=`<link rel="stylesheet" href="/css/chat-widget.css">
+<button class="launcher" id="launcher" type="button" aria-label="Abrir chat de BookTrip" aria-expanded="false" aria-controls="chat-panel" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M20 11.5a8.5 8.5 0 0 1-8.5 8.5H4l-2 2V11.5a8.5 8.5 0 0 1 17 0Z"/><path d="M7 10h8M7 14h5"/></svg></button>
+<section class="panel" id="chat-panel" role="dialog" aria-label="Chat de BookTrip" hidden>
+<header class="header"><span class="mark" aria-hidden="true">✦</span><div class="heading"><h2>BookTrip</h2><p id="connection">Conectando…</p></div><button class="icon-button" id="new-chat" type="button" aria-label="Nueva conversación" title="Nueva conversación">↻</button><button class="icon-button" id="close" type="button" aria-label="Ocultar chat" title="Ocultar chat">×</button></header>
+<div class="messages" id="messages" role="log" aria-live="polite" aria-relevant="additions" tabindex="0"></div>
+<div class="suggestions" id="suggestions"><button type="button" data-prompt="Quiero una escapada en pareja.">Una escapada</button><button type="button" data-prompt="Quiero organizar un roadtrip sin prisa.">Un roadtrip</button></div>
+<p class="error" id="error" role="alert" hidden></p>
+<form class="composer" id="chat-form"><textarea id="message" aria-label="Mensaje a BookTrip" rows="2" maxlength="4000" placeholder="¿A dónde nos vamos?" required></textarea><button class="send" id="send" type="submit" aria-label="Enviar mensaje" disabled>↑</button></form>
+<p class="note">Tu viaje se guarda en el libro. Puedes ajustarlo aquí.<br>Los horarios son propuestas; no se realizan reservas.</p>
+</section>`;
+document.body.append(host);
+const $=id=>root.getElementById(id);
+let config=null,messages=[],conversationToken=null,busy=false,storageKey=null,trip=null,failedContent=null;
 async function api(path,body) {
-  const response=await fetch(`/api/booktrip/${path}`,{credentials:'same-origin',cache:'no-store',...(body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(180000)}:{})});
-  if(!response.headers.get('Content-Type')?.includes('application/json')) throw Error('Inicia sesión para usar el asistente.');
+  const response=await fetch('/api/booktrip/'+path,{credentials:'same-origin',cache:'no-store',...(body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(180000)}:{})});
+  if(!response.headers.get('Content-Type')?.includes('application/json')) throw Error('Inicia sesión para usar BookTrip.');
   const result=await response.json();
   if(!response.ok) throw Error(result.error?.message || 'No pudimos completar la solicitud.');
   return result.data;
 }
-function appendMessage(role,content,pending=false) {
-  const item=document.createElement('div'); item.className=`message ${role}${pending?' pending':''}`;
-  const author=document.createElement('span');author.className='message-author';author.textContent=role==='user'?'Tú':'BookTrip';
-  item.append(author,document.createTextNode(content));$('messages').append(item);$('messages').scrollTop=$('messages').scrollHeight;return item;
+function setOpen(open) {
+  $('chat-panel').hidden=!open;
+  $('launcher').setAttribute('aria-expanded',String(open));
+  $('launcher').setAttribute('aria-label',open?'Ocultar chat de BookTrip':'Abrir chat de BookTrip');
+  if(open) {$('launcher').removeAttribute('data-unread');$('messages').scrollTop=$('messages').scrollHeight;}
+  if(!open) $('launcher').focus();
 }
-function persist() {if(storageKey) try {sessionStorage.setItem(storageKey,JSON.stringify({messages,draft,publication}));} catch {showError('No pudimos conservar el borrador en esta pestaña. Descárgalo antes de salir.');}}
-function controls() {$('send').disabled=busy || !config?.aiReady || !config?.draftsReady;$('message').disabled=busy;$('publish').disabled=busy || !draft || !config?.publishingReady || Boolean(publication);$('new-chat').disabled=busy;$('download').disabled=busy;document.querySelectorAll('[data-prompt]').forEach(button=>button.disabled=busy);}
-function showDraft() {
-  $('draft-empty').hidden=Boolean(draft);$('draft').hidden=!draft;$('draft-actions').hidden=!draft;$('draft-badge').textContent=draft?'Por revisar':'Por empezar';
-  if(draft) {renderTrip($('draft'),draft.trip,draft.warnings);$('draft-notice').textContent=config?.publishingReady?'Revísalo y prepara una propuesta para añadirlo al libro.':config?.demo?'Ejemplo ficticio para probar la interfaz. La publicación está desactivada.':'Tu borrador está listo. Falta conectar la publicación con el repositorio; puedes descargarlo mientras tanto.';}
-  $('publication').hidden=!publication;
-  if(publication) {const link=document.createElement('a');link.href=publication.url;link.target='_blank';link.rel='noopener noreferrer';link.textContent=`Abrir propuesta #${publication.number} ↗`;$('publication').replaceChildren(document.createTextNode(publication.state==='review'?'La propuesta está preparada. El viaje se añadirá al libro al integrarla y completar el despliegue. ':publication.state==='merged'?'La propuesta se integró; comprueba el despliegue para ver el viaje. ':'La propuesta está cerrada; prepara un nuevo borrador. '),link);}
-  controls();
+function showError(message='') {$('error').hidden=!message;$('error').textContent=message;}
+function controls() {
+  const ready=config?.canCreate && config.aiReady && config.storageReady && config.sessionReady;
+  $('send').disabled=busy || !ready;
+  $('message').disabled=busy || !ready;
+  $('new-chat').disabled=busy;
+  root.querySelectorAll('[data-prompt]').forEach(button=>button.disabled=busy || !ready);
+}
+function validTrip(value) {return value && typeof value.title==='string' && /^\/trips\/[a-z0-9][a-z0-9-]{2,63}\/$/.test(value.url);}
+function appendMessage(role,content,extra={}) {
+  const item=document.createElement('div');item.className='message '+role+(extra.pending?' pending':'');
+  const author=document.createElement('span');author.className='author';author.textContent=role==='user'?'Tú':'BookTrip';
+  item.append(author,document.createTextNode(content));
+  if(validTrip(extra.trip)) {const link=document.createElement('a');link.className='trip-link';link.href=extra.trip.url;link.append(document.createTextNode('Abrir '+extra.trip.title+' ↗'));item.append(link);}
+  if(extra.warnings?.length) {const warning=document.createElement('small');warning.className='warning';warning.textContent=extra.warnings.slice(0,3).join(' ');item.append(warning);}
+  $('messages').append(item);$('messages').scrollTop=$('messages').scrollHeight;return item;
+}
+function persist() {
+  const history=busy && failedContent && messages.at(-1)?.role==='user'?messages.slice(0,-1):messages;
+  if(storageKey) try {sessionStorage.setItem(storageKey,JSON.stringify({messages:history,conversationToken,trip,failedContent}));} catch {showError('No pudimos conservar esta conversación. Los viajes guardados siguen en tu libro.');}
 }
 async function sendMessage(content) {
-  if(busy || !config?.aiReady || !config?.draftsReady || !content.trim()) return;
-  if(messages.length>=20) {showError('Esta conversación alcanzó su límite. Descarga el borrador y empieza otra para un nuevo viaje.');return;}
-  busy=true;showError();messages.push({role:'user',content:content.trim()});const userMessage=appendMessage('user',content.trim());$('message').value='';$('suggestions').hidden=true;controls();
-  const pending=appendMessage('assistant','Estoy preparando tu viaje…',true);
+  const text=content.trim();
+  if(busy || !config?.canCreate || !config.aiReady || !config.storageReady || !config.sessionReady || !text) return;
+  if(failedContent && text!==failedContent) {showError('Reintenta primero el mismo mensaje para comprobar si se guardó, o empieza una conversación nueva.');return;}
+  if(messages.length>=20) {showError('Empieza otra conversación para continuar. Tu viaje ya guardado sigue en el libro.');return;}
+  busy=true;failedContent=text;showError();messages.push({role:'user',content:text});const userMessage=appendMessage('user',text);$('message').value='';$('suggestions').hidden=true;controls();persist();
+  const pending=appendMessage('assistant','Estoy preparando tu viaje…',{pending:true});
   try {
-    const result=await api('chat',{messages,...(draft?{draftToken:draft.draftToken}:{})});
-    if(typeof result?.reply!=='string' || !Array.isArray(result.warnings) || !result.warnings.every(item=>typeof item==='string')) throw Error('El asistente devolvió una respuesta incompleta. Tu borrador se conserva.');
-    if(result.trip) {validateTrip(result.trip);if(typeof result.draftToken!=='string')throw Error('El asistente no confirmó el borrador.');}
-    pending.remove();messages.push({role:'assistant',content:result.reply});appendMessage('assistant',result.reply);
-    if(result.trip) {draft=result;publication=null;showDraft();}
-    persist();
-  } catch(error) {pending.remove();messages.pop();userMessage.remove();$('message').value=content;showError(error.message);}
-  finally {busy=false;controls();$('message').focus();}
+    const result=await api('chat',{messages:messages.map(({role,content})=>({role,content})),...(conversationToken?{conversationToken}:{})});
+    if(typeof result?.reply!=='string' || !Array.isArray(result.warnings) || !result.warnings.every(item=>typeof item==='string') || (result.trip && (!validTrip(result.trip) || typeof result.conversationToken!=='string'))) throw Error('No pudimos confirmar el viaje. Reintenta el mismo mensaje.');
+    pending.remove();const answer={role:'assistant',content:result.reply,...(result.trip?{trip:result.trip,warnings:result.warnings}:{})};messages.push(answer);appendMessage(answer.role,answer.content,answer);
+    conversationToken=result.conversationToken || conversationToken;trip=result.trip || trip;failedContent=null;persist();
+    if(result.trip) window.dispatchEvent(new CustomEvent('booktrip:saved',{detail:result.trip}));
+    if($('chat-panel').hidden) $('launcher').setAttribute('data-unread','');
+  } catch(error) {pending.remove();messages.pop();userMessage.remove();failedContent=text;$('message').value=text;showError(error.message);persist();}
+  finally {busy=false;controls();}
 }
+$('launcher').addEventListener('click',()=>setOpen($('chat-panel').hidden));
+$('close').addEventListener('click',()=>setOpen(false));
+root.addEventListener('keydown',event=>{if(event.key==='Escape' && !$('chat-panel').hidden){event.preventDefault();setOpen(false);}});
 $('chat-form').addEventListener('submit',event=>{event.preventDefault();sendMessage($('message').value);});
 $('message').addEventListener('keydown',event=>{if(event.key==='Enter' && !event.shiftKey && !event.isComposing && !matchMedia('(pointer: coarse)').matches){event.preventDefault();sendMessage($('message').value);}});
-document.querySelectorAll('[data-prompt]').forEach(button=>button.addEventListener('click',()=>{$('message').value=button.dataset.prompt;$('message').focus();}));
-$('new-chat').addEventListener('click',()=>{if(draft && !confirm('¿Empezar otra conversación? Descarga primero el borrador si quieres conservarlo.')) return;messages=[];draft=null;publication=null;$('messages').replaceChildren();appendMessage('assistant','¿A dónde te gustaría ir? Cuéntame el destino, las fechas y lo que te apetece hacer.');$('suggestions').hidden=false;$('message').value='';showError();showDraft();persist();});
-$('download').addEventListener('click',()=>{if(!draft)return;const url=URL.createObjectURL(new Blob([JSON.stringify(draft.trip,null,2)+'\n'],{type:'application/json'}));const link=document.createElement('a');link.href=url;link.download=`${draft.trip.id}.json`;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
-$('publish').addEventListener('click',()=>{$('privacy-reviewed').checked=false;$('confirm-publish').disabled=true;$('publish-dialog').showModal();});
-$('privacy-reviewed').addEventListener('change',()=>{$('confirm-publish').disabled=!$('privacy-reviewed').checked;});
-$('publish-dialog').addEventListener('close',async()=>{
-  if($('publish-dialog').returnValue!=='confirm' || !$('privacy-reviewed').checked || !draft || busy) return;
-  busy=true;controls();showError();
-  try {publication=await api('publish',{draftToken:draft.draftToken,approved:true,privacyReviewed:true});persist();showDraft();}
-  catch(error){showError(error.message);}finally{busy=false;controls();}
-});
+root.querySelectorAll('[data-prompt]').forEach(button=>button.addEventListener('click',()=>{$('message').value=button.dataset.prompt;$('message').focus();}));
+$('new-chat').addEventListener('click',()=>{messages=[];conversationToken=null;trip=null;failedContent=null;$('messages').replaceChildren();appendMessage('assistant','¿A dónde te gustaría ir? Dime el destino y las fechas.');$('suggestions').hidden=false;$('message').value='';showError();persist();});
+document.addEventListener('click',event=>{if(event.target.closest('[data-booktrip-open]') && config?.canCreate) {event.preventDefault();setOpen(true);}});
+function viewport() {const view=window.visualViewport;host.style.setProperty('--bt-viewport',(view?.height || innerHeight)+'px');host.style.setProperty('--bt-keyboard',Math.max(0,innerHeight-(view?.height || innerHeight)-(view?.offsetTop || 0))+'px');}
+window.visualViewport?.addEventListener('resize',viewport);window.visualViewport?.addEventListener('scroll',viewport);window.addEventListener('resize',viewport);viewport();
 try {
-  config=await api('config');storageKey=`booktrip-assistant-v1:${config.user.id}`;
-  $('connection').textContent=config.demo?'Demostración · sin IA':config.aiReady && config.draftsReady?`Hola, ${config.user.name} · asistente conectado`:'Asistente pendiente de configuración';
-  $('connection').classList.toggle('ready',config.aiReady && config.draftsReady && !config.demo);$('demo-banner').hidden=!config.demo;
-  let saved;try {saved=JSON.parse(sessionStorage.getItem(storageKey)||'null');} catch { /* A corrupt draft must never prevent opening a new conversation. */ }
-  if(saved && Array.isArray(saved.messages) && saved.messages.every(m=>['user','assistant'].includes(m.role) && typeof m.content==='string')) {
-    messages=saved.messages.slice(0,20);
-    try {if(saved.draft?.trip) {renderTrip($('draft'),saved.draft.trip,saved.draft.warnings);draft=saved.draft;} } catch {draft=null;}
-    if(saved.publication && /^https:\/\/github\.com\/[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+\/pull\/\d+$/.test(saved.publication.url)) publication=saved.publication;
-    messages.forEach(m=>appendMessage(m.role,m.content));
+  config=await api('config');
+  if(!config.canCreate) {document.querySelectorAll('[data-booktrip-open]').forEach(element=>element.hidden=true);host.remove();}
+  else {
+    storageKey='booktrip-chat-v2:'+config.user.id;
+    $('launcher').hidden=false;
+    document.querySelectorAll('[data-booktrip-open]').forEach(element=>element.hidden=false);
+    $('connection').textContent=config.demo?'Demostración local · sin IA':'Hola, '+config.user.name;
+    $('connection').classList.toggle('demo',Boolean(config.demo));
+    let saved;try{saved=JSON.parse(sessionStorage.getItem(storageKey)||'null');}catch{}
+    if(saved && Array.isArray(saved.messages) && saved.messages.length<=20 && saved.messages.every(m=>['user','assistant'].includes(m.role) && typeof m.content==='string')) {
+      messages=saved.messages;conversationToken=typeof saved.conversationToken==='string'?saved.conversationToken:null;trip=validTrip(saved.trip)?saved.trip:null;failedContent=typeof saved.failedContent==='string'?saved.failedContent:null;
+      messages.forEach(m=>appendMessage(m.role,m.content,m));
+    }
+    if(!messages.length) appendMessage('assistant','Hola, '+config.user.name+'. ¿A dónde nos vamos? Dime el destino y las fechas y lo añado a tu libro.');
+    $('suggestions').hidden=messages.length>0;controls();
+    if(failedContent) {$('message').value=failedContent;showError('Reintenta este mensaje para comprobar si se guardó, o empieza una conversación nueva.');}
+    if(!config.aiReady || !config.storageReady || !config.sessionReady) showError('El chat necesita completar su conexión en Cloudflare.');
+    if(new URL(location.href).searchParams.get('chat')==='open') setOpen(true);
   }
-  if(!messages.length) appendMessage('assistant',`Hola, ${config.user.name}. ¿A dónde te gustaría ir? Cuéntame las fechas y el tipo de viaje que tienes en mente.`);
-  $('suggestions').hidden=messages.length>0;showDraft();
-  if(!config.aiReady || !config.draftsReady) showError('El chat necesita completar su configuración en Cloudflare. No generaremos respuestas simuladas.');
-} catch(error) {$('connection').textContent='Conexión pendiente';appendMessage('assistant','Aquí podrás crear tu próximo viaje conversando.');showError(error.message);controls();}
+} catch(error) {
+  // A failed identity check never exposes creation controls.
+  host.remove();document.querySelectorAll('[data-booktrip-open]').forEach(element=>element.hidden=true);
+  console.warn('BookTrip: '+error.message);
+}

@@ -1,7 +1,11 @@
 import { renderTrip } from './trip-view.js';
 const container=document.getElementById('roadbook');
 try {
-  const response=await fetch('./trip.json',{credentials:'same-origin'});
+  const id=location.pathname.match(/^\/trips\/([a-z0-9][a-z0-9-]{2,63})\/?$/)?.[1];
+  if(!id) throw Error('No pudimos identificar el viaje.');
+  let response=await fetch(`/api/booktrip/trips/${id}`,{credentials:'same-origin',cache:'no-store'});
+  const stored=response.ok;
+  if(response.status===404) response=await fetch('./trip.json',{credentials:'same-origin'});
   if(!response.ok || !response.headers.get('Content-Type')?.includes('application/json')) throw Error('No pudimos cargar el viaje. Vuelve al libro e inténtalo de nuevo.');
-  const trip=await response.json();renderTrip(container,trip,['Horarios propuestos. Comprueba disponibilidad y reservas antes de viajar.']);document.title=`${trip.title} · BookTrip`;container.removeAttribute('role');
+  const body=await response.json();const trip=stored?body.data:body;renderTrip(container,trip,['Horarios propuestos. Comprueba disponibilidad y reservas antes de viajar.']);document.title=`${trip.title} · BookTrip`;container.removeAttribute('role');
 } catch(error){container.textContent=error.message;}

@@ -12,8 +12,12 @@ export function createIdentityVerifier({ getKeySet = issuer => {
       const issuer = `https://${env.ACCESS_TEAM_DOMAIN}`;
       const { payload } = await jwtVerify(token, getKeySet(issuer), { issuer, audience: env.ACCESS_AUD, algorithms: ['RS256'], requiredClaims: ['exp','sub'] });
       if (payload.type !== 'app') return null;
-      return { id: payload.sub, name: typeof payload.email === 'string' ? payload.email.split('@')[0].slice(0,60) : 'Viajero' };
+      return { id: payload.sub, email: typeof payload.email === 'string' ? payload.email.trim().toLowerCase() : '', name: typeof payload.email === 'string' ? payload.email.split('@')[0].slice(0,60) : 'Viajero' };
     } catch { return null; }
   };
 }
 export const verifyIdentity = createIdentityVerifier();
+export function canCreate(identity, env) {
+  const allowed = env.BOOKTRIP_CREATOR_EMAIL?.trim().toLowerCase();
+  return Boolean(allowed && identity?.email && identity.email.trim().toLowerCase() === allowed);
+}

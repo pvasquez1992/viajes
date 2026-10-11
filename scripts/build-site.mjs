@@ -1,4 +1,4 @@
-import { access, cp, mkdir, readdir } from 'node:fs/promises';
+import { access, cp, mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { generateTrips } from './generate-trips.mjs';
 
@@ -20,6 +20,19 @@ for (const file of ['leaflet.js', 'leaflet.css', 'images']) {
 }
 await cp(path.join(root, 'node_modules', 'leaflet', 'LICENSE'), path.join(leafletOutput, 'LICENSE'));
 await generateTrips(root, output);
+await cp(path.join(root, 'templates', 'trip.html'), path.join(output, 'trip-shell.html'));
+// Every page shares the same floating chat; its styles stay isolated in Shadow DOM.
+async function addChat(directory) {
+  for (const entry of await readdir(directory, { withFileTypes: true })) {
+    const target = path.join(directory, entry.name);
+    if (entry.isDirectory()) await addChat(target);
+    else if (entry.name.endsWith('.html') && target !== path.join(output, 'assistant', 'index.html')) {
+      const html = await readFile(target, 'utf8');
+      if (!html.includes('src="/js/assistant.js"')) await writeFile(target, html.replace(/<\/body>/i, '<script type="module" src="/js/assistant.js"></script></body>'));
+    }
+  }
+}
+await addChat(output);
 // Fail the build if essential public files are omitted; Pages must not publish an empty shell.
 const requiredFiles = [
   'index.html',
@@ -27,11 +40,13 @@ const requiredFiles = [
   'js/home.js',
   'assistant/index.html',
   'css/assistant.css',
+  'css/chat-widget.css',
   'js/assistant.js',
   'js/trip-view.js',
   'js/trip-contract.js',
   'js/roadbook.js',
   'trips/catalog.json',
+  'trip-shell.html',
   'shenandoah2026/index.html',
   'shenandoah2026/css/autumn.css',
   'shenandoah2026/js/app.js',

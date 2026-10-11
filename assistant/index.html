@@ -1,24 +1,2 @@
 <!doctype html>
-<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark"><title>Crear un viaje · BookTrip</title><link rel="icon" href="/logo.png" type="image/png"><link rel="stylesheet" href="/css/assistant.css"></head>
-<body>
-<header class="bt-header"><a class="bt-brand" href="/"><img src="/logo.png" alt="">BookTrip</a><a href="/#library">Mi libro de viajes ↗</a></header>
-<main class="assistant-shell">
-  <section class="assistant-intro"><p class="eyebrow">DEL SUEÑO AL MAPA</p><h1>Tu próximo viaje<br>empieza conversando.</h1><p>Cuéntame dónde quieres ir y cómo te gustaría vivirlo. Vamos construyendo el plan juntos.</p><span class="connection" id="connection" role="status">Conectando con tu asistente…</span></section>
-  <p class="demo-banner" id="demo-banner" hidden>Demostración local sin IA. Los mensajes y el viaje de ejemplo son ficticios; no se publica nada.</p>
-  <div class="workspace">
-    <section class="conversation" aria-label="Conversación con el asistente">
-      <div class="panel-heading"><div class="assistant-avatar" aria-hidden="true">✦</div><div><h2>BookTrip Assistant</h2><p>Un viaje a tu medida</p></div><button class="quiet" id="new-chat" type="button">Empezar de nuevo</button></div>
-      <div id="messages" class="messages" role="log" aria-live="polite" aria-relevant="additions" tabindex="0"></div>
-      <div class="suggestions" id="suggestions"><button type="button" data-prompt="Quiero organizar un fin de semana tranquilo en Harpers Ferry.">Un fin de semana tranquilo</button><button type="button" data-prompt="Quiero un viaje en pareja con paseos cortos y buena comida.">Una escapada en pareja</button><button type="button" data-prompt="Quiero planificar un roadtrip con pocas horas conduciendo cada día.">Un roadtrip sin prisa</button></div>
-      <form class="composer" id="chat-form"><label class="sr-only" for="message">Qué viaje quieres planificar</label><textarea id="message" rows="2" maxlength="4000" placeholder="Por ejemplo: un fin de semana en Salem, del 30 de octubre al 1 de noviembre de 2026…" required></textarea><button class="send" id="send" type="submit" disabled aria-label="Enviar mensaje">↑</button></form>
-      <p class="composer-note">Puedes ajustar el plan conversando. Las propuestas no realizan reservas.</p><p class="error" id="error" role="alert" hidden></p>
-    </section>
-    <section class="draft-panel" aria-labelledby="draft-title">
-      <div class="draft-heading"><div><p class="eyebrow">TU VIAJE, POCO A POCO</p><h2 id="draft-title">El borrador</h2></div><span class="draft-badge" id="draft-badge">Por empezar</span></div>
-      <div class="draft-empty" id="draft-empty"><div class="compass" aria-hidden="true">↗</div><h3>Un lugar para tu próxima historia.</h3><p>Cuando tengamos destino y fechas, aquí aparecerán los días, las paradas y los detalles del viaje.</p><div class="empty-steps"><span>01 · Conversamos</span><span>02 · Revisas tu viaje</span><span>03 · Lo añades al libro</span></div></div>
-      <div id="draft" hidden></div><div class="draft-actions" id="draft-actions" hidden><p id="draft-notice">Este borrador permanece en esta pestaña hasta que prepares su publicación.</p><button class="primary" id="publish" type="button" disabled>Preparar publicación ↗</button><button class="quiet" id="download" type="button">Descargar borrador</button></div><div id="publication" class="publication" role="status" hidden></div>
-    </section>
-  </div>
-</main>
-<dialog id="publish-dialog"><form method="dialog"><p class="eyebrow">ANTES DE AÑADIRLO AL LIBRO</p><h2>Revisa tu viaje</h2><p>Prepararemos una propuesta en GitHub. El viaje aparecerá en el libro después de revisar e integrar esa propuesta y completar el despliegue.</p><p class="privacy-note">Si el repositorio es público, su contenido será visible aunque BookTrip esté protegido. Excluye códigos de reserva, PIN, documentos y direcciones residenciales.</p><label class="review-check"><input type="checkbox" id="privacy-reviewed"> Revisé el contenido y puede guardarse en el repositorio.</label><div class="dialog-actions"><button class="quiet" value="cancel">Volver al borrador</button><button class="primary" id="confirm-publish" value="confirm" disabled>Preparar propuesta</button></div></form></dialog>
-<script type="module" src="/js/assistant.js"></script></body></html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="refresh" content="0;url=/?chat=open"><title>BookTrip</title></head><body><p><a href="/?chat=open">Abrir el chat en mi libro de viajes</a></p></body></html>

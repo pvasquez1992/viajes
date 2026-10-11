@@ -5,12 +5,14 @@ import path from 'node:path';
 import { randomBytes } from 'node:crypto';
 import { createBooktripHandler } from '../functions/api/booktrip/[[path]].js';
 import { sampleTrip } from '../tests/fixtures/trip.js';
+import { localTripDatabase } from './local-trip-store.mjs';
+import { createTripStore } from '../server/booktrip/store.js';
 const demo=process.argv.includes('--demo');
 const root=path.resolve(import.meta.dirname,'../dist/site');
 const port=Number(process.env.BOOKTRIP_PREVIEW_PORT || 8790);
 const origin=`http://127.0.0.1:${port}`;
-const identity={id:'local-preview',name:'Viajero'};
-const env={BOOKTRIP_DRAFT_SECRET:randomBytes(32).toString('hex')};
+const identity={id:'local-preview',name:'Viajero',email:'preview@example.test'};
+const env={BOOKTRIP_DRAFT_SECRET:randomBytes(32).toString('hex'),BOOKTRIP_CREATOR_EMAIL:identity.email,BOOKTRIP_DB:localTripDatabase()};
 if(!demo) {
   if(!process.env.CLOUDFLARE_ACCOUNT_ID || !process.env.CLOUDFLARE_AI_TOKEN) throw Error('Define CLOUDFLARE_ACCOUNT_ID y CLOUDFLARE_AI_TOKEN para IA real, o utiliza --demo para una demostración explícita sin IA.');
   env.AI={async run(model,input) {
@@ -25,7 +27,7 @@ const handler=createBooktripHandler({identify:async()=>identity,...(demo?{chat:a
   if(input.messages.length===1 && !/2026/.test(requested)) return {reply:'Esta es una demostración sin IA. ¿Qué fechas exactas tienes en mente? Por ejemplo, del 31 de octubre al 1 de noviembre de 2026.',trip:null,research:[],warnings:[]};
   const trip=structuredClone(current?.trip || sampleTrip);
   if(current) trip.description='Ejemplo ficticio ajustado durante la conversación. Los cambios de esta demo no utilizan IA.';
-  return {reply:current?'Actualicé el borrador ficticio para que pruebes la revisión.':'Aquí tienes un viaje ficticio para probar el diseño. Puedes abrir cada parada o descargar el borrador.',trip,research:[],warnings:['Ejemplo ficticio sin IA ni investigación web. No utilizar como itinerario confirmado.']};
+  return {reply:'Ejemplo ficticio local.',trip,research:[],warnings:['Ejemplo ficticio sin IA ni investigación web. No utilizar como itinerario confirmado.']};
 }}:{})});
 const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.svg':'image/svg+xml','.pdf':'application/pdf'};
 const server=createServer(async(req,res)=>{
@@ -40,6 +42,10 @@ const server=createServer(async(req,res)=>{
       res.writeHead(response.status,Object.fromEntries(response.headers));res.end(Buffer.from(await response.arrayBuffer()));return;
     }
     if(req.method!=='GET' && req.method!=='HEAD'){res.writeHead(405);res.end();return;}
+    const tripId=url.pathname.match(/^\/trips\/([a-z0-9][a-z0-9-]{2,63})\/?$/)?.[1];
+    if(tripId && await createTripStore(env).get(tripId)) {
+      const body=await readFile(path.join(root,'trip-shell.html'));res.writeHead(200,{'Content-Type':mime['.html'],'Cache-Control':'no-store'});res.end(req.method==='HEAD'?undefined:body);return;
+    }
     let pathname=decodeURIComponent(url.pathname);if(pathname.endsWith('/'))pathname+='index.html';
     const target=path.resolve(root,'.'+pathname);
     const resolved=await realpath(target);
@@ -47,5 +53,5 @@ const server=createServer(async(req,res)=>{
     const body=await readFile(resolved);res.writeHead(200,{'Content-Type':mime[path.extname(resolved)] || 'application/octet-stream','Cache-Control':'no-store'});res.end(req.method==='HEAD'?undefined:body);
   } catch {res.writeHead(404);res.end('No encontrado.');}
 });
-server.listen(port,'127.0.0.1',()=>console.log(`${demo?'Demostración SIN IA':'Workers AI real · publicación desactivada'}: ${origin}/assistant/`));
-process.on('SIGINT',()=>server.close(()=>process.exit(0)));
+server.listen(port,'127.0.0.1',()=>console.log(`${demo?'Demostración SIN IA':'Workers AI real · almacenamiento local'}: ${origin}/?chat=open`));
+process.on('SIGINT',()=>server.close(()=>{env.BOOKTRIP_DB.close();process.exit(0);}));
