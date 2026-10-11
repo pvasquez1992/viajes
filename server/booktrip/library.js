@@ -15,6 +15,10 @@ export async function readLibrary(env, storage, identity) {
     generated=await response.json();
     if(!Array.isArray(generated) || !generated.every(entry=>entry && /^trips\/[a-z0-9][a-z0-9-]{2,63}\/$/.test(entry.href) && typeof entry.title==='string' && typeof entry.description==='string' && typeof entry.start==='string' && typeof entry.end==='string')) throw new TripError('El catálogo de viajes no está disponible.',503,'catalog_unavailable');
   }
+  if(storage.isRemoved) {
+    const available=await Promise.all(generated.map(async entry=>await storage.isRemoved(libraryReference(entry).id)?null:entry));
+    generated=available.filter(Boolean);
+  }
   const entries=new Map([...legacyTrips,...generated].map(entry=>[entry.href,{...entry,editable:false}]));
   for(const entry of await storage.catalog(identity)) entries.set(entry.href,entry);
   return [...entries.values()];

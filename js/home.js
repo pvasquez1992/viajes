@@ -90,20 +90,23 @@ renderTrips();
 // New entries live privately in Cloudflare; static trips remain in the library.
 async function loadNewTrips() {
   try {
-    const responses=await Promise.all([fetch('/trips/catalog.json',{credentials:'same-origin',cache:'no-store'}),fetch('/api/booktrip/trips',{credentials:'same-origin',cache:'no-store'})]);
+    const responses=[await fetch('/api/booktrip/trips',{credentials:'same-origin',cache:'no-store'})];
     const catalogs=await Promise.all(responses.map(async response=>{
       if(!response.ok || !response.headers.get('Content-Type')?.includes('application/json')) throw Error('Catalog unavailable');
       const body=await response.json();return Array.isArray(body)?body:body.data;
     }));
+    const received=new Set();
     for(const catalog of catalogs) {
       if(!Array.isArray(catalog)) throw Error('Invalid catalog');
       for(const trip of catalog) {
         if (!trip || typeof trip.title !== 'string' || typeof trip.description !== 'string' || !(legacyTrips.some(entry=>entry.href===trip.href) || /^trips\/[a-z0-9][a-z0-9-]{2,63}\/$/.test(trip.href)) || !/^20\d{2}-\d{2}-\d{2}$/.test(trip.start) || !/^20\d{2}-\d{2}-\d{2}$/.test(trip.end) || !['city','forest','ice','halloween','christmas','alpine','italy','ireland'].includes(trip.theme) || !Array.isArray(trip.tags) || !trip.tags.every(tag => typeof tag === 'string')) continue;
+        received.add(trip.href);
         const index=trips.findIndex(existing=>existing.href===trip.href);
         const entry={...trip,phase:trip.phase || 'planned',featured:trip.featured===true};
         if(index<0) trips.push(entry);else trips[index]=entry;
       }
     }
+    for(let index=trips.length-1;index>=0;index--) if(!received.has(trips[index].href)) trips.splice(index,1);
     document.getElementById('catalog-error')?.remove();renderTrips();
   } catch {
     if(document.getElementById('catalog-error')) return;
@@ -114,3 +117,4 @@ async function loadNewTrips() {
 }
 loadNewTrips();
 window.addEventListener('booktrip:saved',loadNewTrips);
+window.addEventListener('booktrip:removed',loadNewTrips);

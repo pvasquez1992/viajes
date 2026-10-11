@@ -34,10 +34,9 @@ if(!demo) {
   if(input.messages.at(-1).content.startsWith('Decide')) {
     const plan={action:'draft',tripId:null,reply:'Ejemplo ficticio local.',queries:[]};
     if(/listar|lista|qu[eé] viajes|cu[aá]ntos viajes/i.test(requested)) plan.action='list';
-    else if(/eliminar|elimina|borrar|borra/i.test(requested)) plan.action='unsupported';
     else {
       const entry=data.library.find(entry=>requested.toLowerCase().includes(entry.id.toLowerCase()) || requested.toLowerCase().includes(entry.title.toLowerCase()) || (/halloween/i.test(requested) && entry.url==='/harpersferry2026/') || (/boston/i.test(requested) && /boston/i.test(entry.title)));
-      if(entry) {plan.action=/a[nñ]ade|agrega|quita|pon/i.test(requested)?'edit':'select';plan.tripId=entry.id;}
+      if(entry) {plan.action=/eliminar|elimina|borrar|borra/i.test(requested)?'delete':/a[nñ]ade|agrega|quita|pon/i.test(requested)?'edit':'select';plan.tripId=entry.id;}
       else if(!data.currentDraft && data.conversation.length===1 && !/2026/.test(requested)) {plan.action='clarify';plan.reply='Esta es una demostración sin IA. ¿Qué fechas exactas tienes en mente? Por ejemplo, del 31 de octubre al 1 de noviembre de 2026.';}
     }
     return {response:plan};
@@ -66,6 +65,7 @@ const server=createServer(async(req,res)=>{
     }
     if(req.method!=='GET' && req.method!=='HEAD'){res.writeHead(405);res.end();return;}
     const tripId=url.pathname.match(/^\/trips\/([a-z0-9][a-z0-9-]{2,63})\/?$/)?.[1];
+    if(tripId && await createTripStore(env).isRemoved(tripId)) {res.writeHead(410,{'Cache-Control':'no-store'});res.end('Este viaje fue eliminado del libro.');return;}
     if(tripId && await createTripStore(env).get(tripId)) {
       const body=await readFile(path.join(root,'trip-shell.html'));res.writeHead(200,{'Content-Type':mime['.html'],'Cache-Control':'no-store'});res.end(req.method==='HEAD'?undefined:body);return;
     }

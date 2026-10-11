@@ -8,7 +8,9 @@ export async function onRequest(context) {
   const route=(Array.isArray(params.path)?params.path.join('/'):params.path || '').replace(/\/$/,'');
   if(!/^[a-z0-9][a-z0-9-]{2,63}$/.test(route)) return context.next();
   try {
-    const trip=await createTripStore(env).get(route);
+    const storage=createTripStore(env);
+    if(await storage.isRemoved(route)) return new Response('Este viaje fue eliminado del libro.',{status:410,headers:{'Cache-Control':'private, no-store'}});
+    const trip=await storage.get(route);
     if(!trip) return context.next();
     const template=await env.ASSETS.fetch(new URL('/trip-shell.html',request.url));
     if(!template.ok) return new Response('No pudimos abrir el viaje.',{status:503});

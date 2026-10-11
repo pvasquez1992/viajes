@@ -34,16 +34,29 @@ guardado, sin crear una copia. Un cambio concreto como «En Boston añade una pa
 puede cargarlo y ajustarlo en el mismo turno. Si hay varios candidatos, pregunta
 cuál. Consultar o seleccionar no escribe ningún viaje.
 Los ocho viajes antiguos y los JSON estáticos también aparecen con su enlace,
-pero siguen siendo de solo lectura desde el chat. Eliminar aún no está habilitado.
+pero siguen siendo de solo lectura desde el chat.
+
+Para eliminar una entrada creada desde el chat, pide «Elimina el viaje a Boston».
+Se muestra su nombre y fechas con **Eliminar viaje** y **Cancelar**. La petición
+inicial no borra nada: solo el botón confirma. La confirmación está firmada,
+ligada a usuario/viaje/versión y vence a los diez minutos. Si el viaje cambió,
+debe solicitarse otra confirmación. Reintentar un botón ya ejecutado es idempotente.
+La portada se actualiza al completar la eliminación, sin recargar manualmente.
+Los viajes antiguos HTML y JSON estáticos aún no admiten eliminación desde el chat.
 
 ## Almacenamiento y API
 Las entradas nuevas se guardan en una base Cloudflare D1 privada, con el binding
 BOOKTRIP_DB. migrations/0001_booktrip.sql crea las tablas de viajes y respuestas
 de guardado. Cada guardado y su respuesta se escriben en una transacción.
+`migrations/0002_booktrip_removals.sql` añade marcadores de eliminación. La baja
+retira el viaje del catálogo y bloquea su lectura y modificación, conservando el
+documento original privado para recuperación manual. Los reintentos y contextos
+anteriores no pueden restaurarlo. No hay interfaz de recuperación todavía.
 Los ocho viajes anteriores siguen en sus páginas y no se migran.
 
 - GET /api/booktrip/config: identidad y capacidades; no devuelve claves.
 - POST /api/booktrip/chat: conversación del creador y guardado directo.
+- POST /api/booktrip/remove: eliminación confirmada por el creador con token específico.
 - GET /api/booktrip/trips: catálogo completo (antiguos, estáticos y D1) para usuarios autenticados.
 - GET /api/booktrip/trips/<id>: itinerario para usuarios autenticados.
 - /trips/<id>/: página compartida del viaje guardado, protegida por Access y JWT.
@@ -78,7 +91,9 @@ producción por separado de los previews; no copiar sus claves ni su base de dat
 | BOOKTRIP_AI_MODEL | Variable opcional | Por defecto @cf/meta/llama-3.3-70b-instruct-fp8-fast. |
 | BOOKTRIP_SEARCH_KEY | Secreto opcional | Investigación mediante Tavily. |
 
-Inicializar la base con migrations/0001_booktrip.sql, añadir el binding y redesplegar.
+Aplicar migrations/0001_booktrip.sql y migrations/0002_booktrip_removals.sql,
+añadir el binding y redesplegar. La segunda migración es idempotente y no elimina
+ninguna entrada existente.
 La implementación no contrata planes ni modifica la facturación automáticamente.
 
 ## Verificación local
