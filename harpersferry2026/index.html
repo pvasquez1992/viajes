@@ -9,11 +9,10 @@
 <link rel="stylesheet" href="../assets/leaflet/leaflet.css">
 </head>
 <body>
-<div class="shell">
-  <nav class="top" aria-label="Navegación">
-    <a class="brand" href="../">← BookTrip</a>
-    <button class="jarvis-button" type="button" data-jarvis-open>⌁ JARVIS · Abrir mapa</button>
-  </nav>
+<header class="site-header"><div class="site-header-inner">
+<a class="site-brand" href="../"><img src="../logo.png" alt=""><span>BookTrip</span></a>
+<nav aria-label="Navegación principal"><a href="../">Viajes</a><a href="../ejercicio/">Ejercicio</a><button class="jarvis-button" type="button" data-jarvis-open>⌁ JARVIS</button></nav>
+</div></header><div class="shell">
   <header class="hero">
     <p class="eyebrow">West Virginia · Roadtrip de Halloween</p>
     <h1>Una noche de Halloween<br>en Harpers Ferry 🎃</h1>
@@ -108,10 +107,16 @@
 </div>
 <div class="j-overlay" id="jarvisOverlay" aria-hidden="true">
 <div class="j-panel" role="dialog" aria-modal="true" aria-label="JARVIS Harpers Ferry">
- <header class="j-header"><div><strong>⌁ JARVIS · HALLOWEEN</strong><small>31 OCT – 1 NOV · Misión de viaje</small></div><button type="button" id="jarvisClose" aria-label="Cerrar JARVIS">✕ Cerrar</button></header>
- <div class="j-toolbar"><div class="j-days" role="group" aria-label="Día del viaje"><button id="jarvisDay0" class="selected" type="button">🎃 Sáb 31</button><button id="jarvisDay1" type="button">🍂 Dom 1</button></div><span id="jarvisCounter" aria-live="polite">1 / 1</span></div>
- <div class="j-content"><div id="jarvisMap" aria-label="Mapa interactivo de paradas"></div><div class="j-info"><div class="meta" id="jarvisTime"></div><h2 id="jarvisName">Preparando ruta…</h2><p id="jarvisDesc"></p><div class="j-mini"><strong>📍 Estacionamiento / acceso</strong><p id="jarvisParking"></p></div><a id="jarvisNavigate" class="action" target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps/">📍 Navegar en Google Maps ↗</a><div class="j-controls"><button id="jarvisPrev" type="button">← Anterior</button><button id="jarvisNext" type="button">Siguiente →</button></div><p class="j-hint" id="jarvisRouteStatus" aria-live="polite">Cargando ruta vial; los tiempos son orientativos y no incluyen tráfico en vivo.</p><p class="j-hint">Horarios sugeridos, no navegación GPS en vivo. Comprueba tráfico, accesos y horarios.</p></div></div>
-</div></div>
+<header class="j-header"><div class="j-brand"><strong>⌁ JARVIS</strong><span>MISSION: HARPERS FERRY · HALLOWEEN 2026</span></div><button type="button" id="jarvisClose" aria-label="Cerrar JARVIS">Cerrar ✕</button></header>
+<div class="j-content">
+ <div class="j-maparea"><div id="jarvisMap" aria-label="Mapa interactivo de ruta y paradas"></div><div class="j-days" role="group" aria-label="Selecciona día"><button id="jarvisDay0" class="selected" type="button">DÍA 1 · 31 OCT</button><button id="jarvisDay1" type="button">DÍA 2 · 1 NOV</button></div></div>
+ <aside class="j-sidebar">
+  <div class="j-sidehead"><div class="meta" id="jarvisDayLabel">DÍA 1</div><h2 id="jarvisDayTitle">Halloween + Harpers Ferry</h2><p><span id="jarvisCounter">8 paradas</span> · Selecciona cualquier etapa</p></div>
+  <div class="j-stoplist" id="jarvisStopList" aria-label="Todas las paradas"></div>
+  <section class="j-selected"><span class="meta" id="jarvisTime"></span><h3 id="jarvisName"></h3><p id="jarvisDesc"></p><div class="j-mini"><strong>📍 Estacionamiento / acceso</strong><p id="jarvisParking"></p></div><a id="jarvisNavigate" class="action" target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps/">📍 NAVEGAR ↗</a></section>
+  <p class="j-hint" id="jarvisRouteStatus" aria-live="polite">Cargando ruta vial…</p>
+ </aside>
+</div></div></div>
 <script src="../assets/leaflet/leaflet.js" defer></script>
 <script src="js/app.js" defer></script>
 <script src="js/jarvis.js" defer></script>
