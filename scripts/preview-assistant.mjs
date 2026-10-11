@@ -13,6 +13,11 @@ const port=Number(process.env.BOOKTRIP_PREVIEW_PORT || 8790);
 const origin=`http://127.0.0.1:${port}`;
 const identity={id:'local-preview',name:'Viajero',email:'preview@example.test'};
 const env={BOOKTRIP_DRAFT_SECRET:randomBytes(32).toString('hex'),BOOKTRIP_CREATOR_EMAIL:identity.email,BOOKTRIP_DB:localTripDatabase()};
+env.ASSETS={async fetch(request) {
+  const pathname=new URL(request.url).pathname;
+  if(pathname!=='/trips/catalog.json') return new Response(null,{status:404});
+  return new Response(await readFile(path.join(root,'trips','catalog.json')), {headers:{'Content-Type':'application/json'}});
+}};
 if(!demo) {
   if(!process.env.CLOUDFLARE_ACCOUNT_ID || !process.env.CLOUDFLARE_AI_TOKEN) throw Error('Define CLOUDFLARE_ACCOUNT_ID y CLOUDFLARE_AI_TOKEN para IA real, o utiliza --demo para una demostración explícita sin IA.');
   env.AI={async run(model,input) {
@@ -20,15 +25,33 @@ if(!demo) {
     const data=await response.json();if(!response.ok || !data.success) throw Error('Workers AI no respondió correctamente.');return data.result;
   }};
   if(process.env.BOOKTRIP_SEARCH_KEY) env.BOOKTRIP_SEARCH_KEY=process.env.BOOKTRIP_SEARCH_KEY;
-} else env.AI={run(){throw Error('La demostración no llama a ningún modelo.');}};
-const handler=createBooktripHandler({identify:async()=>identity,...(demo?{chat:async(input,current)=>{
-  const requested=input.messages.at(-1).content;
+} else env.AI={async run(_model,input) {
+  // A fixed fixture simulates the model protocol, not a real inference. It uses
+  // the production handler, library and persistence exclusively against local DB.
+  const data=JSON.parse(input.messages.find(message=>message.role==='user').content);
+  const requested=data.conversation.at(-1).content;
   if(/fallo de prueba/i.test(requested)) throw Error('Fallo ficticio para QA.');
-  if(input.messages.length===1 && !/2026/.test(requested)) return {reply:'Esta es una demostración sin IA. ¿Qué fechas exactas tienes en mente? Por ejemplo, del 31 de octubre al 1 de noviembre de 2026.',trip:null,research:[],warnings:[]};
-  const trip=structuredClone(current?.trip || sampleTrip);
-  if(current) trip.description='Ejemplo ficticio ajustado durante la conversación. Los cambios de esta demo no utilizan IA.';
-  return {reply:'Ejemplo ficticio local.',trip,research:[],warnings:['Ejemplo ficticio sin IA ni investigación web. No utilizar como itinerario confirmado.']};
-}}:{})});
+  if(input.messages.at(-1).content.startsWith('Decide')) {
+    const plan={action:'draft',tripId:null,reply:'Ejemplo ficticio local.',queries:[]};
+    if(/listar|lista|qu[eé] viajes|cu[aá]ntos viajes/i.test(requested)) plan.action='list';
+    else if(/eliminar|elimina|borrar|borra/i.test(requested)) plan.action='unsupported';
+    else {
+      const entry=data.library.find(entry=>requested.toLowerCase().includes(entry.id.toLowerCase()) || requested.toLowerCase().includes(entry.title.toLowerCase()) || (/halloween/i.test(requested) && entry.url==='/harpersferry2026/') || (/boston/i.test(requested) && /boston/i.test(entry.title)));
+      if(entry) {plan.action=/a[nñ]ade|agrega|quita|pon/i.test(requested)?'edit':'select';plan.tripId=entry.id;}
+      else if(!data.currentDraft && data.conversation.length===1 && !/2026/.test(requested)) {plan.action='clarify';plan.reply='Esta es una demostración sin IA. ¿Qué fechas exactas tienes en mente? Por ejemplo, del 31 de octubre al 1 de noviembre de 2026.';}
+    }
+    return {response:plan};
+  }
+  const trip=structuredClone(data.currentDraft || sampleTrip);
+  if(data.currentDraft) trip.description='Ejemplo ficticio ajustado durante la conversación. Los cambios de esta demo no utilizan IA.';
+  return {response:{reply:'Ejemplo ficticio sin IA; no utilizar como itinerario confirmado.',trip}};
+}};
+if(process.argv.includes('--seed-library')) {
+  const fixture=structuredClone(sampleTrip);fixture.id='boston-fictional-qa';fixture.title='Boston ficticio para QA';
+  await env.BOOKTRIP_DB.prepare('INSERT INTO booktrip_trips (id,owner_id,create_key,document) VALUES (?,?,?,?)').bind(fixture.id,identity.id,'local-fixture',JSON.stringify(fixture)).run();
+  console.log('Catálogo de prueba: un Boston FICTICIO en SQLite local; no se escribe en D1.');
+}
+const handler=createBooktripHandler({identify:async()=>identity});
 const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.svg':'image/svg+xml','.pdf':'application/pdf'};
 const server=createServer(async(req,res)=>{
   try {

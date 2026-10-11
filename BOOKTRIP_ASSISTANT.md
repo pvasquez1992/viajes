@@ -26,10 +26,15 @@ Cerrar o recargar no borra las entradas guardadas en Cloudflare, pero cerrar la
 pestaña termina la conversación. La continuidad está firmada y ligada al usuario,
 con vencimiento de 24 horas. La firma no cifra el contenido. Las ediciones deben
 coincidir con la versión anterior guardada: una pestaña desactualizada no puede
-reemplazar cambios más recientes. Repetir la misma solicitud recupera su respuesta
+reemplazar cambios más recientes. Repetir la misma solicitud de guardado recupera su respuesta
 sin crear otra entrada ni volver a llamar al modelo.
-Por ahora, para editar conversando se necesita la conversación que creó el viaje;
-seleccionar cualquier viaje antiguo como contexto será una mejora posterior.
+Puedes empezar una conversación nueva, pedir «¿Qué viajes tengo?» y después
+«Quiero cambiar Boston». El chat consulta el catálogo real y carga el documento
+guardado, sin crear una copia. Un cambio concreto como «En Boston añade una pausa»
+puede cargarlo y ajustarlo en el mismo turno. Si hay varios candidatos, pregunta
+cuál. Consultar o seleccionar no escribe ningún viaje.
+Los ocho viajes antiguos y los JSON estáticos también aparecen con su enlace,
+pero siguen siendo de solo lectura desde el chat. Eliminar aún no está habilitado.
 
 ## Almacenamiento y API
 Las entradas nuevas se guardan en una base Cloudflare D1 privada, con el binding
@@ -39,7 +44,7 @@ Los ocho viajes anteriores siguen en sus páginas y no se migran.
 
 - GET /api/booktrip/config: identidad y capacidades; no devuelve claves.
 - POST /api/booktrip/chat: conversación del creador y guardado directo.
-- GET /api/booktrip/trips: catálogo de entradas nuevas para usuarios autenticados.
+- GET /api/booktrip/trips: catálogo completo (antiguos, estáticos y D1) para usuarios autenticados.
 - GET /api/booktrip/trips/<id>: itinerario para usuarios autenticados.
 - /trips/<id>/: página compartida del viaje guardado, protegida por Access y JWT.
 - POST /api/booktrip/publish: retirado; no crea PR ni escribe en GitHub.
@@ -48,6 +53,16 @@ Los documentos nuevos NO se guardan en el repositorio público. No hay token de
 GitHub en este flujo. server/booktrip/github.js conserva la utilidad anterior,
 sin conexión desde la API. El generador estático aún admite JSON revisado en el
 repositorio, pero las entradas creadas desde el chat permanecen en D1.
+
+`js/trip-library.js` contiene el catálogo antiguo compartido con la portada.
+`server/booktrip/library.js` lo combina con `/trips/catalog.json` mediante ASSETS
+y con D1, sin duplicar enlaces. El servidor entrega esta lista al modelo en cada
+turno. La IA solicita listar/seleccionar/editar; el código ejecuta esas acciones,
+construye los enlaces reales y comprueba propietario antes de cargar un viaje para
+editar. Si falla la lectura del catálogo, no inventa que el libro esté vacío.
+La selección firma la versión leída; el guardado conserva las comprobaciones de
+concurrencia e idempotencia. Seleccionar un viaje de solo lectura retira el anterior
+del contexto para evitar aplicar cambios por error a otro viaje.
 
 ## Cloudflare
 Mantener Access, GARMIN_API y las variables existentes de ejercicio. Configurar
@@ -76,6 +91,9 @@ demostración sin IA, guardado exclusivamente en SQLite local en memoria. No toc
 npm run preview:assistant requiere CLOUDFLARE_ACCOUNT_ID y CLOUDFLARE_AI_TOKEN:
 inferencia real, pero almacenamiento LOCAL en memoria. Nunca publicar su servidor
 de desarrollo ni sus credenciales. El build solo copia activos públicos permitidos.
+`node scripts/preview-assistant.mjs --demo --seed-library` añade un Boston FICTICIO
+al catálogo de prueba en SQLite local, para comprobar listado y selección.
+`--seed-library` también puede usarse con inferencia real y almacenamiento local.
 
 ## Límites
 Hasta 14 días y 20 mensajes por conversación; JSON validado de 60.000 caracteres

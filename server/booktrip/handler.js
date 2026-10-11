@@ -3,9 +3,10 @@ import { verifyIdentity, canCreate } from './access.js';
 import { converse } from './assistant.js';
 import { sealDraft, openDraft } from './drafts.js';
 import { createTripStore, requestKey } from './store.js';
+import { readLibrary, libraryReference } from './library.js';
 
 const headers = {'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'};
-export function createBooktripHandler({identify=verifyIdentity,chat=converse,store=createTripStore}={}) {
+export function createBooktripHandler({identify=verifyIdentity,chat=converse,store=createTripStore,library=readLibrary}={}) {
   return async ({request,env,params}) => {
     try {
       const route = Array.isArray(params.path) ? params.path.join('/') : params.path || '';
@@ -17,7 +18,7 @@ export function createBooktripHandler({identify=verifyIdentity,chat=converse,sto
       if (!identity) return error(401,'unauthorized','Inicia sesión para usar BookTrip.');
       const creator = canCreate(identity,env);
       if (route === 'config') return Response.json({data:{user:{id:identity.id,name:identity.name},canCreate:creator,aiReady:Boolean(env.AI?.run),storageReady:Boolean(env.BOOKTRIP_DB?.prepare),sessionReady:typeof env.BOOKTRIP_DRAFT_SECRET==='string' && env.BOOKTRIP_DRAFT_SECRET.length>=32,researchReady:Boolean(env.BOOKTRIP_SEARCH_KEY)}},{headers});
-      if (route === 'trips') return Response.json({data:await store(env).catalog()},{headers});
+      if (route === 'trips') return Response.json({data:await library(env,store(env),identity)},{headers});
       if (tripId) {
         const trip = await store(env).get(tripId);
         return trip ? Response.json({data:trip},{headers}) : error(404,'not_found','Este viaje no está en tu libro.');
@@ -41,17 +42,28 @@ export function createBooktripHandler({identify=verifyIdentity,chat=converse,sto
       try {input=JSON.parse(new TextDecoder().decode(buffer));} catch {throw new TripError('Solicitud JSON inválida.');}
       if (!input || typeof input!=='object' || Array.isArray(input) || Object.keys(input).some(key=>!['messages','conversationToken'].includes(key)) || !Array.isArray(input.messages) || input.messages.length<1 || input.messages.length>20 || input.messages.at(-1)?.role!=='user' || !input.messages.every(message=>message && Object.keys(message).length===2 && ['user','assistant'].includes(message.role) && typeof message.content==='string' && message.content.trim() && message.content.length<=4000)) throw new TripError('La conversación contiene mensajes inválidos.');
       if(typeof env.BOOKTRIP_DRAFT_SECRET!=='string' || env.BOOKTRIP_DRAFT_SECRET.length<32) throw new TripError('El chat todavía necesita configurar su protección.',503,'not_configured');
-      const current = input.conversationToken ? await openDraft(input.conversationToken,identity,env.BOOKTRIP_DRAFT_SECRET) : null;
+      let current = input.conversationToken ? await openDraft(input.conversationToken,identity,env.BOOKTRIP_DRAFT_SECRET) : null;
       const storage=store(env), key=await requestKey(input,identity);
       const previous=await storage.receipt(key,identity);
       if(previous) return Response.json({data:previous},{headers});
-      const result=await chat(input,current,env);
-      if(!result.trip) return Response.json({data:{reply:result.reply,conversationToken:input.conversationToken || null,trip:null,warnings:[]}},{headers});
+      const catalog=await library(env,storage,identity);
+      const result=await chat(input,current,env,{library:catalog,loadTrip:async id=>{
+        if(!catalog.some(entry=>entry.editable && libraryReference(entry).id===id)) return null;
+        const trip=await storage.getEditable(id,identity);
+        if(!trip) return null;
+        const urls=[...new Set(trip.days.flatMap(day=>day.activities.flatMap(activity=>activity.sourceUrls)))];
+        return {trip,research:urls.slice(-12).map(url=>({url,title:'Referencia conservada del viaje',content:'Enlace guardado; no se ha consultado nuevamente ni verifica disponibilidad.'}))};
+      }});
+      if(Object.hasOwn(result,'current')) current=result.current;
+      if(!result.trip) {
+        const selectionToken=result.selection && current?await sealDraft(current.trip,identity,env.BOOKTRIP_DRAFT_SECRET,current.research):null;
+        return Response.json({data:{reply:result.reply,conversationToken:result.selection?selectionToken:input.conversationToken || null,trip:result.selection || null,...(result.trips?{trips:result.trips}:{}),saved:false,warnings:[]}},{headers});
+      }
       const trip=validateTrip(result.trip).trip;
       if(current && trip.id!==current.trip.id) throw new TripError('La IA cambió el viaje que estabas ajustando.',502,'invalid_ai_output');
       if(!current) trip.id=`${trip.id.slice(0,50).replace(/-+$/,'')}-${key.slice(0,12)}`;
       const conversationToken=await sealDraft(trip,identity,env.BOOKTRIP_DRAFT_SECRET,result.research);
-      const response={reply:`${current?'Actualicé':'Creé'} «${trip.title}» en tu libro. ${trip.days.length} días, del ${trip.startDate} al ${trip.endDate}. Puedes abrirlo o pedirme ajustes aquí.`,conversationToken,trip:{id:trip.id,title:trip.title,url:`/trips/${trip.id}/`},warnings:result.warnings};
+      const response={reply:`${current?'Actualicé':'Creé'} «${trip.title}» en tu libro. ${trip.days.length} días, del ${trip.startDate} al ${trip.endDate}. Puedes abrirlo o pedirme ajustes aquí.`,conversationToken,trip:{id:trip.id,title:trip.title,url:`/trips/${trip.id}/`},saved:true,warnings:result.warnings};
       const saved=await storage.save(trip,identity,current,key,response);
       return Response.json({data:saved},{headers});
     } catch(cause) {

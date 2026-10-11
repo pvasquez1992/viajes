@@ -28,10 +28,15 @@ export function createTripStore(env) {
       if (!saved) throw new TripError('El viaje cambió desde otra conversación. Abre una conversación nueva para evitar reemplazar esos cambios.',409,'trip_changed');
       return saved;
     },
-    async catalog() {
+    async catalog(identity) {
       ready();
-      const {results} = await db.prepare('SELECT document FROM booktrip_trips ORDER BY created_at DESC LIMIT 200').all();
-      return results.map(row => catalogEntry(JSON.parse(row.document)));
+      const {results} = await db.prepare('SELECT document, owner_id FROM booktrip_trips ORDER BY created_at DESC').all();
+      return results.map(row => ({...catalogEntry(JSON.parse(row.document)),...(identity?{editable:row.owner_id===identity.id}:{})}));
+    },
+    async getEditable(id, identity) {
+      ready();
+      const row = await db.prepare('SELECT document FROM booktrip_trips WHERE id = ? AND owner_id = ?').bind(id,identity.id).first();
+      return row ? validateTrip(JSON.parse(row.document)).trip : null;
     },
     async get(id) {
       ready();
