@@ -496,6 +496,18 @@ h1{
     }
 }
 
+
+/* Individual destination palette; status is a separate attribute. */
+.trip-card.theme-halloween{--status-color:#ff932c;border-color:#c76d36;background:linear-gradient(135deg,rgba(184,75,27,.38),rgba(47,21,50,.9) 65%),#19212a}
+.trip-card.theme-forest{--status-color:#9bcf70;border-color:#547d56;background:linear-gradient(135deg,rgba(34,106,65,.38),rgba(14,37,29,.9) 65%),#19212a}
+.trip-card.theme-christmas{--status-color:#e78d89;border-color:#a14c5b;background:linear-gradient(135deg,rgba(130,36,64,.38),rgba(49,24,40,.9) 65%),#19212a}
+.trip-card.theme-ice{--status-color:#8bd9f2;border-color:#3c8da6;background:linear-gradient(135deg,rgba(22,100,147,.38),rgba(9,28,50,.9) 65%),#19212a}
+.trip-card.theme-city{--status-color:#ddaeef;border-color:#77568e;background:linear-gradient(135deg,rgba(113,66,160,.38),rgba(32,23,55,.9) 65%),#19212a}
+.trip-card.theme-alpine{--status-color:#8cdcc5;border-color:#4f897e;background:linear-gradient(135deg,rgba(52,133,114,.38),rgba(17,43,48,.9) 65%),#19212a}
+.trip-card.theme-italy{--status-color:#f4c474;border-color:#ba8952;background:linear-gradient(135deg,rgba(163,103,37,.38),rgba(53,32,22,.9) 65%),#19212a}
+.trip-card.theme-ireland{--status-color:#8adf8d;border-color:#498954;background:linear-gradient(135deg,rgba(33,116,58,.38),rgba(19,49,33,.9) 65%),#19212a}
+.trip-card[class*="theme-"] .trip-status{color:var(--status-color);border-color:var(--status-color);background:rgba(0,0,0,.20)}
+.trip-card[class*="theme-"]:hover{border-color:var(--status-color)}
 </style>
 </head>
 <body>
@@ -556,6 +568,7 @@ h1{
 const trips = [
     {
         title: 'Halloween Harpers Ferry 2026 🎃',
+        theme: 'halloween',
         href: 'harpersferry2026/',
         start: '2026-10-31',
         end: '2026-11-01',
@@ -565,6 +578,7 @@ const trips = [
     },
     {
         title: 'Shenandoah National Park 2026',
+        theme: 'forest',
         href: 'shenandoah2026/',
         start: '2026-10-10',
         end: '2026-10-10',
@@ -574,6 +588,7 @@ const trips = [
     },
     {
         title: 'Navidad Familiar El Salvador 2026',
+        theme: 'christmas',
         href: 'elsalvador2026/',
         start: '2026-12-18',
         end: '2027-01-03',
@@ -583,6 +598,7 @@ const trips = [
     },
     {
         title: 'Iceland 2026',
+        theme: 'ice',
         href: 'iceland2026/',
         start: '2026-08-31',
         end: '2026-09-07',
@@ -593,6 +609,7 @@ const trips = [
     },
     {
         title: 'NYC Thanksgiving 2026',
+        theme: 'city',
         href: 'nyc2026/',
         start: '2026-11-26',
         end: '2026-11-27',
@@ -602,6 +619,7 @@ const trips = [
     },
     {
         title: 'Suiza 2025',
+        theme: 'alpine',
         href: 'suiza2025/',
         start: '2025-06-01',
         end: '2025-06-15',
@@ -611,6 +629,7 @@ const trips = [
     },
     {
         title: 'Italia 2025',
+        theme: 'italy',
         href: 'italia2025/',
         start: '2025-09-01',
         end: '2025-09-15',
@@ -620,6 +639,7 @@ const trips = [
     },
     {
         title: 'Irlanda 2026',
+        theme: 'ireland',
         href: 'irlanda2026/',
         start: '2026-03-11',
         end: '2026-03-18',
@@ -677,7 +697,7 @@ function renderTrips() {
 
     grid.innerHTML = filtered.map((trip) => {
         const status = getStatus(trip);
-        const classes = ['trip-card', status.key, trip.featured ? 'active' : ''].filter(Boolean).join(' ');
+        const classes = ['trip-card', status.key, trip.theme ? `theme-${trip.theme}` : '', trip.featured ? 'active' : ''].filter(Boolean).join(' ');
         const tags = trip.tags.map((tag) => `<span>${tag}</span>`).join('');
 
         return `
