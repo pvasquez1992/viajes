@@ -3,7 +3,7 @@ import { researchQueries } from './research.js';
 import { libraryReference } from './library.js';
 export const DEFAULT_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
 const plannerSchema = { type:'object', additionalProperties:false, required:['action','reply','queries','tripId','listScope'], properties:{ action:{type:'string',enum:['clarify','discuss','draft','list','select','edit','delete','unsupported']},listScope:{type:'string',enum:['read','edit','remove']},reply:{type:'string',maxLength:1800},tripId:{type:['string','null'],maxLength:64},queries:{type:'array',maxItems:2,items:{type:'string',maxLength:200}} } };
-const discussionSchema={type:'object',additionalProperties:false,required:['reply'],properties:{reply:{type:'string',maxLength:4500}}};
+const discussionSchema={type:'object',additionalProperties:false,required:['reply'],properties:{reply:{type:'string',maxLength:3500}}};
 function occupiedTimes(trip) {
   return trip?.days.map(day=>({date:day.date,intervals:day.activities.filter(activity=>activity.time && activity.durationMinutes!==null).map(activity=>{const end=Number(activity.time.slice(0,2))*60+Number(activity.time.slice(3))+activity.durationMinutes;return {title:activity.title,start:activity.time,end:String(Math.floor(end/60)).padStart(2,'0')+':'+String(end%60).padStart(2,'0')};}),unknownTimes:day.activities.filter(activity=>!activity.time || activity.durationMinutes===null).map(activity=>activity.title)})) || [];
 }

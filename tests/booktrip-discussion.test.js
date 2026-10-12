@@ -66,3 +66,11 @@ test('discussion can use research sources and bounds large trip context while pr
   const env={BOOKTRIP_SEARCH_KEY:'fictional-key',AI:{run:async(_model,request)=>{if(request.response_format.json_schema.properties.action)return {response:plan('discuss')};const data=context(request);assert.equal(data.selectedTrip.startDate,trip.startDate);assert.equal(data.selectedTrip.days[0].activities[0].time,'10:00');assert.equal(data.selectedTrip.contextSummarized,true);assert.ok(JSON.stringify(data.selectedTrip).length<19000);assert.equal(data.sources[0].url,'https://example.test/verified');return {response:{reply:'Consulta la fuente recibida; no acredita disponibilidad.'}};}}};
   const result=await converse({messages:[{role:'user',content:'Recomiéndame alternativas'}]},{trip,research:[]},env,{research:async()=>{calledResearch=true;return [{url:'https://example.test/verified',title:'Fuente QA',content:'Datos ficticios'}];}});assert.equal(calledResearch,true);assert.deepEqual(result.warnings,[]);assert.equal(result.trip,null);
 });
+
+test('advice replies fit the next chat request history limit and reject excessive model text',async t=>{
+  let length=3500;
+  const {env,trip,call}=setup(t,request=>request.response_format.json_schema.properties.action?plan('discuss'):{reply:'x'.repeat(length)});
+  const token=await sealDraft(trip,admin,env.BOOKTRIP_DRAFT_SECRET);
+  const response=await call('Más info',token);assert.equal(response.status,200);assert.equal((await response.json()).data.reply.length,3500);
+  length=3501;const oversized=await call('Cuéntame más',token);assert.equal(oversized.status,502);assert.equal((await oversized.json()).error.code,'invalid_ai_output');
+});
