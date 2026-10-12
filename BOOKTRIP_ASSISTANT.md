@@ -152,6 +152,21 @@ al catálogo de prueba en SQLite local, para comprobar listado y selección.
 `--seed-library` también puede usarse con inferencia real y almacenamiento local.
 
 ## Límites
+El asistente admite conversación y asesoramiento con acción discuss: ampliar
+información, sugerir lugares/horas/alternativas y evaluar un itinerario sin guardar
+cambios. Usa el viaje seleccionado o lee un viaje visible del catálogo; esto no
+concede edición. La respuesta solo contiene texto, conserva el contexto firmado
+y no pasa por save. Para incorporar cambios se necesita una petición concreta.
+Sin búsqueda configurada, las ideas nuevas se presentan como opciones a verificar,
+no disponibilidad u horarios oficiales. Una conversación no garantiza exactitud
+factual sobre lugares externos al libro; la investigación requiere fuentes.
+
+En móvil el panel ocupa el visualViewport y sigue su offset, sin reservar un
+hueco adicional para el lanzador; el botón flotante se oculta al abrir el chat.
+El teclado oculta notas auxiliares y conserva mensajes/compositor dentro del
+área visible. El fondo recupera su scroll al cerrar. El campo usa readOnly
+durante inferencia para conservar el foco, y mantiene fuente mínima de 16px.
+
 Las consultas de permisos distinguen los viajes visibles de los editables y
 eliminables. «Qué viajes puedo ajustar» se filtra en servidor con los permisos
 actuales; el rol Creador no concede edición sobre viajes ajenos. Las listas

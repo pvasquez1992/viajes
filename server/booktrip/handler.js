@@ -82,7 +82,7 @@ export function createBooktripHandler({identify=verifyIdentity,chat=converse,sto
       if(current && await storage.isRemoved?.(current.trip.id)) throw new TripError('Este viaje fue eliminado del libro. Empieza una conversación nueva.',410,'trip_removed');
       if(current && storage.getEditable && !await storage.getEditable(current.trip.id,identity)) throw new TripError('Ya no tienes permiso para editar este viaje. Empieza otra conversación.',403,'editing_forbidden');
       const catalog=await library(env,storage,identity);
-      const result=await chat(input,current,env,{library:catalog,canCreate:creator,loadTrip:async id=>{
+      const result=await chat(input,current,env,{library:catalog,canCreate:creator,readTrip:async id=>catalog.some(entry=>libraryReference(entry).id===id)?storage.get(id):null,loadTrip:async id=>{
         if(!catalog.some(entry=>entry.editable && libraryReference(entry).id===id)) return null;
         const trip=await storage.getEditable(id,identity);
         if(!trip) return null;
@@ -97,7 +97,7 @@ export function createBooktripHandler({identify=verifyIdentity,chat=converse,sto
         }
         const selectionToken=result.selection && current?await sealDraft(current.trip,identity,env.BOOKTRIP_DRAFT_SECRET,current.research,Date.now(),current.generation || 0):null;
         const pendingRemoval=result.removal?{id:result.removal.id,title:result.removal.title,start:result.removal.startDate,end:result.removal.endDate,confirmationToken:await sealRemoval(result.removal,identity,env.BOOKTRIP_DRAFT_SECRET,Date.now(),await storage.generation?.(result.removal.id) || 0)}:null;
-        return Response.json({data:{reply:result.reply,conversationToken:result.selection?selectionToken:input.conversationToken || null,trip:result.selection || null,...(result.trips?{trips:result.trips}:{}),...(pendingRemoval?{pendingRemoval}:{}),saved:false,warnings:[]}},{headers});
+        return Response.json({data:{reply:result.reply,conversationToken:result.selection?selectionToken:input.conversationToken || null,trip:result.selection || null,...(result.trips?{trips:result.trips}:{}),...(pendingRemoval?{pendingRemoval}:{}),saved:false,warnings:result.warnings || []}},{headers});
       }
       const trip=validateTrip(result.trip).trip;
       if(!current && !creator) throw new TripError('Puedes editar los viajes asignados, pero tu rol no permite crear otros.',403,'creation_forbidden');

@@ -15,6 +15,7 @@ root.innerHTML=`<link rel="stylesheet" href="/css/chat-widget.css">
 document.body.append(host);
 const $=id=>root.getElementById(id);
 let config=null,messages=[],conversationToken=null,busy=false,storageKey=null,trip=null,failedContent=null,removalRetry=null;
+let scrollLock=null,viewportFrame=0,layoutHeight=innerHeight,lastWidth=innerWidth;
 async function api(path,body) {
   const response=await fetch('/api/booktrip/'+path,{credentials:'same-origin',cache:'no-store',...(body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(180000)}:{})});
   if(!response.headers.get('Content-Type')?.includes('application/json')) throw Error('Inicia sesión para usar BookTrip.');
@@ -24,6 +25,7 @@ async function api(path,body) {
 }
 function setOpen(open) {
   $('chat-panel').hidden=!open;
+  host.toggleAttribute('data-open',open);viewport();
   $('launcher').setAttribute('aria-expanded',String(open));
   $('launcher').setAttribute('aria-label',open?'Ocultar chat de BookTrip':'Abrir chat de BookTrip');
   if(open) {$('launcher').removeAttribute('data-unread');$('messages').scrollTop=$('messages').scrollHeight;}
@@ -33,7 +35,7 @@ function showError(message='') {$('error').hidden=!message;$('error').textConten
 function controls() {
   const ready=config?.canChat && config.aiReady && config.storageReady && config.sessionReady;
   $('send').disabled=busy || !ready;
-  $('message').disabled=busy || !ready;
+  $('message').disabled=!ready;$('message').readOnly=busy;
   $('new-chat').disabled=busy;
   root.querySelectorAll('[data-prompt]').forEach(button=>button.disabled=busy || !ready);
   root.querySelectorAll('.removal-actions button').forEach(button=>button.disabled=busy || !ready || button.closest('.removal-card').dataset.resolved==='true');
@@ -106,7 +108,7 @@ async function sendMessage(content) {
     const result=await api('chat',{messages:messages.map(({role,content})=>({role,content})),...(conversationToken?{conversationToken}:{})});
     if(typeof result?.reply!=='string' || !Array.isArray(result.warnings) || !result.warnings.every(item=>typeof item==='string') || (result.trip && !validTrip(result.trip)) || (result.saved!==false && result.trip && typeof result.conversationToken!=='string') || (result.trips && (!Array.isArray(result.trips) || !result.trips.every(validTrip)))) throw Error('No pudimos confirmar la respuesta. Reintenta el mismo mensaje.');
     if(result.pendingRemoval && !validRemoval(result.pendingRemoval)) throw Error('No pudimos identificar el viaje para eliminar.');
-    resolveRemovals();pending.remove();const answer={role:'assistant',content:result.reply,...(result.trip?{trip:result.trip,warnings:result.warnings}:{}),...(result.trips?{trips:result.trips}:{}),...(result.pendingRemoval?{pendingRemoval:result.pendingRemoval}:{})};messages.push(answer);appendMessage(answer.role,answer.content,answer);
+    resolveRemovals();pending.remove();const answer={role:'assistant',content:result.reply,...(result.warnings.length?{warnings:result.warnings}:{}),...(result.trip?{trip:result.trip}:{}),...(result.trips?{trips:result.trips}:{}),...(result.pendingRemoval?{pendingRemoval:result.pendingRemoval}:{})};messages.push(answer);appendMessage(answer.role,answer.content,answer);
     conversationToken=result.conversationToken ?? null;trip=result.trip || (conversationToken?trip:null);failedContent=null;persist();
     if(result.trip && result.saved!==false) {config.canEdit=true;window.dispatchEvent(new CustomEvent('booktrip:saved',{detail:result.trip}));}
     if($('chat-panel').hidden) $('launcher').setAttribute('data-unread','');
@@ -122,8 +124,19 @@ root.querySelectorAll('[data-prompt]').forEach(button=>button.addEventListener('
 function greeting() {return 'Puedes consultar los viajes del libro.'+(config?.canEdit?' También puedes ajustar los viajes para los que tienes permiso.':' Actualmente no tienes viajes con permiso de edición.')+(config?.canCreate?' Puedes crear un viaje nuevo.':'');}
 $('new-chat').addEventListener('click',()=>{messages=[];conversationToken=null;trip=null;failedContent=null;removalRetry=null;$('messages').replaceChildren();appendMessage('assistant',greeting());$('suggestions').hidden=false;$('message').value='';showError();persist();});
 document.addEventListener('click',event=>{if(event.target.closest('[data-booktrip-open]') && config?.canChat) {event.preventDefault();setOpen(true);}});
-function viewport() {const view=window.visualViewport;host.style.setProperty('--bt-viewport',(view?.height || innerHeight)+'px');host.style.setProperty('--bt-keyboard',Math.max(0,innerHeight-(view?.height || innerHeight)-(view?.offsetTop || 0))+'px');}
-window.visualViewport?.addEventListener('resize',viewport);window.visualViewport?.addEventListener('scroll',viewport);window.addEventListener('resize',viewport);viewport();
+function viewport() {
+  const view=window.visualViewport,height=view?.height || innerHeight,width=view?.width || innerWidth,mobile=matchMedia('(max-width:600px)').matches;
+  if(Math.abs(innerWidth-lastWidth)>60){layoutHeight=innerHeight;lastWidth=innerWidth;}else layoutHeight=Math.max(layoutHeight,innerHeight);
+  const focused=root.activeElement?.matches('textarea,input'),keyboard=mobile && focused && layoutHeight-height>120;
+  host.style.setProperty('--bt-viewport',height+'px');host.style.setProperty('--bt-top',(view?.offsetTop || 0)+'px');host.style.setProperty('--bt-left',(view?.offsetLeft || 0)+'px');host.style.setProperty('--bt-width',width+'px');
+  host.style.setProperty('--bt-keyboard',Math.max(0,innerHeight-height-(view?.offsetTop || 0))+'px');host.toggleAttribute('data-keyboard',Boolean(keyboard));
+  const locked=mobile && !$('chat-panel').hidden;
+  if(locked && !scrollLock){scrollLock={html:document.documentElement.style.overflow,body:document.body.style.overflow};document.documentElement.style.overflow='hidden';document.body.style.overflow='hidden';}
+  if(!locked && scrollLock){document.documentElement.style.overflow=scrollLock.html;document.body.style.overflow=scrollLock.body;scrollLock=null;}
+}
+function scheduleViewport(){cancelAnimationFrame(viewportFrame);viewportFrame=requestAnimationFrame(()=>{const log=$('messages'),atEnd=log.scrollHeight-log.scrollTop-log.clientHeight<40;viewport();if(atEnd)log.scrollTop=log.scrollHeight;});}
+window.visualViewport?.addEventListener('resize',scheduleViewport);window.visualViewport?.addEventListener('scroll',scheduleViewport);window.addEventListener('resize',scheduleViewport);root.addEventListener('focusin',scheduleViewport);root.addEventListener('focusout',scheduleViewport);
+$('send').addEventListener('pointerdown',event=>{if(root.activeElement===$('message'))event.preventDefault();});viewport();
 try {
   config=await api('config');
   if(!config.canChat) {document.querySelectorAll('[data-booktrip-open]').forEach(element=>element.hidden=true);host.remove();}

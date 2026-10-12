@@ -13,3 +13,19 @@
 .suggestions{display:flex;flex-wrap:wrap;gap:7px;padding:0 18px 13px}.suggestions button{border:1px solid #436459;background:transparent;color:var(--muted);padding:9px 12px;border-radius:30px;font-size:11px}.composer{display:flex;align-items:flex-end;gap:8px;margin:0 14px;padding:10px 10px 10px 13px;border:1px solid #557563;border-radius:15px;background:#091615}.composer:focus-within{border-color:var(--mint)}textarea{background:transparent;border:0;outline:none!important;color:var(--ink);width:100%;resize:none;min-height:44px;max-height:108px;line-height:1.5;font-size:14px}textarea::placeholder{color:#89a49b}.send{width:39px;height:39px;flex-shrink:0;border:0;border-radius:11px;background:var(--mint);color:#173b2d;font-size:23px}.note{font-size:10px;color:var(--muted);margin:10px 18px 14px;line-height:1.5}.error{font-size:12px;line-height:1.6;margin:0 14px 12px;padding:10px 12px;background:#4a2929;color:#ffd3c1;border-radius:10px}.demo{color:#e8cb93}
 @media(max-width:600px){:host{right:12px;bottom:calc(12px + env(safe-area-inset-bottom) + var(--bt-keyboard,0px))}.launcher{width:54px;height:54px;border-radius:19px}.panel{width:calc(100vw - 24px);bottom:66px;height:min(610px,calc(var(--bt-viewport,100dvh) - 94px));border-radius:20px}textarea{font-size:16px}.messages{padding:16px 15px 6px}.header{padding:13px 14px}}
 @media(prefers-reduced-motion:no-preference){.panel{animation:open .18s ease-out}.launcher{transition:transform .15s}.launcher:hover{transform:translateY(-2px)}@keyframes open{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}}
+/* Mobile chat occupies the visual viewport once, including keyboard panning.
+   The composer stays inside the panel rather than above a second launcher gap. */
+@media(max-width:600px){
+  :host{top:var(--bt-top,0px);left:var(--bt-left,0px);right:auto;bottom:auto;width:var(--bt-width,100vw);height:var(--bt-viewport,100dvh);pointer-events:none}
+  .panel{pointer-events:auto;left:8px;right:8px;top:8px;bottom:max(8px,env(safe-area-inset-bottom));width:auto;height:auto;max-height:none;border-radius:18px}
+  .permissions-dialog,.permissions-dialog::backdrop{pointer-events:auto}
+  .launcher{pointer-events:auto;position:absolute;right:max(12px,env(safe-area-inset-right));bottom:max(12px,env(safe-area-inset-bottom))}
+  :host([data-open]) .launcher{display:none}
+  .header{flex-shrink:0;gap:7px;padding:10px 12px}.mark{width:30px;height:30px;flex-shrink:0}.icon-button{width:40px;height:40px;flex-shrink:0}.permissions-button{flex-shrink:0}
+  .messages{min-height:0;padding:14px 14px 6px;scroll-padding-bottom:10px}
+  .composer{flex-shrink:0;margin:0 10px;padding:8px 9px;gap:8px}.composer textarea{min-height:44px;max-height:92px;font-size:16px}.send{width:44px;height:44px}
+  .note{flex-shrink:0;margin:8px 14px 10px}.error{flex-shrink:0;max-height:84px;overflow:auto}
+  :host([data-keyboard]) .panel{bottom:4px;top:4px}
+  :host([data-keyboard]) .note,:host([data-keyboard]) .suggestions{display:none}
+  :host([data-keyboard]) .composer{margin-bottom:8px}
+}
