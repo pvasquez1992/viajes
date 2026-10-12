@@ -74,3 +74,34 @@ test('advice replies fit the next chat request history limit and reject excessiv
   const response=await call('Más info',token);assert.equal(response.status,200);assert.equal((await response.json()).data.reply.length,3500);
   length=3501;const oversized=await call('Cuéntame más',token);assert.equal(oversized.status,502);assert.equal((await oversized.json()).error.code,'invalid_ai_output');
 });
+
+test('daily AI quota failures in planning and generation preserve trips and save receipts',async t=>{
+  for(const failOn of [1,2]) {
+    const {env,trip,call,store,db,calls}=setup(t,(_request,n)=>{
+      if(n===failOn)throw Error('AiError: you have used up your daily free allocation of 10,000 neurons, private upstream text');
+      return plan('draft');
+    });
+    const token=await sealDraft(trip,admin,env.BOOKTRIP_DRAFT_SECRET);
+    const response=await call('Cambia la descripción a tranquila',token),body=await response.json();
+    assert.equal(response.status,429);assert.equal(body.error.code,'ai_quota_exceeded');
+    assert.ok(body.error.message.includes('00:00 UTC'));assert.ok(!JSON.stringify(body).includes('private upstream'));
+    assert.equal(calls(),failOn);assert.deepEqual(await store.get(trip.id),trip);
+    assert.equal((await db.prepare('SELECT count(*) AS n FROM booktrip_receipts').first()).n,0);
+  }
+});
+
+test('AI diagnostics distinguish quota, capacity, other provider errors and invalid JSON without leaking their text',async t=>{
+  const records=[];t.mock.method(console,'warn',value=>records.push(JSON.parse(value)));
+  const cases=[
+    {failure:Object.assign(Error('private quota details'),{code:3036}),status:429,code:'ai_quota_exceeded',kind:'daily_quota'},
+    {failure:Error('AiError: 3036: private quota details'),status:429,code:'ai_quota_exceeded',kind:'daily_quota'},
+    {failure:Object.assign(Error('Capacity temporarily exceeded; private data'),{code:3040}),status:502,code:'ai_unavailable',kind:'upstream'},
+    {failure:Object.assign(Error('Generic private error'),{code:4006}),status:502,code:'ai_unavailable',kind:'upstream'},
+    {output:'{"reply":"truncated private data',status:502,code:'invalid_ai_output',kind:'invalid_json'}
+  ];
+  for(const value of cases) {
+    const {env,call}=setup(t,()=>{if(value.failure)throw value.failure;return value.output;});
+    const response=await call('hola'),body=await response.json();assert.equal(response.status,value.status);assert.equal(body.error.code,value.code);
+    assert.ok(!JSON.stringify(body).includes('private'));assert.deepEqual(records.at(-1),{event:'booktrip_ai_failure',phase:'planner',kind:value.kind});
+  }
+});

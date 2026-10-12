@@ -20,7 +20,7 @@ async function api(path,body) {
   const response=await fetch('/api/booktrip/'+path,{credentials:'same-origin',cache:'no-store',...(body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(180000)}:{})});
   if(!response.headers.get('Content-Type')?.includes('application/json')) throw Error('Inicia sesión para usar BookTrip.');
   const result=await response.json();
-  if(!response.ok) {const error=Error(result.error?.message || 'No pudimos completar la solicitud.');error.status=response.status;throw error;}
+  if(!response.ok) {const error=Error(result.error?.message || 'No pudimos completar la solicitud.');error.status=response.status;error.code=result.error?.code;throw error;}
   return result.data;
 }
 function setOpen(open) {
@@ -112,7 +112,7 @@ async function sendMessage(content) {
     conversationToken=result.conversationToken ?? null;trip=result.trip || (conversationToken?trip:null);failedContent=null;persist();
     if(result.trip && result.saved!==false) {config.canEdit=true;window.dispatchEvent(new CustomEvent('booktrip:saved',{detail:result.trip}));}
     if($('chat-panel').hidden) $('launcher').setAttribute('data-unread','');
-  } catch(error) {pending.remove();messages.pop();userMessage.remove();failedContent=text;$('message').value=text;showError(error.message);persist();}
+  } catch(error) {pending.remove();messages.pop();userMessage.remove();failedContent=error.code==='ai_quota_exceeded'?null:text;$('message').value=text;showError(error.message);persist();}
   finally {busy=false;controls();}
 }
 $('launcher').addEventListener('click',()=>setOpen($('chat-panel').hidden));

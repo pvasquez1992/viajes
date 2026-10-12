@@ -64,11 +64,24 @@ export function applyChanges(trip,changes) {
 }
 async function model(env, messages, schema, maxTokens) {
   if (!env.AI?.run) throw new TripError('El asistente todavía necesita conectar Workers AI en Cloudflare.',503,'ai_not_configured');
+  const phase=schema===plannerSchema?'planner':schema===discussionSchema?'discussion':'generation';
   let result;
   try {
     result = await env.AI.run(env.BOOKTRIP_AI_MODEL || DEFAULT_MODEL, { messages, response_format:{type:'json_schema',json_schema:schema}, max_tokens:maxTokens, temperature:0.2 });
-    result = typeof result.response === 'string' ? JSON.parse(result.response) : result.response;
-  } catch { throw new TripError('La IA no pudo preparar una respuesta válida. Inténtalo de nuevo; el viaje guardado se conserva.',502,'ai_unavailable'); }
+  } catch(cause) {
+    // Workers AI may wrap its account-limit error in an AiError string. Code
+    // 4006 is generic; only 3036 or the daily-allocation message identify quota.
+    const quota=Number(cause?.code)===3036 || /(?:\b3036\b|used up your daily free allocation)/i.test(typeof cause?.message==='string'?cause.message:'');
+    // Log a category only: upstream messages may contain private input or keys.
+    console.warn(JSON.stringify({event:'booktrip_ai_failure',phase,kind:quota?'daily_quota':'upstream'}));
+    if(quota)throw new TripError('Se agotó la cuota diaria de IA de Cloudflare. Se renueva a las 00:00 UTC. Puedes seguir viendo el libro; esta petición no cambió ningún viaje.',429,'ai_quota_exceeded');
+    throw new TripError('El servicio de IA no está disponible en este momento. Inténtalo más tarde; esta petición no cambió ningún viaje.',502,'ai_unavailable');
+  }
+  try {result = typeof result?.response === 'string' ? JSON.parse(result.response) : result?.response;}
+  catch {
+    console.warn(JSON.stringify({event:'booktrip_ai_failure',phase,kind:'invalid_json'}));
+    throw new TripError('La IA no pudo preparar una respuesta válida. Inténtalo de nuevo; el viaje guardado se conserva.',502,'invalid_ai_output');
+  }
   if (!result || typeof result !== 'object' || typeof result.reply !== 'string' || !result.reply.trim() || result.reply.length > (schema.properties.reply.maxLength || 1800)) throw new TripError('La IA devolvió una respuesta incompleta.',502,'invalid_ai_output');
   return result;
 }
