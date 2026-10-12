@@ -152,6 +152,12 @@ al catálogo de prueba en SQLite local, para comprobar listado y selección.
 `--seed-library` también puede usarse con inferencia real y almacenamiento local.
 
 ## Límites
+Las consultas de permisos distinguen los viajes visibles de los editables y
+eliminables. «Qué viajes puedo ajustar» se filtra en servidor con los permisos
+actuales; el rol Creador no concede edición sobre viajes ajenos. Las listas
+generales marcan la lectura, y config informa canEdit para el saludo. El backend
+vuelve a comprobar permisos al escribir, independientemente de texto o controles.
+
 Hasta 31 días, 32 actividades por jornada y 20 mensajes por conversación; JSON validado de 60.000 caracteres
 máximo. La IA no compra ni reserva; no afirma investigar si falta búsqueda.
 Una jornada puede quedar vacía y una duración desconocida puede ser null.

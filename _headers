@@ -1,0 +1,14 @@
+# Revalidate shared, unversioned UI assets after a deployment.
+/
+  Cache-Control: no-cache, must-revalidate
+/index.html
+  Cache-Control: no-cache, must-revalidate
+/js/*
+  Cache-Control: no-cache, must-revalidate
+/css/*
+  Cache-Control: no-cache, must-revalidate
+/assistant/*
+  Cache-Control: no-cache, must-revalidate
+/eliminados/
+  Cache-Control: no-cache, must-revalidate
+

@@ -14,8 +14,9 @@ export async function authorizeIdentity(identity,env) {
     if(member) await env.BOOKTRIP_DB.prepare('UPDATE booktrip_users SET user_id = ? WHERE email = ? AND (user_id IS NULL OR user_id != ?)').bind(identity.id,email,identity.id).run();
   }
   const canCreateTrip=role==='admin' || role==='creator';
-  const grants=!canCreateTrip && env.BOOKTRIP_DB?.prepare?await env.BOOKTRIP_DB.prepare('SELECT 1 AS allowed FROM booktrip_trip_access a JOIN booktrip_trips t ON t.id = a.trip_id WHERE a.email = ? AND NOT EXISTS (SELECT 1 FROM booktrip_removals WHERE trip_id = t.id) LIMIT 1').bind(email).first():null;
-  return {...identity,email,role,bootstrapAdmin,canCreate:canCreateTrip,canChat:canCreateTrip || Boolean(grants)};
+  const authorized={...identity,email,role,bootstrapAdmin};
+  const editable=env.BOOKTRIP_DB?.prepare?await env.BOOKTRIP_DB.prepare(`SELECT 1 AS allowed FROM booktrip_trips WHERE ${editPredicate} AND NOT EXISTS (SELECT 1 FROM booktrip_removals WHERE trip_id = booktrip_trips.id) LIMIT 1`).bind(...editArgs(authorized)).first():null;
+  return {...authorized,canCreate:canCreateTrip,canEdit:Boolean(editable),canChat:canCreateTrip || Boolean(editable)};
 }
 // These predicates are executed again in the write transaction. A revoked grant
 // cannot be recovered with an old conversation, confirmation or save receipt.

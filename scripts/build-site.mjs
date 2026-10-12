@@ -8,7 +8,7 @@ await mkdir(output, { recursive: true });
 // Only public site assets go to Pages. Never copy credentials, dependencies or tools.
 const directories = new Set(['assets', 'css', 'js', 'assistant', 'eliminados', 'ejercicio', 'elsalvador2026', 'iceland2026', 'irlanda2026', 'italia2025', 'nyc2026', 'shenandoah2026', 'harpersferry2026', 'suiza2025']);
 for (const entry of await readdir(root, { withFileTypes: true })) {
-  if (entry.isDirectory() ? directories.has(entry.name) : /\.(html|png|pdf)$/i.test(entry.name) || ['.nojekyll', '_routes.json'].includes(entry.name)) {
+  if (entry.isDirectory() ? directories.has(entry.name) : /\.(html|png|pdf)$/i.test(entry.name) || ['.nojekyll', '_routes.json', '_headers'].includes(entry.name)) {
     await cp(path.join(root, entry.name), path.join(output, entry.name), { recursive: true });
   }
 }
@@ -46,6 +46,7 @@ async function addChat(directory) {
 await addChat(output);
 // Fail the build if essential public files are omitted; Pages must not publish an empty shell.
 const requiredFiles = [
+  '_headers',
   'index.html',
   'css/home.css',
   'js/home.js',

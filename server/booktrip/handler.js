@@ -21,7 +21,7 @@ export function createBooktripHandler({identify=verifyIdentity,chat=converse,sto
       if (!verified) return error(401,'unauthorized','Inicia sesión para usar BookTrip.');
       const identity=await authorizeIdentity(verified,env);
       const creator = identity.canCreate;
-      if (route === 'config') return Response.json({data:{user:{id:identity.id,name:identity.name,role:identity.role},canCreate:creator,canChat:identity.canChat,canAdmin:identity.role==='admin',aiReady:Boolean(env.AI?.run),storageReady:Boolean(env.BOOKTRIP_DB?.prepare),sessionReady:typeof env.BOOKTRIP_DRAFT_SECRET==='string' && env.BOOKTRIP_DRAFT_SECRET.length>=32,researchReady:Boolean(env.BOOKTRIP_SEARCH_KEY)}},{headers});
+      if (route === 'config') return Response.json({data:{user:{id:identity.id,name:identity.name,role:identity.role},canCreate:creator,canEdit:identity.canEdit,canChat:identity.canChat,canAdmin:identity.role==='admin',aiReady:Boolean(env.AI?.run),storageReady:Boolean(env.BOOKTRIP_DB?.prepare),sessionReady:typeof env.BOOKTRIP_DRAFT_SECRET==='string' && env.BOOKTRIP_DRAFT_SECRET.length>=32,researchReady:Boolean(env.BOOKTRIP_SEARCH_KEY)}},{headers});
       if(route==='admin') {
         if(identity.role!=='admin') return error(403,'admin_forbidden','Solo un administrador puede asignar permisos.');
         if(request.method==='GET') return Response.json({data:await permissionPanel(env,identity)},{headers});

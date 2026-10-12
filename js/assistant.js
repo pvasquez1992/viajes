@@ -10,7 +10,7 @@ root.innerHTML=`<link rel="stylesheet" href="/css/chat-widget.css">
 <div class="suggestions" id="suggestions"><button type="button" data-prompt="¿Qué viajes tengo guardados?">Mis viajes</button><button type="button" data-prompt="Quiero una escapada en pareja.">Una escapada</button></div>
 <p class="error" id="error" role="alert" hidden></p>
 <form class="composer" id="chat-form"><textarea id="message" aria-label="Mensaje a BookTrip" rows="2" maxlength="4000" placeholder="¿A dónde nos vamos?" required></textarea><button class="send" id="send" type="submit" aria-label="Enviar mensaje" disabled>↑</button></form>
-<p class="note">Tu viaje se guarda en el libro. Puedes ajustarlo aquí.<br>Los horarios son propuestas; no se realizan reservas.</p>
+<p class="note">Solo puedes ajustar tus viajes o los que te asignen.<br>Los horarios son propuestas; no se realizan reservas.</p>
 </section>`;
 document.body.append(host);
 const $=id=>root.getElementById(id);
@@ -44,6 +44,7 @@ function tripLink(value,list=false) {
   const link=document.createElement('a');link.className='trip-link';link.href=value.url;
   const label=document.createElement('span');label.textContent=(list?'':'Abrir ')+value.title+' ↗';link.append(label);
   if(list && typeof value.start==='string' && typeof value.end==='string') {const dates=document.createElement('small');dates.textContent=value.start+' → '+value.end;link.append(dates);}
+  if(list && typeof value.editable==='boolean') {const permission=document.createElement('small');permission.textContent=value.editable?'Puedes ajustar este viaje':'Solo lectura';link.append(permission);}
   return link;
 }
 function appendMessage(role,content,extra={}) {
@@ -107,7 +108,7 @@ async function sendMessage(content) {
     if(result.pendingRemoval && !validRemoval(result.pendingRemoval)) throw Error('No pudimos identificar el viaje para eliminar.');
     resolveRemovals();pending.remove();const answer={role:'assistant',content:result.reply,...(result.trip?{trip:result.trip,warnings:result.warnings}:{}),...(result.trips?{trips:result.trips}:{}),...(result.pendingRemoval?{pendingRemoval:result.pendingRemoval}:{})};messages.push(answer);appendMessage(answer.role,answer.content,answer);
     conversationToken=result.conversationToken ?? null;trip=result.trip || (conversationToken?trip:null);failedContent=null;persist();
-    if(result.trip && result.saved!==false) window.dispatchEvent(new CustomEvent('booktrip:saved',{detail:result.trip}));
+    if(result.trip && result.saved!==false) {config.canEdit=true;window.dispatchEvent(new CustomEvent('booktrip:saved',{detail:result.trip}));}
     if($('chat-panel').hidden) $('launcher').setAttribute('data-unread','');
   } catch(error) {pending.remove();messages.pop();userMessage.remove();failedContent=text;$('message').value=text;showError(error.message);persist();}
   finally {busy=false;controls();}
@@ -118,7 +119,8 @@ root.addEventListener('keydown',event=>{if(event.key==='Escape' && !$('chat-pane
 $('chat-form').addEventListener('submit',event=>{event.preventDefault();sendMessage($('message').value);});
 $('message').addEventListener('keydown',event=>{if(event.key==='Enter' && !event.shiftKey && !event.isComposing && !matchMedia('(pointer: coarse)').matches){event.preventDefault();sendMessage($('message').value);}});
 root.querySelectorAll('[data-prompt]').forEach(button=>button.addEventListener('click',()=>{$('message').value=button.dataset.prompt;$('message').focus();}));
-$('new-chat').addEventListener('click',()=>{messages=[];conversationToken=null;trip=null;failedContent=null;removalRetry=null;$('messages').replaceChildren();appendMessage('assistant','Puedo mostrarte tus viajes, cargar uno para ajustarlo o ayudarte a crear otro. ¿Qué hacemos?');$('suggestions').hidden=false;$('message').value='';showError();persist();});
+function greeting() {return 'Puedes consultar los viajes del libro.'+(config?.canEdit?' También puedes ajustar los viajes para los que tienes permiso.':' Actualmente no tienes viajes con permiso de edición.')+(config?.canCreate?' Puedes crear un viaje nuevo.':'');}
+$('new-chat').addEventListener('click',()=>{messages=[];conversationToken=null;trip=null;failedContent=null;removalRetry=null;$('messages').replaceChildren();appendMessage('assistant',greeting());$('suggestions').hidden=false;$('message').value='';showError();persist();});
 document.addEventListener('click',event=>{if(event.target.closest('[data-booktrip-open]') && config?.canChat) {event.preventDefault();setOpen(true);}});
 function viewport() {const view=window.visualViewport;host.style.setProperty('--bt-viewport',(view?.height || innerHeight)+'px');host.style.setProperty('--bt-keyboard',Math.max(0,innerHeight-(view?.height || innerHeight)-(view?.offsetTop || 0))+'px');}
 window.visualViewport?.addEventListener('resize',viewport);window.visualViewport?.addEventListener('scroll',viewport);window.addEventListener('resize',viewport);viewport();
@@ -126,7 +128,7 @@ try {
   config=await api('config');
   if(!config.canChat) {document.querySelectorAll('[data-booktrip-open]').forEach(element=>element.hidden=true);host.remove();}
   else {
-    storageKey='booktrip-chat-v2:'+config.user.id;
+    storageKey='booktrip-chat-v3:'+config.user.id;
     $('launcher').hidden=false;
     document.querySelectorAll('[data-booktrip-open]').forEach(element=>element.hidden=false);
     $('connection').textContent=config.demo?'Demostración local · sin IA':'Hola, '+config.user.name;
@@ -139,7 +141,7 @@ try {
       removalRetry=typeof saved.removalRetry==='string'?saved.removalRetry:null;
       messages.forEach(m=>appendMessage(m.role,m.content,m));
     }
-    if(!messages.length) appendMessage('assistant','Hola, '+config.user.name+'. Puedes pedirme tus viajes guardados, ajustar uno o crear un viaje nuevo.');
+    if(!messages.length) appendMessage('assistant','Hola, '+config.user.name+'. '+greeting());
     $('suggestions').hidden=messages.length>0;controls();
     if(failedContent) {$('message').value=failedContent;showError('Reintenta este mensaje para comprobar si se guardó, o empieza una conversación nueva.');}
     if(removalRetry) showError('Reintenta la eliminación pendiente con Eliminar viaje para comprobar su resultado.');

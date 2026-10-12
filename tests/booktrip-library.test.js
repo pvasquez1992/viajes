@@ -53,7 +53,7 @@ test('listing uses the real catalog even with no selected trip, and performs no 
   const saved=clone();saved.title='Boston ficticio';seed(env,saved);
   const before=await createTripStore(env).get(saved.id);
   const response=await call(input('¿Puedes listar los viajes que tengo?'));assert.equal(response.status,200);
-  const {data}=await response.json();assert.ok(data.reply.startsWith('Tienes 9 viajes'));assert.equal(data.trips.length,9);assert.equal(data.saved,false);assert.equal(data.conversationToken,null);
+  const {data}=await response.json();assert.ok(data.reply.startsWith('Puedes consultar 9 viajes'));assert.equal(data.trips.length,9);assert.equal(data.saved,false);assert.equal(data.conversationToken,null);
   assert.ok(data.trips.some(entry=>entry.url==='/harpersferry2026/'));
   assert.ok(!JSON.stringify(data).includes('owner@example.test'));assert.equal(calls(),1);
   assert.deepEqual(await createTripStore(env).get(saved.id),before);
@@ -102,7 +102,7 @@ test('legacy selections open the original page and clear another selected trip w
   const {env,call,calls}=setup(t,()=>plan('edit',halloween.id));
   const saved=clone();seed(env,saved);const token=await sealDraft(saved,identity,secret);
   const {data}=await (await call(input('Cambia Halloween',token))).json();
-  assert.equal(data.trip.url,'/harpersferry2026/');assert.equal(data.conversationToken,null);assert.equal(data.saved,false);assert.ok(data.reply.includes('aún no se puede editar'));
+  assert.equal(data.trip.url,'/harpersferry2026/');assert.equal(data.conversationToken,null);assert.equal(data.saved,false);assert.ok(data.reply.includes('no tiene permiso para editarlo'));
   assert.equal(calls(),1);assert.deepEqual(await createTripStore(env).get(saved.id),saved);assert.equal((await createTripStore(env).catalog()).length,1);
 });
 
