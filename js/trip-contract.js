@@ -8,17 +8,18 @@ export const tripSchema = {
   properties: {
     schemaVersion: { type: 'integer', const: 1 }, id: text(64), title: text(120), destination: text(120),
     startDate: text(10), endDate: text(10), timezone: text(80), description: text(1200), theme: { type: 'string', enum: THEMES },
+    notes: text(12000),
     reservations: { type: 'array', maxItems: 12, items: {
       type: 'object', additionalProperties: false,
       required: ['type', 'provider', 'startDate', 'startTime', 'endDate', 'endTime', 'notes', 'status'],
       properties: { type: { type: 'string', enum: ['hotel', 'car', 'flight', 'other'] }, provider: text(120), startDate: text(10), startTime: nullable(text(5)), endDate: text(10), endTime: nullable(text(5)), notes: text(800), status: { type: 'string', enum: ['proposed', 'user-provided'] } },
     } },
-    days: { type: 'array', minItems: 1, maxItems: 14, items: {
+    days: { type: 'array', minItems: 1, maxItems: 31, items: {
       type: 'object', additionalProperties: false, required: ['date', 'title', 'activities'],
-      properties: { date: text(10), title: text(120), activities: { type: 'array', minItems: 1, maxItems: 10, items: {
+      properties: { date: text(10), title: text(120), activities: { type: 'array', minItems: 0, maxItems: 32, items: {
         type: 'object', additionalProperties: false,
         required: ['id', 'time', 'durationMinutes', 'period', 'title', 'description', 'location', 'kind', 'sourceUrls'],
-        properties: { id: text(64), time: nullable(text(5)), durationMinutes: { type: 'integer', minimum: 5, maximum: 720 }, period: { type: 'string', enum: PERIODS }, title: text(120), description: text(1200), location: nullable(text(200)), kind: { type: 'string', enum: ['walk', 'food', 'visit', 'transport', 'rest'] }, sourceUrls: { type: 'array', maxItems: 3, items: text(1000) } },
+        properties: { id: text(64), time: nullable(text(5)), durationMinutes: nullable({ type: 'integer', minimum: 5, maximum: 720 }), period: { type: 'string', enum: PERIODS }, title: text(120), description: text(1200), location: nullable(text(200)), kind: { type: 'string', enum: ['walk', 'food', 'visit', 'transport', 'rest'] }, sourceUrls: { type: 'array', maxItems: 3, items: text(1000) } },
       } } },
     } },
   },
@@ -44,27 +45,28 @@ export function safeUrl(value) {
 }
 export function validateTrip(trip) {
   check(JSON.stringify(trip)?.length <= 60000, 'El borrador es demasiado extenso; reduce las descripciones.');
-  shape(trip, Object.keys(tripSchema.properties), 'Viaje');
+  check(trip && typeof trip==='object' && !Array.isArray(trip) && tripSchema.required.every(key=>Object.hasOwn(trip,key)) && Object.keys(trip).every(key=>Object.hasOwn(tripSchema.properties,key)), 'Viaje: campos inválidos.');
   check(trip.schemaVersion === 1, 'Versión de viaje desconocida.');
   check(typeof trip.id === 'string' && /^[a-z0-9][a-z0-9-]{2,63}$/.test(trip.id), 'Identificador de viaje inválido.');
   for (const [key, max] of [['title',120], ['destination',120], ['timezone',80], ['description',1200]]) string(trip[key], max, key);
+  if(Object.hasOwn(trip,'notes'))string(trip.notes,12000,'Notas',true);
   check(THEMES.includes(trip.theme), 'Tema de viaje inválido.');
   try { new Intl.DateTimeFormat('es', { timeZone: trip.timezone }); } catch { throw new TripError('Zona horaria inválida.'); }
   check(isDate(trip.startDate) && isDate(trip.endDate) && trip.endDate >= trip.startDate, 'Revisa las fechas del viaje.');
   const length = (Date.parse(trip.endDate) - Date.parse(trip.startDate)) / 86400000 + 1;
-  check(length <= 14, 'Esta primera versión admite viajes de hasta 14 días.');
+  check(length <= 31, 'El libro admite viajes de hasta 31 días.');
   check(Array.isArray(trip.days) && trip.days.length === length, 'El itinerario debe cubrir todos los días del viaje.');
   const ids = new Set(); const warnings = [];
   trip.days.forEach((day, index) => {
     shape(day, ['date','title','activities'], 'Día'); string(day.title, 120, 'Título del día');
     check(day.date === new Date(Date.parse(trip.startDate) + index * 86400000).toISOString().slice(0,10), 'Los días deben estar ordenados y dentro del viaje.');
-    check(Array.isArray(day.activities) && day.activities.length >= 1 && day.activities.length <= 10, 'Cada día admite entre 1 y 10 actividades.');
+    check(Array.isArray(day.activities) && day.activities.length <= 32, 'Cada día admite hasta 32 actividades.');
     let previousEnd = -1;
     for (const activity of day.activities) {
       shape(activity, ['id','time','durationMinutes','period','title','description','location','kind','sourceUrls'], 'Actividad');
       check(typeof activity.id === 'string' && /^[a-z0-9][a-z0-9-]{0,63}$/.test(activity.id) && !ids.has(activity.id), 'Identificador de actividad inválido o repetido.'); ids.add(activity.id);
       check(time(activity.time), 'Hora de actividad inválida.');
-      check(Number.isInteger(activity.durationMinutes) && activity.durationMinutes >= 5 && activity.durationMinutes <= 720, 'Duración de actividad inválida.');
+      check(activity.durationMinutes===null || Number.isInteger(activity.durationMinutes) && activity.durationMinutes >= 5 && activity.durationMinutes <= 720, 'Duración de actividad inválida.');
       check(PERIODS.includes(activity.period) && ['walk','food','visit','transport','rest'].includes(activity.kind), 'Tipo de actividad inválido.');
       string(activity.title,120,'Actividad'); string(activity.description,1200,'Descripción',true);
       if (activity.location !== null) string(activity.location,200,'Ubicación');
@@ -72,10 +74,10 @@ export function validateTrip(trip) {
       if (activity.time) {
         const minutes = Number(activity.time.slice(0,2)) * 60 + Number(activity.time.slice(3));
         check(minutes >= previousEnd, `Hay actividades solapadas o desordenadas el ${day.date}.`);
-        check(minutes + activity.durationMinutes <= 1440, 'Una actividad cruza la medianoche; sepárala en dos días.');
+        check(minutes + (activity.durationMinutes || 0) <= 1440, 'Una actividad cruza la medianoche; sepárala en dos días.');
         const period = minutes < 12*60 ? 'morning' : minutes < 18*60 ? 'afternoon' : 'evening';
         check(activity.period === period, 'El momento del día no coincide con la hora.');
-        previousEnd = minutes + activity.durationMinutes;
+        previousEnd = minutes + (activity.durationMinutes || 0);
       } else warnings.push(`Hora pendiente: ${activity.title}.`);
     }
   });

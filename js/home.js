@@ -1,5 +1,6 @@
 import { legacyTrips } from './trip-library.js';
-const trips = structuredClone(legacyTrips);
+const trips = [];
+let catalogReady=false;
 
 const today = new Date();
 today.setHours(0, 0, 0, 0);
@@ -40,6 +41,7 @@ function normalize(value) {
 const escapeHtml = value => String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 
 function renderTrips() {
+    if(!catalogReady){grid.replaceChildren();count.textContent='Cargando…';emptyState.hidden=true;return;}
     const query = normalize(search.value.trim());
     const filtered = trips.filter((trip) => {
         const status = getStatus(trip);
@@ -107,14 +109,16 @@ async function loadNewTrips() {
       }
     }
     for(let index=trips.length-1;index>=0;index--) if(!received.has(trips[index].href)) trips.splice(index,1);
-    document.getElementById('catalog-error')?.remove();renderTrips();
+    catalogReady=true;document.getElementById('catalog-error')?.remove();renderTrips();
   } catch {
     if(document.getElementById('catalog-error')) return;
     const notice=document.createElement('p');notice.id='catalog-error';notice.className='empty-state';
-    notice.textContent='No pudimos cargar los viajes nuevos. Vuelve a cargar la página para reintentar.';
+    if(!catalogReady)count.textContent='No disponible';
+    notice.textContent='No pudimos cargar el libro. Vuelve a cargar la página para reintentar.';
     document.querySelector('.library-panel').append(notice);
   }
 }
 loadNewTrips();
 window.addEventListener('booktrip:saved',loadNewTrips);
 window.addEventListener('booktrip:removed',loadNewTrips);
+window.addEventListener('booktrip:restored',loadNewTrips);

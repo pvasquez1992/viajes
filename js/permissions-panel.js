@@ -40,7 +40,7 @@ export function attachPermissions(root,api) {
       content.append(form);
     }
     const add=node('form'),email=emailInput('Agregar o cambiar un usuario'),select=roleSelect();add.append(email.wrapper,select);submit(add,'Guardar rol',()=>change({action:'role',email:email.input.value,role:select.value}));content.append(add,node('p','Asignar un rol aquí no permite saltarse Cloudflare Access: el correo también debe estar autorizado para entrar.'),node('h3','Permisos por viaje'));
-    if(!data.trips.length) {content.append(node('p','Todavía no hay viajes creados desde el chat. Los viajes HTML anteriores se mantienen en lectura.'));return;}
+    if(!data.trips.length) {content.append(node('p','No hay viajes activos. Puedes consultar la carpeta Eliminados.'));return;}
     if(!data.trips.some(trip=>trip.id===selectedId))selectedId=data.trips[0].id;
     const label=node('label','Viaje'),trips=node('select');trips.setAttribute('aria-label','Viaje para asignar permisos');
     for(const trip of data.trips) {const option=node('option',trip.title);option.value=trip.id;trips.append(option);}

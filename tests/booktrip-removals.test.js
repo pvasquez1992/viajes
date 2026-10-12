@@ -28,12 +28,12 @@ test('deletion is a proposal until confirmed; a confirmation removes only its ow
   assert.equal(requested.data.pendingRemoval.title,trip.title);assert.equal(requested.data.pendingRemoval.start,trip.startDate);
   assert.deepEqual(await store.get(trip.id),trip);assert.equal((await store.catalog()).length,1);
   const token=requested.data.pendingRemoval.confirmationToken;
-  const removed=await (await call('remove',{confirmationToken:token})).json();assert.equal(removed.data.removed.id,trip.id);assert.ok(removed.data.reply.startsWith('Eliminé'));
+  const removed=await (await call('remove',{confirmationToken:token})).json();assert.equal(removed.data.removed.id,trip.id);assert.ok(removed.data.reply.startsWith('Moví'));
   assert.equal(await store.get(trip.id),null);assert.equal(await store.getEditable(trip.id,identity),null);assert.equal((await store.catalog()).length,0);
   assert.equal((await call('trips/'+trip.id)).status,404);
   env.ASSETS.fetch=async()=>Response.json([catalogEntry(trip)]);
   assert.equal((await (await call('trips')).json()).data.length,8);
-  assert.deepEqual(await (await call('remove',{confirmationToken:token})).json(),removed);assert.equal(calls(),1);
+  assert.deepEqual(await (await call('remove',{confirmationToken:token})).json(),removed);assert.equal(calls(),0);
   // Retaining the original privately permits recovery; no old link exposes it.
   assert.equal((await env.BOOKTRIP_DB.prepare('SELECT document FROM booktrip_trips WHERE id = ?').bind(trip.id).first()).document,JSON.stringify(trip));
 });

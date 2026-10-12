@@ -132,6 +132,7 @@ try {
     $('connection').textContent=config.demo?'Demostración local · sin IA':'Hola, '+config.user.name;
     $('connection').classList.toggle('demo',Boolean(config.demo));
     if(config.canAdmin) attachPermissions(root,api);
+    if(config.canCreate) {const link=document.createElement('a');link.href='/eliminados/';link.textContent='Eliminados';link.className='permissions-button';$('chat-panel').querySelector('.note').append(document.createElement('br'),link);const library=document.querySelector('.library-panel');if(library){const shortcut=link.cloneNode(true);shortcut.className='filter-button';shortcut.style.cssText='display:inline-flex;margin-bottom:16px;text-decoration:none';library.before(shortcut);}}
     let saved;try{saved=JSON.parse(sessionStorage.getItem(storageKey)||'null');}catch{}
     if(saved && Array.isArray(saved.messages) && saved.messages.length<=20 && saved.messages.every(m=>['user','assistant'].includes(m.role) && typeof m.content==='string')) {
       messages=saved.messages;conversationToken=typeof saved.conversationToken==='string'?saved.conversationToken:null;trip=validTrip(saved.trip)?saved.trip:null;failedContent=typeof saved.failedContent==='string'?saved.failedContent:null;

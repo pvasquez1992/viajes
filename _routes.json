@@ -1,5 +1,5 @@
 {
   "version": 1,
-  "include": ["/api/ejercicio/*", "/api/booktrip/*", "/trips/*"],
+  "include": ["/api/ejercicio/*", "/api/booktrip/*", "/trips/*", "/eliminados/originales/*", "/eliminados/trips/*", "/harpersferry2026/*", "/shenandoah2026/*", "/elsalvador2026/*", "/iceland2026/*", "/nyc2026/*", "/suiza2025/*", "/italia2025/*", "/irlanda2026/*"],
   "exclude": []
 }

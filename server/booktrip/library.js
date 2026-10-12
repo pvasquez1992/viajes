@@ -2,7 +2,7 @@ import { legacyTrips } from '../../js/trip-library.js';
 import { TripError } from '../../js/trip-contract.js';
 
 export function libraryReference(entry) {
-  return {id:(entry.href.startsWith('trips/')?'':'legacy:')+entry.href.replace(/^trips\//,'').replace(/\/$/,''),title:entry.title,url:'/'+entry.href,start:entry.start,end:entry.end,editable:entry.editable===true,removable:entry.removable ?? entry.editable===true};
+  return {id:entry.id || (entry.href.startsWith('trips/')?'':'legacy:')+entry.href.replace(/^trips\//,'').replace(/\/$/,''),title:entry.title,url:'/'+entry.href,start:entry.start,end:entry.end,editable:entry.editable===true,removable:entry.removable ?? entry.editable===true};
 }
 
 // The same legacy catalog drives the home page and the assistant. Generated
@@ -19,7 +19,8 @@ export async function readLibrary(env, storage, identity) {
     const available=await Promise.all(generated.map(async entry=>await storage.isRemoved(libraryReference(entry).id)?null:entry));
     generated=available.filter(Boolean);
   }
-  const entries=new Map([...legacyTrips,...generated].map(entry=>[entry.href,{...entry,editable:false}]));
+  const registered=new Set(await storage.legacyHrefs?.() || []);
+  const entries=new Map([...legacyTrips,...generated].filter(entry=>!registered.has(entry.href)).map(entry=>[entry.href,{...entry,editable:false}]));
   for(const entry of await storage.catalog(identity)) entries.set(entry.href,entry);
   return [...entries.values()];
 }

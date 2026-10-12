@@ -9,9 +9,9 @@ async function key(secret) {
   if (typeof secret !== 'string' || secret.length < 32) throw new TripError('La protección de la conversación todavía no está configurada.',503,'not_configured');
   return crypto.subtle.importKey('raw', encoder.encode(secret), { name:'HMAC', hash:'SHA-256' }, false, ['sign','verify']);
 }
-export async function sealDraft(trip, identity, secret, research = [], now = Date.now()) {
+export async function sealDraft(trip, identity, secret, research = [], now = Date.now(), generation=0) {
   validateTrip(trip);
-  const content=encoder.encode(JSON.stringify({ trip, owner:identity.id, expires:now+86400000, research }));
+  const content=encoder.encode(JSON.stringify({ trip, owner:identity.id, expires:now+86400000, research,generation }));
   if(content.length>90000)throw new TripError('El viaje y sus fuentes son demasiado extensos. Reduce las descripciones.',413,'too_large');
   const payload = b64(content);
   return `${payload}.${b64(new Uint8Array(await crypto.subtle.sign('HMAC',await key(secret),encoder.encode(payload))))}`;
@@ -24,6 +24,7 @@ export async function openDraft(token, identity, secret, now = Date.now()) {
     const data = JSON.parse(new TextDecoder().decode(bytes(payload)));
     if (data.owner !== identity.id || !Number.isFinite(data.expires) || data.expires <= now) throw Error('expired');
     validateTrip(data.trip);
+    if(data.generation!==undefined && (!Number.isInteger(data.generation) || data.generation<0)) throw Error('generation');
     return data;
   } catch (error) {
     if (error.code === 'not_configured') throw error;

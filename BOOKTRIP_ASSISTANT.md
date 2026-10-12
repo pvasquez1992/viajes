@@ -14,8 +14,10 @@ consulta. Todos siguen necesitando entrar por Cloudflare Access.
 `booktrip_trip_access` permite conceder edición a un correo en un viaje concreto.
 Ese editor puede modificar el viaje, pero no eliminarlo ni crear otros si su rol
 general es Lector. Al retirar la edición vuelve a lectura; el propietario y los
-administradores conservan sus derechos según su rol. Los ocho HTML anteriores
-y los JSON estáticos siguen siendo de lectura: este panel gestiona los viajes D1.
+administradores conservan sus derechos según su rol. Los ocho viajes HTML se
+migran a D1 con ID/propietario, manteniendo sus carpetas, enlaces y páginas
+originales. El panel incluye esos viajes y las entradas creadas desde el chat.
+Los JSON estáticos revisados que todavía no se importen siguen en lectura.
 
 El servidor usa el JWT verificado, el rol vigente y el ID/propietario del viaje;
 no acepta roles del navegador ni cabeceras de correo sin verificar. Los permisos
@@ -45,16 +47,26 @@ Puedes empezar una conversación nueva, pedir «¿Qué viajes tengo?» y despué
 guardado, sin crear una copia. Un cambio concreto como «En Boston añade una pausa»
 puede cargarlo y ajustarlo en el mismo turno. Si hay varios candidatos, pregunta
 cuál. Consultar o seleccionar no escribe ningún viaje.
-Los ocho viajes antiguos y los JSON estáticos también aparecen con su enlace,
-pero siguen siendo de solo lectura desde el chat.
+Los viajes HTML migrados conservan sus enlaces y aspecto originales mientras
+no cambian sus datos. Tras editar uno, su enlace abre el lector actualizado;
+**Ver página original conservada** mantiene acceso a la versión HTML anterior.
+Las actividades, notas de logística y reservas se extraen sin inventar tiempos
+o compromisos. Italia y Suiza se importan como estaban: fechas y jornadas vacías.
 
 Para eliminar una entrada creada desde el chat, pide «Elimina el viaje a Boston».
 Se muestra su nombre y fechas con **Eliminar viaje** y **Cancelar**. La petición
 inicial no borra nada: solo el botón confirma. La confirmación está firmada,
 ligada a usuario/viaje/versión y vence a los diez minutos. Si el viaje cambió,
 debe solicitarse otra confirmación. Reintentar un botón ya ejecutado es idempotente.
+Una orden explícita con nombre inequívoco prepara el botón directamente en el
+servidor; no depende de que la IA pida confirmar solo mediante texto.
 La portada se actualiza al completar la eliminación, sin recargar manualmente.
-Los viajes antiguos HTML y JSON estáticos aún no admiten eliminación desde el chat.
+Eliminar mueve el viaje a **Eliminados**, sin borrar su documento ni los archivos
+HTML, JS, imágenes o carpeta. `/eliminados/` lista los viajes archivados que
+puede gestionar el usuario (administrador: todos; creador: propios), permite
+abrirlos y restaurarlos con el mismo ID y permisos. Los originales migrados se
+consultan en `/eliminados/originales/<id>/`; los enlaces públicos anteriores
+devuelven 410 mientras el viaje esté archivado. No hay borrado definitivo.
 
 ## Almacenamiento y API
 Las entradas nuevas se guardan en una base Cloudflare D1 privada, con el binding
@@ -63,12 +75,21 @@ de guardado. Cada guardado y su respuesta se escriben en una transacción.
 `migrations/0002_booktrip_removals.sql` añade marcadores de eliminación. La baja
 retira el viaje del catálogo y bloquea su lectura y modificación, conservando el
 documento original privado para recuperación manual. Los reintentos y contextos
-anteriores no pueden restaurarlo. No hay interfaz de recuperación todavía.
-Los ocho viajes anteriores siguen en sus páginas y no se migran.
+anteriores no pueden restaurarlo. `0004_booktrip_legacy_archive.sql` añade el
+registro de páginas originales y la generación de cada viaje. Restaurar solo
+retira el marcador de baja e incrementa esa generación: contextos y confirmaciones
+anteriores no pueden modificar ni volver a archivar la entrada restaurada.
+El importador idempotente `scripts/import-legacy.mjs` exige el catálogo completo,
+un propietario verificado y una extracción privada revisada; nunca sobreescribe
+un viaje editado ni reactiva uno eliminado. No se publica esa extracción.
 
 - GET /api/booktrip/config: identidad y capacidades; no devuelve claves.
 - POST /api/booktrip/chat: conversación y guardado según rol y permiso por viaje.
 - POST /api/booktrip/remove: eliminación confirmada por creador/administrador con token específico.
+- GET /api/booktrip/archive: carpeta Eliminados, según derechos de propietario/administrador.
+- GET /api/booktrip/archive/<id>: datos de una entrada archivada autorizada.
+- POST /api/booktrip/restore: restauración firmada ligada a actor/ID/generación/baja;
+  la respuesta perdida puede reintentarse sin duplicar ni cambiar el ID.
 - GET /api/booktrip/admin: usuarios, roles y viajes con editores; solo administradores.
 - POST /api/booktrip/admin: asignar rol (`action: role`) o conceder/retirar edición
   (`action: trip-access`, `permission: edit/view`); solo administradores y mismo origen.
@@ -107,7 +128,8 @@ producción por separado de los previews; no copiar sus claves ni su base de dat
 | BOOKTRIP_SEARCH_KEY | Secreto opcional | Investigación mediante Tavily. |
 
 Aplicar migrations/0001_booktrip.sql, migrations/0002_booktrip_removals.sql y
-migrations/0003_booktrip_permissions.sql, añadir el binding y redesplegar.
+migrations/0003_booktrip_permissions.sql y migrations/0004_booktrip_legacy_archive.sql,
+añadir el binding y redesplegar.
 La tercera añade tablas de roles y edición, sin alterar documentos de viaje.
 Registrar el administrador inicial y los creadores por correo completo en D1;
 no guardar el listado de correos personales en el repositorio público. `user_id`
@@ -130,8 +152,12 @@ al catálogo de prueba en SQLite local, para comprobar listado y selección.
 `--seed-library` también puede usarse con inferencia real y almacenamiento local.
 
 ## Límites
-Hasta 14 días y 20 mensajes por conversación; JSON validado de 60.000 caracteres
+Hasta 31 días, 32 actividades por jornada y 20 mensajes por conversación; JSON validado de 60.000 caracteres
 máximo. La IA no compra ni reserva; no afirma investigar si falta búsqueda.
+Una jornada puede quedar vacía y una duración desconocida puede ser null.
+Para editar documentos grandes, el modelo devuelve cambios acotados y el
+servidor conserva las jornadas, notas y reservas no afectadas; así no debe
+regenerar todo un itinerario extenso para cambiar una descripción.
 Sin BOOKTRIP_SEARCH_KEY, horarios, lugares y disponibilidad quedan por comprobar.
 JARVIS ofrece enlaces a Google Maps, no mapas Mission Control ni trazados calculados.
 No se añadió MCP. Garmin y Foundry continúan independientes.
@@ -157,4 +183,5 @@ viaje cuando existen y respeta su estado, sin afirmar confirmaciones verificadas
 Conserva enlaces a Maps; aún no incorpora el mapa Mission Control del viaje original.
 
 Referencias: [D1](https://developers.cloudflare.com/d1/worker-api/d1-database/),
-[Workers AI en Pages](https://developers.cloudflare.com/pages/functions/bindings/#workers-ai).
+[Workers AI en Pages](https://developers.cloudflare.com/pages/functions/bindings/#workers-ai),
+[modelo Llama alojado](https://developers.cloudflare.com/workers-ai/models/llama-3.3-70b-instruct-fp8-fast/).
