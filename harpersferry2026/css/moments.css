@@ -75,3 +75,31 @@
 }
 @media(max-width:355px){.moment-stop summary{grid-template-columns:51px 24px minmax(0,1fr) 12px;gap:6px}.moment-detail{padding-left:82px}.moment-count{font-size:10px}}
 @media(prefers-reduced-motion:reduce){.moment-chevron,.day-switcher a{transition:none}}
+
+
+/* Excursión opcional separada de las paradas obligatorias y la ruta de JARVIS. */
+.optional-hike{margin-top:17px;border:1px solid #b07b57;border-radius:16px;background:linear-gradient(125deg,#3a2b38,#2a2333);overflow:hidden}
+.optional-hike>summary{list-style:none;cursor:pointer;padding:15px;display:flex;gap:12px;align-items:center;min-height:66px}
+.optional-hike>summary::-webkit-details-marker,.j-optional-hike>summary::-webkit-details-marker{display:none}
+.optional-hike>summary:focus-visible,.j-optional-hike>summary:focus-visible{outline:2px solid #ffc58a;outline-offset:-3px}
+.optional-hike-icon{font-size:23px}
+.optional-hike-title{display:flex;flex:1;min-width:0;flex-direction:column;gap:3px}
+.optional-hike-title strong{font-size:15px;color:#fff2e5;line-height:1.25}
+.optional-hike-title small{font-size:12px;line-height:1.35;color:#dbc5d1}
+.optional-hike-label{font-size:10px;color:#ffd2a4;border-radius:18px;border:1px solid #a87c5e;padding:4px 8px;white-space:nowrap}
+.optional-hike-chevron{font-size:21px;color:#ffd2a4;transition:transform .15s}
+.optional-hike[open] .optional-hike-chevron{transform:rotate(180deg)}
+.optional-hike-body{padding:13px 18px 19px;border-top:1px dashed #78566c;font-size:13px;line-height:1.6;color:#eadde8}
+.optional-hike-body p{margin:0 0 12px}
+.optional-hike-links{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.optional-hike-links a{display:inline-flex;align-items:center;padding:8px 11px;border:1px solid #ba896b;border-radius:9px;color:#ffe1bd;text-decoration:none;font-size:12px}
+.optional-hike-links a:hover{background:#5e3c4f}
+.optional-hike-note{font-size:12px;color:#d3c0cd}
+.j-optional-hike[hidden]{display:none!important}
+.j-optional-hike{margin:0 11px 13px;border:1px solid #5b8c6b;border-radius:10px;background:#153329;color:#e8f6ed}
+.j-optional-hike>summary{padding:11px 13px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:12px;font-weight:800}
+.j-optional-body{border-top:1px solid #355b49;padding:12px 13px;font-size:12px;line-height:1.5}
+.j-optional-body p{margin:0 0 10px;color:#c6ddd0}
+.j-optional-body a{display:block;color:#ffd4a3;padding:5px 0;font-weight:750}
+@media(max-width:650px){.optional-hike>summary{gap:8px;padding:13px 11px}.optional-hike-title strong{font-size:13px}.optional-hike-title small{font-size:11px}.optional-hike-label{font-size:9px;padding:3px 5px}.optional-hike-body{padding:12px}}
+@media(prefers-reduced-motion:reduce){.optional-hike-chevron{transition:none}}
