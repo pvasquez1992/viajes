@@ -1,9 +1,13 @@
 import { legacyTrips } from './trip-library.js';
+import { getTripCountdown } from './trip-countdown.js';
 const trips = [];
 let catalogReady=false;
 
-const today = new Date();
-today.setHours(0, 0, 0, 0);
+function localToday() {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    return date;
+}
 
 const grid = document.getElementById('tripGrid');
 const search = document.getElementById('tripSearch');
@@ -19,6 +23,7 @@ function getStatus(trip) {
         current: 'Viviéndolo',
         finished: 'Finalizado'
     };
+    const today = localToday();
     const startDate = new Date(`${trip.start}T00:00:00`);
     const endDate = new Date(`${trip.end}T00:00:00`);
 
@@ -39,6 +44,21 @@ function normalize(value) {
 }
 
 const escapeHtml = value => String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+
+// Update only the labels, never the whole cards: scrolling and search remain stable.
+function updateCountdowns() {
+    const now = new Date();
+    grid.querySelectorAll('.trip-countdown').forEach((element) => {
+        const countdown = getTripCountdown({start: element.dataset.start, end: element.dataset.end}, now);
+        element.dataset.state = countdown.state;
+        element.querySelector('.trip-countdown-label').textContent = countdown.label;
+        element.querySelector('.trip-countdown-value').textContent = countdown.value;
+        element.setAttribute('aria-label', countdown.value);
+        element.title = countdown.state === 'future' || countdown.state === 'soon'
+            ? 'Calculado hasta las 00:00 del primer día del viaje (hora local)'
+            : countdown.value;
+    });
+}
 
 function renderTrips() {
     if(!catalogReady){grid.replaceChildren();count.textContent='Cargando…';emptyState.hidden=true;return;}
@@ -67,6 +87,15 @@ function renderTrips() {
                 <span class="trip-status">${status.label}</span>
                 <h3>${escapeHtml(trip.title)}</h3>
                 <p>${escapeHtml(trip.description)}</p>
+                <div class="trip-countdown" data-start="${escapeHtml(trip.start)}" data-end="${escapeHtml(trip.end)}" aria-live="off">
+                    <span class="trip-countdown-clock" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 6.5V12l4 2.5"/></svg>
+                    </span>
+                    <span class="trip-countdown-content">
+                        <span class="trip-countdown-label">CUENTA REGRESIVA</span>
+                        <strong class="trip-countdown-value">Calculando…</strong>
+                    </span>
+                </div>
                 <div class="trip-meta">${tags}</div>
             </a>
         `;
@@ -74,6 +103,7 @@ function renderTrips() {
 
     count.textContent = `${filtered.length} ${filtered.length === 1 ? 'viaje' : 'viajes'}`;
     emptyState.hidden = filtered.length > 0;
+    updateCountdowns();
 }
 
 filterButtons.forEach((button) => {
@@ -87,6 +117,23 @@ filterButtons.forEach((button) => {
 
 search.addEventListener('input', renderTrips);
 renderTrips();
+
+// Counts refresh without reloading; midnight also refreshes the trip status/order.
+let lastCalendarDay = localToday().getTime();
+function refreshCountdowns() {
+    const currentCalendarDay = localToday().getTime();
+    if (currentCalendarDay !== lastCalendarDay) {
+        lastCalendarDay = currentCalendarDay;
+        renderTrips();
+    } else {
+        updateCountdowns();
+    }
+}
+setInterval(refreshCountdowns, 30000);
+window.addEventListener('focus', refreshCountdowns);
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) refreshCountdowns();
+});
 
 
 // New entries live privately in Cloudflare; static trips remain in the library.
