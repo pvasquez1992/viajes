@@ -14,14 +14,26 @@ test('travels tomorrow show hours rather than one day', () => {
   assert.equal(value, 'Faltan 12 horas');
 });
 
-test('upcoming 36-hour window remains hours', () => {
+test('more than 24 hours remaining uses calendar days, never hours', () => {
   const value = getTripCountdown(trip('2026-10-31'), new Date(2026, 9, 29, 12)).value;
-  assert.equal(value, 'Faltan 36 horas');
+  assert.equal(value, 'Faltan 2 días');
 });
 
-test('middle distances select weeks and days', () => {
+test('less than one month always displays days instead of weeks', () => {
   const value = getTripCountdown(trip('2026-11-26'), new Date(2026, 10, 6, 9)).value;
-  assert.equal(value, 'Faltan 2 semanas y 6 días');
+  assert.equal(value, 'Faltan 20 días');
+});
+
+test('exactly one calendar month displays months', () => {
+  assert.equal(getTripCountdown(trip('2026-11-17'), new Date(2026, 9, 17, 0)).value, 'Faltan 1 mes');
+});
+
+test('even 31 civil days can be less than one full calendar month', () => {
+  assert.equal(getTripCountdown(trip('2026-11-17'), new Date(2026, 9, 17, 19)).value, 'Faltan 31 días');
+});
+
+test('one week always displays days', () => {
+  assert.equal(getTripCountdown(trip('2026-10-24'), new Date(2026, 9, 17, 0)).value, 'Faltan 7 días');
 });
 
 test('minutes never round to 60 alongside the hour', () => {
