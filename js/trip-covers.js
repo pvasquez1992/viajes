@@ -35,8 +35,11 @@ export const tripCovers = Object.freeze({
     alt: 'Aurora boreal sobre el paisaje de Islandia'
   },
   'irlanda2026/': {
-    src: '/irlanda2026/img/Irlanda/1592795968644459.jpg',
-    alt: 'Fotografía del viaje a Irlanda'
+    src: commons("The Giant's Causeway landscape.jpg"),
+    alt: 'Paisaje costero de la Calzada del Gigante en Irlanda del Norte, sin retratos',
+    credit: 'Yujin', license: 'CC0 1.0 (dominio público)',
+    source: page("The Giant's Causeway landscape.jpg"),
+    licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/'
   },
   'suiza2025/': {
     src: commons('Matterhorn-EastAndNorthside-viewedFromZermatt landscapeformat.jpg'),
