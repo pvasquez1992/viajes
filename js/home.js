@@ -1,5 +1,6 @@
 import { legacyTrips } from './trip-library.js';
 import { getTripCountdown } from './trip-countdown.js';
+import { tripCovers, getTripCover } from './trip-covers.js';
 const trips = [];
 let catalogReady=false;
 
@@ -14,6 +15,7 @@ const search = document.getElementById('tripSearch');
 const count = document.getElementById('tripCount');
 const emptyState = document.getElementById('emptyState');
 const filterButtons = document.querySelectorAll('.filter-button');
+const photoCredits = document.getElementById('photoCredits');
 let activeFilter = 'all';
 
 function getStatus(trip) {
@@ -81,22 +83,32 @@ function renderTrips() {
         const status = getStatus(trip);
         const classes = ['trip-card', status.key, trip.theme ? `theme-${trip.theme}` : '', trip.featured ? 'active' : ''].filter(Boolean).join(' ');
         const tags = trip.tags.map((tag) => `<span>${escapeHtml(tag)}</span>`).join('');
+        const cover = getTripCover(trip);
+        const fallbackIcon = {halloween:'🎃',forest:'🌲',christmas:'✦',city:'✦',ice:'❄️',alpine:'⛰️',italy:'☀️',ireland:'☘️'}[trip.theme] || '✦';
+        const image = cover ? `<img class="trip-cover-image" src="${escapeHtml(cover.src)}" alt="${escapeHtml(cover.alt)}" loading="lazy" decoding="async" referrerpolicy="no-referrer">` : '';
 
         return `
             <a class="${classes}" href="${escapeHtml(trip.href)}">
-                <span class="trip-status">${status.label}</span>
-                <h3>${escapeHtml(trip.title)}</h3>
-                <p>${escapeHtml(trip.description)}</p>
-                <div class="trip-countdown" data-start="${escapeHtml(trip.start)}" data-end="${escapeHtml(trip.end)}" aria-live="off">
-                    <span class="trip-countdown-clock" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 6.5V12l4 2.5"/></svg>
+                <span class="trip-cover">
+                    <span class="trip-cover-fallback" aria-hidden="true">${fallbackIcon}</span>
+                    ${image}
+                    <span class="trip-cover-arrow" aria-hidden="true">↗</span>
+                </span>
+                <span class="trip-card-body">
+                    <span class="trip-status">${status.label}</span>
+                    <h3>${escapeHtml(trip.title)}</h3>
+                    <p class="trip-description">${escapeHtml(trip.description)}</p>
+                    <span class="trip-countdown" data-start="${escapeHtml(trip.start)}" data-end="${escapeHtml(trip.end)}" aria-live="off">
+                        <span class="trip-countdown-clock" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 6.5V12l4 2.5"/></svg>
+                        </span>
+                        <span class="trip-countdown-content">
+                            <span class="trip-countdown-label">CUENTA REGRESIVA</span>
+                            <strong class="trip-countdown-value">Calculando…</strong>
+                        </span>
                     </span>
-                    <span class="trip-countdown-content">
-                        <span class="trip-countdown-label">CUENTA REGRESIVA</span>
-                        <strong class="trip-countdown-value">Calculando…</strong>
-                    </span>
-                </div>
-                <div class="trip-meta">${tags}</div>
+                    <span class="trip-meta">${tags}</span>
+                </span>
             </a>
         `;
     }).join('');
@@ -116,6 +128,20 @@ filterButtons.forEach((button) => {
 });
 
 search.addEventListener('input', renderTrips);
+// If a remote image cannot load, reveal the styled postcard instead of a broken icon.
+grid.addEventListener('error', (event) => {
+    if (event.target instanceof HTMLImageElement && event.target.classList.contains('trip-cover-image')) {
+        event.target.hidden = true;
+    }
+}, true);
+// Image credits are independent of filters: they cover every photograph available in the book.
+if (photoCredits) {
+    const credits = Object.entries(tripCovers).filter(([,cover]) => cover.source);
+    photoCredits.innerHTML = credits.map(([href,cover]) => {
+        const title = legacyTrips.find(trip => trip.href === href)?.title || 'Viaje';
+        return `<li><span>${escapeHtml(title)}</span> · ${escapeHtml(cover.credit)} — <a href="${escapeHtml(cover.source)}" target="_blank" rel="noopener noreferrer">fotografía original</a>${cover.licenseUrl ? ` · <a href="${escapeHtml(cover.licenseUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(cover.license)}</a>` : ` · ${escapeHtml(cover.license)}`}</li>`;
+    }).join('');
+}
 renderTrips();
 
 // Counts refresh without reloading; midnight also refreshes the trip status/order.
