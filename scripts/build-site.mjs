@@ -50,6 +50,7 @@ const requiredFiles = [
   'index.html',
   'css/home.css',
   'js/home.js',
+  'js/trip-countdown.js',
   'js/trip-library.js',
   'assistant/index.html',
   'css/assistant.css',
