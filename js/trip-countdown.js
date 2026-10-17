@@ -67,8 +67,8 @@ export function getTripCountdown(trip, now = new Date()) {
       readable = 'menos de 1 minuto';
     }
   } else {
-    // A month means one real calendar month from this very moment.
-    const months = calendarMonthsUntil(now, start);
+    // Trips have dates but no departure times, so "one month" uses calendar dates.
+    const months = calendarMonthsUntil(today, start);
     if (months < 1) {
       // Preserve civil days across DST changes instead of dividing milliseconds by 24h.
       readable = plural(daysBetween(today, start), 'día', 'días');
