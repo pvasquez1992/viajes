@@ -20,8 +20,9 @@ export const tripCovers = Object.freeze({
   'elsalvador2026/': {
     src: commons('CATEDRAL DE SANTA ANA, EL SALVADOR.JPG'),
     alt: 'Catedral de Santa Ana, El Salvador',
-    credit: 'Lacalderonjr', license: 'Ver licencia en Wikimedia Commons',
-    source: page('CATEDRAL DE SANTA ANA, EL SALVADOR.JPG')
+    credit: 'Lacalderonjr', license: 'CC BY-SA 3.0',
+    source: page('CATEDRAL DE SANTA ANA, EL SALVADOR.JPG'),
+    licenseUrl: 'https://creativecommons.org/licenses/by-sa/3.0/'
   },
   'shenandoah2026/': {
     src: commons('Sunset - Moormans River Overlook (1a00cb34-155d-451f-67fa-ebbbd1773fb9).jpg'),
