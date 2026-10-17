@@ -31,8 +31,11 @@ export const tripCovers = Object.freeze({
     source: page('Sunset - Moormans River Overlook (1a00cb34-155d-451f-67fa-ebbbd1773fb9).jpg')
   },
   'iceland2026/': {
-    src: '/iceland2026/img/hero-aurora.jpg',
-    alt: 'Aurora boreal sobre el paisaje de Islandia'
+    src: commons('Iceland Aurora 1.jpg'),
+    alt: 'Aurora boreal sobre el paisaje de Thingvellir, Islandia',
+    credit: 'Carl Young', license: 'CC BY-SA 4.0',
+    source: page('Iceland Aurora 1.jpg'),
+    licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/'
   },
   'irlanda2026/': {
     src: commons("The Giant's Causeway landscape.jpg"),
