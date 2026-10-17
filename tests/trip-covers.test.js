@@ -21,7 +21,11 @@ test('all Wikimedia photographs include author, source and licensing information
   for (const cover of Object.values(tripCovers).filter(x => x.source)) {
     assert.ok(cover.credit);
     assert.match(cover.source, /^https:\/\/commons\.wikimedia\.org\/wiki\/File:/);
-    assert.match(cover.licenseUrl, /^https:\/\/creativecommons\.org\/licenses\//);
-    assert.match(cover.license, /^CC BY/);
+    if (cover.license.startsWith('CC BY')) {
+      assert.match(cover.licenseUrl, /^https:\/\/creativecommons\.org\/licenses\//);
+    } else {
+      assert.match(cover.license, /Dominio público/);
+      assert.equal(cover.licenseUrl, undefined);
+    }
   }
 });
