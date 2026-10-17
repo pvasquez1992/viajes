@@ -94,7 +94,7 @@ function renderTrips() {
                     ${image}
                     <span class="trip-cover-arrow" aria-hidden="true">↗</span>
                 </span>
-                <span class="trip-card-body">
+                <div class="trip-card-body">
                     <span class="trip-status">${status.label}</span>
                     <h3>${escapeHtml(trip.title)}</h3>
                     <p class="trip-description">${escapeHtml(trip.description)}</p>
@@ -107,8 +107,8 @@ function renderTrips() {
                             <strong class="trip-countdown-value">Calculando…</strong>
                         </span>
                     </span>
-                    <span class="trip-meta">${tags}</span>
-                </span>
+                    <div class="trip-meta">${tags}</div>
+                </div>
             </a>
         `;
     }).join('');
