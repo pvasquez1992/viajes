@@ -55,8 +55,9 @@ export function getTripCountdown(trip, now = new Date()) {
   let readable;
   // On the day before departure, hours communicate urgency better than "1 día".
   if (timeLeft < 48 * HOUR) {
-    const hours = Math.floor(timeLeft / HOUR);
-    const minutes = Math.ceil((timeLeft % HOUR) / MINUTE);
+    const totalMinutes = Math.ceil(timeLeft / MINUTE);
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
     if (hours >= 1) {
       readable = plural(hours, 'hora', 'horas') +
         (minutes > 0 && hours < 24 ? ' y ' + plural(minutes, 'minuto', 'minutos') : '');
