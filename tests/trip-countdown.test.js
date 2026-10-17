@@ -28,8 +28,9 @@ test('exactly one calendar month displays months', () => {
   assert.equal(getTripCountdown(trip('2026-11-17'), new Date(2026, 9, 17, 0)).value, 'Faltan 1 mes');
 });
 
-test('even 31 civil days can be less than one full calendar month', () => {
-  assert.equal(getTripCountdown(trip('2026-11-17'), new Date(2026, 9, 17, 19)).value, 'Faltan 31 días');
+test('month boundaries use trip dates, not unspecified departure hours', () => {
+  assert.equal(getTripCountdown(trip('2026-11-17'), new Date(2026, 9, 17, 19)).value, 'Faltan 1 mes');
+  assert.equal(getTripCountdown(trip('2026-11-17'), new Date(2026, 9, 18, 0)).value, 'Faltan 30 días');
 });
 
 test('one week always displays days', () => {
