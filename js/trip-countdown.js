@@ -23,7 +23,8 @@ function addCalendarMonths(from, amount) {
   const year = from.getFullYear();
   const month = from.getMonth() + amount;
   const lastDay = new Date(year, month + 1, 0).getDate();
-  return new Date(year, month, Math.min(from.getDate(), lastDay));
+  return new Date(year, month, Math.min(from.getDate(), lastDay),
+    from.getHours(), from.getMinutes(), from.getSeconds(), from.getMilliseconds());
 }
 
 function calendarMonthsUntil(from, target) {
@@ -51,43 +52,34 @@ export function getTripCountdown(trip, now = new Date()) {
     return { state: 'current', label: 'EN MARCHA', value: '¡Ya comenzó!' };
   }
 
-  const wholeDays = daysBetween(today, start);
   let readable;
-  // On the day before departure, hours communicate urgency better than "1 día".
-  if (timeLeft < 48 * HOUR) {
+  // Less than 24 hours: hours (and minutes when helpful). No premature "one day".
+  if (timeLeft < DAY) {
     const totalMinutes = Math.ceil(timeLeft / MINUTE);
     const hours = Math.floor(totalMinutes / 60);
     const minutes = totalMinutes % 60;
     if (hours >= 1) {
       readable = plural(hours, 'hora', 'horas') +
-        (minutes > 0 && hours < 24 ? ' y ' + plural(minutes, 'minuto', 'minutos') : '');
+        (minutes > 0 ? ' y ' + plural(minutes, 'minuto', 'minutos') : '');
     } else if (timeLeft >= MINUTE) {
       readable = plural(Math.ceil(timeLeft / MINUTE), 'minuto', 'minutos');
     } else {
       readable = 'menos de 1 minuto';
     }
-  } else if (wholeDays < 14) {
-    readable = plural(wholeDays, 'día', 'días');
-  } else if (wholeDays < 31) {
-    const weeks = Math.floor(wholeDays / 7);
-    const days = wholeDays % 7;
-    readable = plural(weeks, 'semana', 'semanas') +
-      (days ? ' y ' + plural(days, 'día', 'días') : '');
   } else {
-    const months = calendarMonthsUntil(today, start);
-    const remaining = daysBetween(addCalendarMonths(today, months), start);
-    const years = Math.floor(months / 12);
-    const extraMonths = months % 12;
-    if (years) {
-      readable = plural(years, 'año', 'años') +
-        (extraMonths ? ' y ' + plural(extraMonths, 'mes', 'meses') : '');
-    } else if (months) {
-      readable = plural(months, 'mes', 'meses') +
-        (remaining >= 7 ? ' y ' + plural(Math.floor(remaining / 7), 'semana', 'semanas') : '');
+    // A month means one real calendar month from this very moment.
+    const months = calendarMonthsUntil(now, start);
+    if (months < 1) {
+      // Preserve civil days across DST changes instead of dividing milliseconds by 24h.
+      readable = plural(daysBetween(today, start), 'día', 'días');
     } else {
-      readable = plural(Math.floor(wholeDays / 7), 'semana', 'semanas') +
-        (wholeDays % 7 ? ' y ' + plural(wholeDays % 7, 'día', 'días') : '');
+      const years = Math.floor(months / 12);
+      const extraMonths = months % 12;
+      readable = years
+        ? plural(years, 'año', 'años') +
+          (extraMonths ? ' y ' + plural(extraMonths, 'mes', 'meses') : '')
+        : plural(months, 'mes', 'meses');
     }
   }
-  return { state: timeLeft < 48 * HOUR ? 'soon' : 'future', label: 'CUENTA REGRESIVA', value: 'Faltan ' + readable };
+  return { state: timeLeft < DAY ? 'soon' : 'future', label: 'CUENTA REGRESIVA', value: 'Faltan ' + readable };
 }
