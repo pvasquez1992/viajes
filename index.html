@@ -509,6 +509,86 @@ h1{
 .trip-card[class*="theme-"] .trip-status{color:var(--status-color);border-color:var(--status-color);background:rgba(0,0,0,.20)}
 .trip-card[class*="theme-"]:hover{border-color:var(--status-color)}
 .create-trip-link{display:inline-flex;align-items:center;gap:12px;padding:14px 18px;margin-top:18px;border:1px solid #89cbb5;border-radius:12px;background:#16352c;color:#c0f1da;text-decoration:none;font-size:14px;font-weight:700}.create-trip-link:hover{background:#234738}
+
+/* Adaptive trip clock: one reusable component for every legacy and D1 trip. */
+.trip-countdown{
+    display:flex;
+    align-items:center;
+    gap:11px;
+    margin-top:17px;
+    padding:11px 12px;
+    min-height:65px;
+    border:1px solid rgba(217,232,245,.19);
+    border-radius:14px;
+    background:linear-gradient(100deg,rgba(255,255,255,.075),rgba(255,255,255,.025));
+}
+.trip-countdown-clock{
+    flex:0 0 39px;
+    width:39px;
+    height:39px;
+    display:grid;
+    place-items:center;
+    border-radius:50%;
+    border:1px solid rgba(217,232,245,.23);
+    background:rgba(0,0,0,.22);
+    color:var(--status-color,#77d8ff);
+}
+.trip-countdown-clock svg{
+    width:23px;
+    height:23px;
+}
+.trip-countdown-content{
+    min-width:0;
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+}
+.trip-countdown-label{
+    color:#c9d6e3;
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:.105em;
+    line-height:1.15;
+}
+.trip-countdown-value{
+    color:#fff;
+    font-size:clamp(14px,1.5vw,16px);
+    font-weight:900;
+    line-height:1.22;
+    overflow-wrap:anywhere;
+}
+.trip-countdown[data-state="soon"]{
+    border-color:rgba(255,212,141,.48);
+    background:linear-gradient(100deg,rgba(255,181,84,.16),rgba(255,255,255,.03));
+}
+.trip-countdown[data-state="soon"] .trip-countdown-clock{
+    color:#ffd38c;
+    border-color:rgba(255,211,140,.53);
+    animation:booktrip-clock-pulse 2.6s ease-in-out infinite;
+}
+.trip-countdown[data-state="current"]{
+    border-color:rgba(142,242,196,.38);
+}
+.trip-countdown[data-state="current"] .trip-countdown-clock{
+    color:#8ef2c4;
+}
+.trip-countdown[data-state="finished"],
+.trip-countdown[data-state="unknown"]{
+    border-color:rgba(217,232,245,.12);
+    background:rgba(0,0,0,.12);
+}
+.trip-countdown[data-state="finished"] .trip-countdown-clock,
+.trip-countdown[data-state="unknown"] .trip-countdown-clock{
+    color:#b1c0cc;
+}
+.trip-card .trip-meta{margin-top:13px}
+@keyframes booktrip-clock-pulse{
+    50%{box-shadow:0 0 0 5px rgba(255,211,140,.08)}
+}
+@media (prefers-reduced-motion:reduce){
+    .trip-countdown-clock{animation:none!important}
+}
+
 </style>
 </head>
 <body>
