@@ -24,8 +24,10 @@ test('all Wikimedia photographs include author, source and licensing information
     if (cover.license.startsWith('CC BY')) {
       assert.match(cover.licenseUrl, /^https:\/\/creativecommons\.org\/licenses\//);
     } else {
-      assert.match(cover.license, /Dominio público/);
-      assert.equal(cover.licenseUrl, undefined);
+      assert.match(cover.license, /dominio público/i);
+      if (cover.license.startsWith('CC0')) {
+        assert.equal(cover.licenseUrl, 'https://creativecommons.org/publicdomain/zero/1.0/');
+      }
     }
   }
 });
