@@ -6,7 +6,7 @@ export const legacyTrips = [
         start: '2026-10-31',
         end: '2026-11-01',
         phase: 'planned',
-        description: 'Una noche de Halloween: hotel y Hertz confirmados, pueblo histórico, trick-or-treat en Bolivar y ghost tour opcional.',
+        description: 'Halloween histórico y trick-or-treat en Bolivar el sábado; Maryland Heights el domingo. Hotel y Hertz confirmados.',
         tags: ['31 oct–1 nov', 'Halloween', 'West Virginia']
     },
     {
