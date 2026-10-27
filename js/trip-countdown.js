@@ -67,9 +67,10 @@ export function getTripCountdown(trip, now = new Date()) {
       readable = 'menos de 1 minuto';
     }
   } else {
-    // Trips have dates but no departure times, so "one month" uses calendar dates.
+    // When fewer than three full calendar months remain, show exact civil days.
+    // For instance, Oct 27 -> Dec 18 is 52 days, not a vague "1 month".
     const months = calendarMonthsUntil(today, start);
-    if (months < 1) {
+    if (months < 3) {
       // Preserve civil days across DST changes instead of dividing milliseconds by 24h.
       readable = plural(daysBetween(today, start), 'día', 'días');
     } else {
