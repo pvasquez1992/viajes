@@ -24,13 +24,29 @@ test('less than one month always displays days instead of weeks', () => {
   assert.equal(value, 'Faltan 20 días');
 });
 
-test('exactly one calendar month displays months', () => {
-  assert.equal(getTripCountdown(trip('2026-11-17'), new Date(2026, 9, 17, 0)).value, 'Faltan 1 mes');
+test('one full calendar month displays exact days', () => {
+  assert.equal(getTripCountdown(trip('2026-11-17'), new Date(2026, 9, 17, 0)).value, 'Faltan 31 días');
+});
+
+test('less than three calendar months displays exact civil days', () => {
+  assert.equal(getTripCountdown(trip('2026-12-18'), new Date(2026, 9, 27, 15, 48)).value, 'Faltan 52 días');
+  assert.equal(getTripCountdown(trip('2026-12-16'), new Date(2026, 10, 1, 10)).value, 'Faltan 45 días');
+  assert.equal(getTripCountdown(trip('2026-12-16'), new Date(2026, 9, 17, 12)).value, 'Faltan 60 días');
+});
+
+test('three calendar months is the threshold for month wording', () => {
+  assert.equal(getTripCountdown(trip('2027-01-17'), new Date(2026, 9, 17, 12)).value, 'Faltan 3 meses');
+  assert.equal(getTripCountdown(trip('2027-01-16'), new Date(2026, 9, 17, 12)).value, 'Faltan 91 días');
 });
 
 test('month boundaries use trip dates, not unspecified departure hours', () => {
-  assert.equal(getTripCountdown(trip('2026-11-17'), new Date(2026, 9, 17, 19)).value, 'Faltan 1 mes');
+  assert.equal(getTripCountdown(trip('2026-11-17'), new Date(2026, 9, 17, 19)).value, 'Faltan 31 días');
   assert.equal(getTripCountdown(trip('2026-11-17'), new Date(2026, 9, 18, 0)).value, 'Faltan 30 días');
+});
+
+test('crossing daylight saving time does not skew remaining days', () => {
+  assert.equal(getTripCountdown(trip('2026-11-15'), new Date(2026, 9, 31, 12)).value, 'Faltan 15 días');
+  assert.equal(getTripCountdown(trip('2027-03-15'), new Date(2027, 2, 1, 12)).value, 'Faltan 14 días');
 });
 
 test('one week always displays days', () => {
