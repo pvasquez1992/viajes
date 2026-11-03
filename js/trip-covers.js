@@ -10,6 +10,12 @@ export const tripCovers = Object.freeze({
     source: page('Harpers Ferry & Potomac River Overlook - HDR (21647594852).jpg'),
     licenseUrl: 'https://creativecommons.org/licenses/by/3.0/'
   },
+  'trips/front-royal-2026/': {
+    src: commons('Sunset - Moormans River Overlook (1a00cb34-155d-451f-67fa-ebbbd1773fb9).jpg'),
+    alt: 'Paisaje de montañas del Shenandoah National Park para el viaje a Front Royal',
+    credit: 'National Park Service', license: 'Dominio público (EE. UU.)',
+    source: page('Sunset - Moormans River Overlook (1a00cb34-155d-451f-67fa-ebbbd1773fb9).jpg')
+  },
   'nyc2026/': {
     src: commons('Empire State Building at Sunset, New York.jpg'),
     alt: 'Manhattan y el Empire State Building al atardecer',
